@@ -1,24 +1,42 @@
 //! TMDB, The Movie Database: the Metadata Provider of Movies and TV Shows.
+//!
+//! A Movie's or a TV Show's details come in one request, which brings what every Locale shares, and
+//! the texts, posters and trailers in every language: TMDB's translations, and its images and
+//! videos in each Locale's language. A TV Show's Episodes come in `tv_show`, and the credits'
+//! details in `credits`.
+//!
+//! Trailers and TV Show Episodes' texts are only in the Locales' languages, so they have no original
+//! language to fall back on. That would take more requests for little: TMDB has English summaries
+//! and trailers for nearly every show, and only some lack English titles for their TV Show
+//! Episodes, which then show their number only.
 
-mod details;
+mod credits;
+mod search;
+mod tv_show;
 
 use std::{
     fmt::{self, Display, Formatter},
-    num::{NonZeroU32, ParseIntError},
+    num::ParseIntError,
     str::FromStr,
 };
 
-use anyhow::Context;
 use jiff::civil::Date;
 use secrecy::SecretString;
 use serde::{Deserialize, Deserializer};
 
+use self::{
+    credits::Credits,
+    tv_show::{AppendedSeasons, SeasonSummary},
+};
 use crate::{
     api_client::ApiClient,
     domain::{
-        InternalError,
         accounts::Locale,
-        contents::{ExternalContentId, Image, ImageSource, SearchResult, SearchResults},
+        contents::{
+            ContentMetadata, ContentTranslations, ExternalContentId, ExternalIds, Genre, Image,
+            ImageSource, Language, LookUpError, MediaMetadata, MediaTranslations, MediaType,
+            Translations,
+        },
     },
 };
 
@@ -40,11 +58,24 @@ const PROFILE_WIDTHS: [u32; 2] = [45, 185];
 /// The widths of TMDB's stills of TV Show Episodes, in pixels
 const STILL_WIDTHS: [u32; 3] = [92, 185, 300];
 
-/// The last page of results TMDB serves, whatever their number
-const LAST_PAGE: u32 = 500;
+/// The Locale of the details request, which also brings what every Locale shares
+const BASE_LOCALE: Locale = Locale::EnUs;
 
-/// The number of TMDB's pages a search reads at most to find some Content, as some only have people
-const MAX_PAGES_READ: u32 = 5;
+/// What the details request adds to a Movie's or a TV Show's details
+const DETAILS_APPENDS: [&str; 5] = [
+    "translations",
+    "images",
+    "videos",
+    "credits",
+    "external_ids",
+];
+
+/// The number of requests TMDB adds to one with `append_to_response` at most: more fail it
+const MAX_APPENDS: usize = 20;
+
+/// The number of votes below which a Content has no rating, as a single vote of 10 would otherwise
+/// top the best rated
+const MIN_VOTES: u32 = 25;
 
 /// The ID of a Movie or a TV Show at TMDB, which numbers Movies and TV Shows apart: a Movie and a TV
 /// Show can have the same.
@@ -90,76 +121,287 @@ impl Tmdb {
         })
     }
 
-    /// Returns a page of the Movies and TV Shows whose title matches the query, most relevant
-    /// first, with their texts in the Locale's language. It leaves out adult content, and the
-    /// videos: what TMDB lists as movies but flags as not truly ones, such as filmed sports events,
-    /// concerts and compilations.
-    ///
-    /// TMDB's pages also list people, who aren't Content: when one has only people and videos, the
-    /// search reads the next one, up to `MAX_PAGES_READ`, so that the apps don't load pages that
-    /// show nothing.
-    pub async fn search(
+    /// Returns the Movie with this ID, in every language TMDB has it.
+    pub async fn fetch_movie(&self, id: TmdbId) -> Result<ContentMetadata, LookUpError> {
+        let movie = self
+            .details("/movie/{id}", id, &[])
+            .await?
+            .ok_or(LookUpError::NotFound)?;
+
+        let media = MediaMetadata {
+            media_type: MediaType::Movie,
+            group_number: None,
+            number_in_group: None,
+            release_date: movie.release_date,
+            runtime_seconds: movie.runtime.and_then(minutes_to_seconds),
+            image: None,
+            texts: MediaTranslations::default(),
+        };
+        Ok(movie.into_metadata(ExternalContentId::Movie(id), vec![media]))
+    }
+
+    /// Returns the details of the Movie or TV Show at `route`, such as `/movie/{id}`, with these
+    /// seasons, or None when TMDB doesn't know it.
+    async fn details(
         &self,
-        query: &str,
-        mut page: NonZeroU32,
-        locale: Locale,
-    ) -> Result<SearchResults, InternalError> {
-        let mut pages_read = 1;
-        loop {
-            let page_number = page.to_string();
-            let params = [
-                ("query", query),
-                ("page", &page_number),
-                ("include_adult", "false"),
-                ("language", locale.language_tag()),
-            ];
-            let found: MultiSearchPage = self
-                .api
-                .get("/search/multi", &[], &params)
-                .await?
-                .context("TMDB answered GET /search/multi with 404 Not Found")?;
+        route: &'static str,
+        id: TmdbId,
+        seasons: &[i32],
+    ) -> anyhow::Result<Option<Details>> {
+        let appends = DETAILS_APPENDS
+            .into_iter()
+            .map(str::to_owned)
+            .chain(seasons.iter().map(|number| format!("season/{number}")))
+            .collect::<Vec<_>>()
+            .join(",");
+        // Without them, TMDB only sends the images and videos in the request's language. Images
+        // without a language have no text, such as most backdrops
+        let languages = Locale::ALL.map(Locale::language).join(",");
+        let image_languages = format!("{languages},null");
 
-            let next_page = found.next_page();
-            let results: Vec<_> = found
-                .results
-                .into_iter()
-                .filter_map(search_result)
+        self.api
+            .get(
+                route,
+                &[&id.to_string()],
+                &[
+                    ("language", BASE_LOCALE.language_tag()),
+                    ("append_to_response", &appends),
+                    ("include_image_language", &image_languages),
+                    ("include_video_language", &languages),
+                ],
+            )
+            .await
+    }
+}
+
+/// Returns a runtime in seconds from TMDB's minutes, or None for TMDB's 0, which means it doesn't
+/// know.
+fn minutes_to_seconds(minutes: i32) -> Option<i32> {
+    (minutes > 0).then(|| minutes.saturating_mul(60))
+}
+
+/// The details of a Movie or a TV Show, with what `DETAILS_APPENDS` adds. TMDB names some fields
+/// differently for each: a TV Show's `name` is a Movie's `title`.
+#[derive(Debug, Deserialize)]
+struct Details {
+    #[serde(alias = "original_name")]
+    original_title: String,
+    #[serde(default, deserialize_with = "optional_text")]
+    original_language: Option<String>,
+    /// The countries it comes from, the main one first
+    #[serde(default)]
+    origin_country: Vec<String>,
+    /// The countries it was made in, which some Movies have without an origin country
+    #[serde(default)]
+    production_countries: Vec<Country>,
+    #[serde(default, alias = "first_air_date", deserialize_with = "optional_date")]
+    release_date: Option<Date>,
+    #[serde(default)]
+    genres: Vec<GenreReference>,
+    #[serde(default)]
+    vote_average: f32,
+    #[serde(default)]
+    vote_count: u32,
+    poster_path: Option<String>,
+    backdrop_path: Option<String>,
+    /// A Movie's runtime, in minutes
+    runtime: Option<i32>,
+    /// A TV Show's seasons
+    #[serde(default)]
+    seasons: Vec<SeasonSummary>,
+    translations: TranslationList,
+    images: Images,
+    videos: VideoList,
+    credits: Credits,
+    external_ids: TmdbExternalIds,
+    /// A TV Show's seasons that the request asked for
+    #[serde(flatten)]
+    appended_seasons: AppendedSeasons,
+}
+
+impl Details {
+    /// Returns the Content's metadata, with these Media.
+    fn into_metadata(self, id: ExternalContentId, media: Vec<MediaMetadata>) -> ContentMetadata {
+        let texts = self.texts();
+        let backdrop = self
+            .images
+            .backdrops
+            .iter()
+            // Backdrops without a language have no text
+            .find(|image| image.iso_639_1.is_none())
+            .map(|image| image.file_path.as_str())
+            .or(self.backdrop_path.as_deref())
+            .and_then(backdrop);
+        let origin_country = self
+            .origin_country
+            .into_iter()
+            .chain(
+                self.production_countries
+                    .into_iter()
+                    .map(|country| country.iso_3166_1),
+            )
+            .next();
+        let rating =
+            (self.vote_count >= MIN_VOTES).then(|| (self.vote_average * 10.0).round() / 10.0);
+
+        ContentMetadata {
+            id,
+            external_ids: ExternalIds {
+                imdb: self.external_ids.imdb_id,
+                tvdb: self.external_ids.tvdb_id.map(|id| id.to_string()),
+                ..ExternalIds::default()
+            },
+            original_title: self.original_title,
+            original_language: self.original_language,
+            origin_country,
+            release_date: self.release_date,
+            genres: genres(&self.genres),
+            rating,
+            backdrop,
+            texts,
+            credits: self.credits.into_metadata(),
+            media,
+        }
+    }
+
+    /// Returns the Content's texts, posters and trailers in every language TMDB has them.
+    fn texts(&self) -> ContentTranslations {
+        let original_language = self.original_language.as_deref();
+        let is_original =
+            |translation: &&Translation| Some(translation.iso_639_1.as_str()) == original_language;
+
+        let titles =
+            self.translations
+                .translations
+                .iter()
+                .filter_map(|translation| {
+                    // TMDB leaves the title of the original language's translation empty
+                    let title = translation.data.title.clone().or_else(|| {
+                        is_original(&translation).then(|| self.original_title.clone())
+                    })?;
+                    Some((translation.language(), title))
+                })
                 .collect();
+        let overviews = self
+            .translations
+            .translations
+            .iter()
+            .filter_map(|translation| {
+                Some((translation.language(), translation.data.overview.clone()?))
+            })
+            .collect();
+        let original_overview = self
+            .translations
+            .translations
+            .iter()
+            .filter(is_original)
+            .find_map(|translation| translation.data.overview.clone());
+        let posters = self
+            .images
+            .posters
+            .iter()
+            .filter_map(|image| {
+                let language = Language::new(image.iso_639_1.clone()?, image.iso_3166_1.clone());
+                Some((language, poster(&image.file_path)?))
+            })
+            .collect();
 
-            match next_page {
-                Some(next_page) if results.is_empty() && pages_read < MAX_PAGES_READ => {
-                    page = next_page;
-                    pages_read += 1;
-                }
-                _ => return Ok(SearchResults { results, next_page }),
-            }
+        ContentTranslations {
+            titles: Translations {
+                original: None,
+                translated: titles,
+            },
+            overviews: Translations {
+                original: original_overview,
+                translated: overviews,
+            },
+            posters: Translations {
+                // TMDB's main poster, which may have no text
+                original: self.poster_path.as_deref().and_then(poster),
+                translated: posters,
+            },
+            trailer_urls: Translations {
+                original: None,
+                translated: trailers(&self.videos.results),
+            },
         }
     }
 }
 
-/// Returns the Content a result of TMDB's search is, or None for a person or a video.
-fn search_result(result: MultiSearchResult) -> Option<SearchResult> {
-    match result {
-        MultiSearchResult::Movie(movie) if movie.video => None,
-        MultiSearchResult::Movie(movie) => Some(SearchResult {
-            external_content_id: ExternalContentId::Movie(TmdbId(movie.id)),
-            title: movie.title,
-            date: movie.release_date,
-            overview: movie.overview,
-            poster: movie.poster_path.as_deref().and_then(poster),
-            // TMDB's search doesn't say who makes them
-            creators: Vec::new(),
-        }),
-        MultiSearchResult::TvShow(tv_show) => Some(SearchResult {
-            external_content_id: ExternalContentId::TvShow(TmdbId(tv_show.id)),
-            title: tv_show.name,
-            date: tv_show.first_air_date,
-            overview: tv_show.overview,
-            poster: tv_show.poster_path.as_deref().and_then(poster),
-            // TMDB's search doesn't say who makes them
-            creators: Vec::new(),
-        }),
-        MultiSearchResult::Person => None,
+/// Returns the YouTube URL of each trailer, by language, the best first: the official trailers,
+/// then the others, then the teasers.
+fn trailers(videos: &[Video]) -> Vec<(Language, String)> {
+    let mut trailers: Vec<_> = videos
+        .iter()
+        .filter(|video| video.site == "YouTube" && !video.key.is_empty())
+        .filter_map(|video| {
+            let rank = match (video.kind.as_str(), video.official) {
+                ("Trailer", true) => 0,
+                ("Trailer", false) => 1,
+                ("Teaser", _) => 2,
+                _ => return None,
+            };
+            Some((rank, video))
+        })
+        .collect();
+    trailers.sort_by_key(|(rank, _)| *rank);
+
+    trailers
+        .into_iter()
+        .map(|(_, video)| {
+            let language = Language::new(video.iso_639_1.clone(), Some(video.iso_3166_1.clone()));
+            (
+                language,
+                format!("https://www.youtube.com/watch?v={}", video.key),
+            )
+        })
+        .collect()
+}
+
+/// Returns the genres of TMDB's genres, once each, leaving out those TMDB added after this list.
+fn genres(tmdb_genres: &[GenreReference]) -> Vec<Genre> {
+    let mut genres = Vec::new();
+    for &genre in tmdb_genres.iter().flat_map(|genre| genres_of(genre.id)) {
+        if !genres.contains(&genre) {
+            genres.push(genre);
+        }
+    }
+    genres
+}
+
+/// Returns the genres of a TMDB genre, by its ID: TMDB's TV genres that combine two give both. From
+/// <https://developer.themoviedb.org/reference/genre-movie-list> and
+/// <https://developer.themoviedb.org/reference/genre-tv-list>.
+fn genres_of(tmdb_genre_id: u32) -> &'static [Genre] {
+    match tmdb_genre_id {
+        28 => &[Genre::Action],
+        12 => &[Genre::Adventure],
+        16 => &[Genre::Animation],
+        35 => &[Genre::Comedy],
+        80 => &[Genre::Crime],
+        99 => &[Genre::Documentary],
+        18 => &[Genre::Drama],
+        10_751 => &[Genre::Family],
+        14 => &[Genre::Fantasy],
+        36 => &[Genre::History],
+        27 => &[Genre::Horror],
+        10_402 => &[Genre::Music],
+        9648 => &[Genre::Mystery],
+        10_749 => &[Genre::Romance],
+        878 => &[Genre::ScienceFiction],
+        10_770 => &[Genre::TvMovie],
+        53 => &[Genre::Thriller],
+        10_752 => &[Genre::War],
+        37 => &[Genre::Western],
+        10_759 => &[Genre::Action, Genre::Adventure],
+        10_762 => &[Genre::Kids],
+        10_763 => &[Genre::News],
+        10_764 => &[Genre::Reality],
+        10_765 => &[Genre::ScienceFiction, Genre::Fantasy],
+        10_766 => &[Genre::Soap],
+        10_767 => &[Genre::Talk],
+        10_768 => &[Genre::War, Genre::Politics],
+        _ => &[],
     }
 }
 
@@ -198,61 +440,93 @@ fn image(path: &str, widths: &[u32], (ratio_width, ratio_height): (u32, u32)) ->
     }))
 }
 
-/// A page of the results of a search for Movies, TV Shows and people.
+/// A country a Movie was made in.
 #[derive(Debug, Deserialize)]
-struct MultiSearchPage {
-    /// The page's number, from 1
-    page: u32,
-    results: Vec<MultiSearchResult>,
-    /// The number of pages, of which TMDB serves the first 500
-    total_pages: u32,
+struct Country {
+    iso_3166_1: String,
 }
 
-impl MultiSearchPage {
-    /// Returns the number of the next page TMDB serves, or None on the last one.
-    fn next_page(&self) -> Option<NonZeroU32> {
-        NonZeroU32::new(self.page)
-            .and_then(|page| page.checked_add(1))
-            .filter(|next| next.get() <= self.total_pages.min(LAST_PAGE))
+/// A genre, by its TMDB ID.
+#[derive(Debug, Deserialize)]
+struct GenreReference {
+    id: u32,
+}
+
+/// The translations of a Content's texts.
+#[derive(Debug, Deserialize)]
+struct TranslationList {
+    translations: Vec<Translation>,
+}
+
+/// A Content's texts in one language, which are empty when nobody translated them.
+#[derive(Debug, Deserialize)]
+struct Translation {
+    iso_639_1: String,
+    iso_3166_1: String,
+    data: TranslationData,
+}
+
+impl Translation {
+    fn language(&self) -> Language {
+        Language::new(self.iso_639_1.clone(), Some(self.iso_3166_1.clone()))
     }
 }
 
-/// A result of a search for Movies, TV Shows and people.
+/// The texts of a translation. A TV Show's `name` is a Movie's `title`.
 #[derive(Debug, Deserialize)]
-#[serde(tag = "media_type", rename_all = "lowercase")]
-enum MultiSearchResult {
-    Movie(MovieResult),
-    #[serde(rename = "tv")]
-    TvShow(TvShowResult),
-    Person,
-}
-
-/// A Movie in search results, with its texts in the search's language.
-#[derive(Debug, Deserialize)]
-struct MovieResult {
-    id: u32,
-    title: String,
+struct TranslationData {
+    #[serde(default, alias = "name", deserialize_with = "optional_text")]
+    title: Option<String>,
     #[serde(default, deserialize_with = "optional_text")]
     overview: Option<String>,
-    poster_path: Option<String>,
-    #[serde(default, deserialize_with = "optional_date")]
-    release_date: Option<Date>,
-    /// Whether TMDB flags it as a video rather than a movie, such as a filmed sports event, a
-    /// concert or a compilation
+}
+
+/// A Content's posters and backdrops, the most voted first.
+#[derive(Debug, Deserialize)]
+struct Images {
     #[serde(default)]
-    video: bool,
+    posters: Vec<ImageInfo>,
+    #[serde(default)]
+    backdrops: Vec<ImageInfo>,
 }
 
-/// A TV Show in search results, with its texts in the search's language.
+/// A poster or a backdrop, and the language of its text, if it has any.
 #[derive(Debug, Deserialize)]
-struct TvShowResult {
-    id: u32,
-    name: String,
+struct ImageInfo {
+    file_path: String,
+    iso_639_1: Option<String>,
+    #[serde(default)]
+    iso_3166_1: Option<String>,
+}
+
+/// A Content's videos.
+#[derive(Debug, Deserialize)]
+struct VideoList {
+    results: Vec<Video>,
+}
+
+/// A video about a Content, such as a trailer, on a site such as YouTube.
+#[derive(Debug, Deserialize)]
+struct Video {
+    iso_639_1: String,
+    iso_3166_1: String,
+    /// Its ID on its site
+    key: String,
+    site: String,
+    /// Such as `Trailer`, `Teaser` or `Featurette`
+    #[serde(rename = "type")]
+    kind: String,
+    #[serde(default)]
+    official: bool,
+}
+
+/// A Content's IDs in other catalogs.
+#[derive(Debug, Deserialize)]
+struct TmdbExternalIds {
     #[serde(default, deserialize_with = "optional_text")]
-    overview: Option<String>,
-    poster_path: Option<String>,
-    #[serde(default, deserialize_with = "optional_date")]
-    first_air_date: Option<Date>,
+    imdb_id: Option<String>,
+    /// A TV Show's ID at TheTVDB
+    tvdb_id: Option<u32>,
 }
 
 /// Reads a text that TMDB sends empty, or null, when it has none.
