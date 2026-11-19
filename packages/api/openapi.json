@@ -1484,7 +1484,7 @@
         "items": {
           "$ref": "#/components/schemas/ImageSource"
         },
-        "description": "A picture in each size its Metadata Provider has, from the narrowest, so that the apps can\ndownload the smallest one that stays sharp. The database stores it as this JSON.",
+        "description": "A picture in each size its Metadata Provider has, from the narrowest, so that the apps can\ndownload the smallest one that stays sharp.",
         "minItems": 1
       },
       "ImageSource": {

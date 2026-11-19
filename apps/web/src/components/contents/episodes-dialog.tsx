@@ -1,11 +1,9 @@
 import {Radio} from '@base-ui/react/radio';
 import {RadioGroup} from '@base-ui/react/radio-group';
-import {useQuery} from '@tanstack/react-query';
 import type {Content, Media} from '@watchclub/api';
-import {groupMedia, mediaQuery, useEpisodeFacts} from '@watchclub/core/contents/media';
+import {useEpisodeFacts, useEpisodes} from '@watchclub/core/contents/media';
 import {cn} from 'cn';
 import {CircleIcon, ImageIcon, ListVideoIcon, TriangleAlertIcon} from 'lucide-react';
-import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {RoundAction} from '@/components/contents/round-action';
 import {SizedImage} from '@/components/contents/sized-image';
@@ -48,13 +46,12 @@ export function EpisodesDialog({content}: {content: Content}) {
 /** The TV Show's Episodes of the season the User picks, the first one at first. */
 function Episodes({contentId}: {contentId: string}) {
   const {t} = useTranslation('core');
-  const media = useQuery(mediaQuery(contentId));
-  const [pickedSeason, setPickedSeason] = useState<number | null>(null);
+  const {status, seasons, season, pickSeason, retry} = useEpisodes(contentId);
 
-  if (media.isPending) {
+  if (status === 'loading') {
     return <EpisodesSkeleton />;
   }
-  if (media.isError) {
+  if (status === 'failed') {
     return (
       <Empty className="p-6">
         <EmptyHeader>
@@ -63,21 +60,12 @@ function Episodes({contentId}: {contentId: string}) {
           </EmptyMedia>
           <EmptyDescription>{t($ => $.core.errors.somethingWentWrong)}</EmptyDescription>
         </EmptyHeader>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => {
-            void media.refetch();
-          }}
-        >
+        <Button variant="secondary" size="sm" onClick={retry}>
           {t($ => $.core.controls.tryAgain)}
         </Button>
       </Empty>
     );
   }
-
-  const seasons = groupMedia(media.data);
-  const season = seasons.find(each => each.number === pickedSeason) ?? seasons[0];
   if (!season) {
     return null;
   }
@@ -90,7 +78,7 @@ function Episodes({contentId}: {contentId: string}) {
             aria-label={t($ => $.core.contents.episodes)}
             value={season.number}
             onValueChange={number => {
-              setPickedSeason(number);
+              pickSeason(number);
             }}
             className="flex gap-2 overflow-x-auto pb-1"
           >
@@ -134,8 +122,7 @@ function Episodes({contentId}: {contentId: string}) {
  */
 function EpisodeRow({episode}: {episode: Media}) {
   const {t} = useTranslation('core');
-  const episodeFacts = useEpisodeFacts();
-  const facts = episodeFacts(episode);
+  const facts = useEpisodeFacts(episode);
   return (
     <li className="flex items-start gap-4 py-2">
       <div

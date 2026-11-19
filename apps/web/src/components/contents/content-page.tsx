@@ -214,20 +214,24 @@ function Facts({content}: {content: Content}) {
   );
 }
 
-/** The overview, shortened to a few lines, with More to read a long one whole. */
+/** The overview: a long one shortened to a few lines, with More to read it whole. */
 function Overview({text}: {text: string}) {
   const {t} = useTranslation('core');
   const [isExpanded, setIsExpanded] = useState(false);
   const id = useId();
+  const isLong = text.length > LONG_OVERVIEW_LENGTH;
   return (
     <div className="flex max-w-readable flex-col items-center gap-1 @3xl:items-start">
       <p
         id={id}
-        className={cn('text-muted-foreground', !isExpanded && 'line-clamp-3 @3xl:line-clamp-5')}
+        className={cn(
+          'text-muted-foreground',
+          isLong && !isExpanded && 'line-clamp-3 @3xl:line-clamp-5',
+        )}
       >
         {text}
       </p>
-      {text.length > LONG_OVERVIEW_LENGTH && (
+      {isLong && (
         <Button
           variant="ghost"
           size="sm"

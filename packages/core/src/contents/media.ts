@@ -2,8 +2,9 @@
  * Media: what Users play inside a Content, such as each of a TV Show's Episodes, as both apps show
  * them.
  */
-import {queryOptions} from '@tanstack/react-query';
+import {queryOptions, useQuery} from '@tanstack/react-query';
 import {listMediaOfContentOptions, type Media} from '@watchclub/api';
+import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {longDate, useFormatRuntime} from './content';
 
@@ -43,6 +44,36 @@ export function groupMedia(media: readonly Media[]): MediaGroup[] {
   return groups;
 }
 
+/** A TV Show's Episodes, as a screen shows them: by season, one season at a time. */
+export interface Episodes {
+  /** The progress of loading them: they load when the screen opens */
+  status: 'loading' | 'failed' | 'done';
+  /** The seasons and their Episodes, in order */
+  seasons: MediaGroup[];
+  /** The season shown: the one the User picked, else the first. None until they load */
+  season?: MediaGroup;
+  /** Shows the season with this number */
+  pickSeason: (number: number) => void;
+  /** Loads them again, after they failed */
+  retry: () => void;
+}
+
+/** Returns the Episodes of the TV Show with this ID, by season. */
+export function useEpisodes(contentId: string): Episodes {
+  const media = useQuery(mediaQuery(contentId));
+  const [pickedSeason, setPickedSeason] = useState<number | null>(null);
+  const seasons = media.data ? groupMedia(media.data) : [];
+  return {
+    status: media.data ? 'done' : media.isError ? 'failed' : 'loading',
+    seasons,
+    season: seasons.find(season => season.number === pickedSeason) ?? seasons[0],
+    pickSeason: setPickedSeason,
+    retry: () => {
+      void media.refetch();
+    },
+  };
+}
+
 /** The facts a TV Show Episode's row shows, as the app's language writes them. */
 export interface EpisodeFacts {
   /** Its season and number, such as "S01E02" */
@@ -54,27 +85,24 @@ export interface EpisodeFacts {
   isOut: boolean;
 }
 
-/** Returns the function that gives the facts of a TV Show Episode's row. */
-export function useEpisodeFacts(): (episode: Media) => EpisodeFacts {
+/** Returns the facts of a TV Show Episode's row. */
+export function useEpisodeFacts(episode: Media): EpisodeFacts {
   const {t, i18n} = useTranslation('core');
   const formatRuntime = useFormatRuntime();
-  const today = isoDay(new Date());
-  return episode => {
-    const isOut = episode.release_date !== null && episode.release_date <= today;
-    let releaseNote: string | null = null;
-    if (episode.release_date === null) {
-      releaseNote = t($ => $.core.episodes.notOutYet);
-    } else if (!isOut) {
-      releaseNote = t($ => $.core.episodes.outOn, {
-        date: longDate(episode.release_date, i18n.language),
-      });
-    }
-    return {
-      code: episodeCode(episode),
-      runtime: episode.runtime_seconds === null ? null : formatRuntime(episode.runtime_seconds),
-      releaseNote,
-      isOut,
-    };
+  const isOut = episode.release_date !== null && episode.release_date <= isoDay(new Date());
+  let releaseNote: string | null = null;
+  if (episode.release_date === null) {
+    releaseNote = t($ => $.core.episodes.notOutYet);
+  } else if (!isOut) {
+    releaseNote = t($ => $.core.episodes.outOn, {
+      date: longDate(episode.release_date, i18n.language),
+    });
+  }
+  return {
+    code: episodeCode(episode),
+    runtime: episode.runtime_seconds === null ? null : formatRuntime(episode.runtime_seconds),
+    releaseNote,
+    isOut,
   };
 }
 

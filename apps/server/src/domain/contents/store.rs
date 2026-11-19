@@ -383,6 +383,9 @@ async fn save_media(
     let group_numbers: Vec<_> = media.iter().map(|media| media.group_number).collect();
     let numbers: Vec<_> = media.iter().map(|media| media.number).collect();
 
+    // Compares the numbers, which a Movie doesn't have, as arrays: their equality counts two nulls
+    // as equal, and unlike IS NOT DISTINCT FROM, Postgres can hash it, rather than compare every
+    // TV Show Episode with every other
     sqlx::query!(
         r#"
         DELETE FROM media
@@ -390,8 +393,9 @@ async fn save_media(
             AND NOT EXISTS (
                 SELECT FROM UNNEST($2::media_type[], $3::integer[], $4::integer[])
                     AS listed (media_type, group_number, number)
-                WHERE (listed.media_type, listed.group_number, listed.number)
-                    IS NOT DISTINCT FROM (media.media_type, media.group_number, media.number)
+                WHERE listed.media_type = media.media_type
+                    AND ARRAY[listed.group_number, listed.number]
+                        = ARRAY[media.group_number, media.number]
             )
         "#,
         content_id as ContentId,
@@ -443,7 +447,7 @@ async fn save_media(
     .context("failed to save a Content's Media")?;
 
     // One row per Media and Locale, which finds its Media by type, group and number, as the Media
-    // that didn't change don't return their IDs
+    // that didn't change don't return their IDs. The numbers compare as arrays, as above
     let localizations: Vec<_> = media
         .iter()
         .flat_map(|media| {
@@ -486,8 +490,8 @@ async fn save_media(
         ) AS localization (media_type, group_number, number, locale, title, overview)
         JOIN media ON media.content_id = $1
             AND media.media_type = localization.media_type
-            AND media.group_number IS NOT DISTINCT FROM localization.group_number
-            AND media.number IS NOT DISTINCT FROM localization.number
+            AND ARRAY[media.group_number, media.number]
+                = ARRAY[localization.group_number, localization.number]
         ON CONFLICT (media_id, locale) DO UPDATE
         SET title = EXCLUDED.title,
             overview = EXCLUDED.overview

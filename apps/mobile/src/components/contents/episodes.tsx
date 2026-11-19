@@ -1,7 +1,5 @@
-import {useQuery} from '@tanstack/react-query';
 import type {Media} from '@watchclub/api';
-import {groupMedia, mediaQuery, useEpisodeFacts} from '@watchclub/core/contents/media';
-import {useState} from 'react';
+import {useEpisodeFacts, useEpisodes} from '@watchclub/core/contents/media';
 import {useTranslation} from 'react-i18next';
 import {ActivityIndicator, FlatList, Text, View} from 'react-native';
 import {ChoiceChips} from '@/components/choice-chips';
@@ -11,34 +9,24 @@ import {StatusScreen} from '@/components/layouts/status-screen';
 /** A TV Show's Episodes, of the season the User picks, the first one at first. */
 export function Episodes({contentId}: {contentId: string}) {
   const {t} = useTranslation('core');
-  const media = useQuery(mediaQuery(contentId));
-  const [pickedSeason, setPickedSeason] = useState<number | null>(null);
+  const {status, seasons, season, pickSeason, retry} = useEpisodes(contentId);
 
-  if (media.isPending) {
+  if (status === 'loading') {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator accessibilityLabel={t($ => $.core.contents.loading)} />
       </View>
     );
   }
-  if (media.isError) {
+  if (status === 'failed') {
     return (
       <StatusScreen
         description={t($ => $.core.errors.somethingWentWrong)}
-        actions={[
-          {
-            label: t($ => $.core.controls.tryAgain),
-            onPress: () => {
-              void media.refetch();
-            },
-          },
-        ]}
+        actions={[{label: t($ => $.core.controls.tryAgain), onPress: retry}]}
       />
     );
   }
 
-  const seasons = groupMedia(media.data);
-  const season = seasons.find(each => each.number === pickedSeason) ?? seasons[0];
   const seasonName = (number: number) => t($ => $.core.episodes.season, {number});
   return (
     <FlatList
@@ -56,7 +44,7 @@ export function Episodes({contentId}: {contentId: string}) {
             }))}
             value={String(season.number)}
             onChange={number => {
-              setPickedSeason(Number(number));
+              pickSeason(Number(number));
             }}
           />
         ) : (
@@ -76,8 +64,7 @@ export function Episodes({contentId}: {contentId: string}) {
  * The still is grey before it comes out.
  */
 function EpisodeRow({episode}: {episode: Media}) {
-  const episodeFacts = useEpisodeFacts();
-  const facts = episodeFacts(episode);
+  const facts = useEpisodeFacts(episode);
   const notes = [facts.runtime, facts.releaseNote].filter(note => note !== null);
   return (
     // One stop for a TV's remote and for screen readers, which read it whole

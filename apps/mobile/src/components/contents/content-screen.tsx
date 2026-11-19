@@ -121,7 +121,9 @@ function Facts({content}: {content: Content}) {
   const languageLabel =
     facts.originalLanguage &&
     t($ => $.core.contents.originalLanguage, {language: facts.originalLanguage.name});
-  const firstFact = [facts.originalLanguage?.flag, facts.date].filter(Boolean).join(' ');
+  const firstFact = [facts.originalLanguage?.flag, facts.date]
+    .filter(text => Boolean(text))
+    .join(' ');
   const texts = [firstFact, facts.contentType, facts.length].filter(text => Boolean(text));
   // The flag means nothing to screen readers: they read the language's name instead
   const spokenTexts = [languageLabel, facts.date, facts.contentType, facts.length].filter(text =>
@@ -160,7 +162,7 @@ function Facts({content}: {content: Content}) {
   );
 }
 
-/** The overview, shortened to a few lines, with More to read a long one whole. */
+/** The overview: a long one shortened to a few lines, with More to read it whole. */
 function Overview({text}: {text: string}) {
   const {t} = useTranslation('core');
   const [isExpanded, setIsExpanded] = useState(false);
@@ -168,7 +170,7 @@ function Overview({text}: {text: string}) {
   return (
     <View className="items-center gap-1">
       <Text
-        numberOfLines={isExpanded ? undefined : 3}
+        numberOfLines={isLong && !isExpanded ? 3 : undefined}
         className="text-center text-base text-muted-foreground"
       >
         {text}
