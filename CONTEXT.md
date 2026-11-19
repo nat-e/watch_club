@@ -92,6 +92,14 @@ _Avoid_: Show, series
 Content whose content type is sports event, such as a UFC event or a Formula 1 race. Its metadata comes from sportarr.net, in English only.
 _Avoid_: Sport, match, fight, game
 
+**Book**:
+Content whose content type is book.
+_Avoid_: Volume
+
+**TV Show Episode**:
+A numbered part of a **TV Show**, in one of its seasons.
+_Avoid_: Episode, TV media, show item
+
 **Content Type**:
 The kind of content, such as movie, TV show, sports event, or book.
 _Avoid_: Media type, category
@@ -104,8 +112,28 @@ _Avoid_: External source, provider, integration, source
 The identifier of content within one metadata provider.
 _Avoid_: Provider ID, remote ID
 
+**Content Localization**:
+A **Content**'s texts and poster in one **Locale**, such as its title and overview.
+_Avoid_: Translation, localized content
+
+**Genre**:
+A kind of story a **Movie** or **TV Show** tells, such as Drama or Comedy.
+_Avoid_: Category, tag
+
+**Rating**:
+How good people found a **Movie** or **TV Show**: the average of their votes out of 10 on its **Metadata Provider**.
+_Avoid_: Score, vote average, grade
+
+**Media**:
+What **Users** play inside a **Content**: a **Movie**'s one Media, each **TV Show Episode**, a **Sports Event**.
+_Avoid_: Video, file, item
+
+**Media File**:
+A file that brings **Media** to the **Instance**, such as a video.
+_Avoid_: Media, video file
+
 **Library**:
-All the **Content** that is available on the **Instance** and has **Media**.
+All the **Content** that is available on the **Instance** and has **Media Files**.
 _Avoid_: Catalog, available content, server content
 
 **Browse**:
@@ -144,6 +172,10 @@ _Avoid_: Discover
 - A **Content** has exactly one **Content Type**
 - A **User** can search for any **Movie** or **TV Show** on TMDB, **Sports Event** on sportarr.net, or **Book** on Hardcover, in the **Library** or not
 - Searching for **Movies** leaves out what TMDB flags as videos rather than movies, such as filmed sports events, concerts and compilations: **Sports Events** come from sportarr.net
+- Opening a **Content** saves it from its **Metadata Provider**, with its **Media**, and its page then shows what's saved
+- A **Content** has a **Content Localization** in every **Locale**: each text in the Locale's language when its **Metadata Provider** has it, else in English, else in its original language
+- A **Media** can exist without a **Media File**, such as a **TV Show Episode** that isn't out yet
+- A **Book** has no **Media** yet
 
 ## Flagged ambiguities
 
