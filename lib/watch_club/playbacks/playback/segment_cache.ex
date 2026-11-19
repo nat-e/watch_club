@@ -18,6 +18,14 @@ defmodule WatchClub.Playbacks.Playback.SegmentCache do
 
   def playback_dir(playback_id), do: Path.join(root(), playback_id)
 
+  @doc "Whether the file at `path` is made. Files are renamed into place once complete."
+  def cached?(path) do
+    case File.stat(path) do
+      {:ok, %{size: size}} when size > 0 -> true
+      _other -> false
+    end
+  end
+
   @doc """
   Deletes the cache folder of every Playback that isn't current. Raises when
   the Playbacks can't be read or a folder can't be deleted.
