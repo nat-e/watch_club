@@ -1,12 +1,12 @@
 defmodule WatchClub.Playbacks.Playback.SegmentQueue do
   @moduledoc """
-  Makes HLS segments, and makes each player's next segments before it asks for them: a player
+  Makes HLS segments, and makes each Screen's next segments before it asks for them: a Screen
   counts the wait for a segment as network time, and picks a lower quality.
 
-  A segment a player asks for starts at once, unless it's cached, or being made, which the
-  request then waits for. The next segments wait in a queue, first in, first out across players,
+  A segment a Screen asks for starts at once, unless it's cached, or being made, which the
+  request then waits for. The next segments wait in a queue, first in, first out across Screens,
   and at most `@max_runs_ahead` of them are made at a time, so that they don't slow down the
-  segments players wait for. Each request replaces the segments its group queued before, which
+  segments Screens wait for. Each request replaces the segments its group queued before, which
   drops them on a seek or a quality switch. Runs already started finish.
   """
   use GenServer
@@ -52,7 +52,7 @@ defmodule WatchClub.Playbacks.Playback.SegmentQueue do
     end
   end
 
-  # `queue` holds a few jobs per player, oldest first. `runs` holds the running jobs by task
+  # `queue` holds a few jobs per Screen, oldest first. `runs` holds the running jobs by task
   # reference, with the callers waiting for them.
   @impl true
   def init(nil), do: {:ok, %{queue: [], runs: %{}}}

@@ -12,7 +12,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   the start of the stream it reads rather than from the start of the file.
 
   Segments are cached on disk at the Playback level. `SegmentQueue` makes them, and makes the
-  `@segments_ahead` segments after each one a player asks for, of the same quality or audio track.
+  `@segments_ahead` segments after each one a Screen asks for, of the same quality or audio track.
   """
 
   require Logger
@@ -24,7 +24,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   alias WatchClub.Playbacks.Playback.{Playlist, QualityLadder, SegmentCache, SegmentQueue}
 
   @segment_duration 6.0
-  # At least 30 s, most of the web player's buffer
+  # About 30 s and more than 24 s, most of the Player's buffer
   @segments_ahead 5
 
   @doc "`query`, such as `?token=…`, follows every URI of the playlists, which need it."
@@ -167,20 +167,22 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   defp audio_segment_job(%Playback{} = playback, %AudioTrack{} = track, segment, index) do
     output_path = audio_segment_path(playback, track, index)
 
-    make = fn ->
-      attributes = %{
-        "watch_club.audio_track.stream_index": track.stream_index,
-        "watch_club.hls.segment_index": index
-      }
+    ffmpeg_job = %{
+      source_path: playback.media.path,
+      output_path: output_path,
+      start_time: segment.start_time,
+      end_time: segment.end_time,
+      stream_index: track.stream_index
+    }
 
+    attributes = %{
+      "watch_club.audio_track.stream_index": track.stream_index,
+      "watch_club.hls.segment_index": index
+    }
+
+    make = fn ->
       trace_transcode("transcode audio segment", attributes, fn ->
-        Ffmpeg.transcode_audio_segment(%{
-          source_path: playback.media.path,
-          output_path: output_path,
-          start_time: segment.start_time,
-          end_time: segment.end_time,
-          stream_index: track.stream_index
-        })
+        Ffmpeg.transcode_audio_segment(ffmpeg_job)
       end)
     end
 
