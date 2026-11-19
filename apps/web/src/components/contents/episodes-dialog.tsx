@@ -7,6 +7,7 @@ import {CircleIcon, ImageIcon, ListVideoIcon, TriangleAlertIcon} from 'lucide-re
 import {useTranslation} from 'react-i18next';
 import {RoundAction} from '@/components/contents/round-action';
 import {SizedImage} from '@/components/contents/sized-image';
+import {ScrollRow} from '@/components/scroll-row';
 import {Button} from '@/components/ui/button';
 import {
   Dialog,
@@ -30,12 +31,14 @@ export function EpisodesDialog({content}: {content: Content}) {
       <DialogTrigger
         render={<RoundAction label={t($ => $.core.contents.episodes)} icon={<ListVideoIcon />} />}
       />
-      <DialogContent className="flex max-h-[calc(100dvh-4rem)] flex-col sm:max-w-3xl max-sm:h-dvh max-sm:max-h-dvh max-sm:max-w-full max-sm:rounded-none">
-        <DialogHeader>
+      {/* Padded with the page's margins, which the seasons' row runs into. Over the whole screen on
+          phones, where `!` beats the dialog's own width */}
+      <DialogContent className="flex max-h-[calc(100dvh-4rem)] flex-col gap-0 p-0 md:max-w-2xl max-md:h-dvh max-md:max-h-dvh max-md:max-w-none! max-md:rounded-none max-md:border-0">
+        <DialogHeader className="py-6 pr-14 pl-page">
           <DialogTitle className="text-lg">{content.title}</DialogTitle>
         </DialogHeader>
-        {/* A container for the rows' breakpoints */}
-        <div className="@container -mx-6 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6">
+        {/* Only the Episodes scroll, under the title. A container for the rows' breakpoints */}
+        <div className="@container flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-page pb-6">
           <Episodes contentId={content.id} />
         </div>
       </DialogContent>
@@ -80,17 +83,19 @@ function Episodes({contentId}: {contentId: string}) {
             onValueChange={number => {
               pickSeason(number);
             }}
-            className="flex gap-2 overflow-x-auto pb-1"
           >
-            {seasons.map(each => (
-              <Radio.Root
-                key={each.number}
-                value={each.number}
-                className={cn(toggleVariants({variant: 'chip', size: 'sm'}), 'shrink-0')}
-              >
-                {seasonName(each.number)}
-              </Radio.Root>
-            ))}
+            <ScrollRow variant="chips">
+              {seasons.map(each => (
+                <Radio.Root
+                  key={each.number}
+                  value={each.number}
+                  // `cn` lets the pill's classes replace the toggle's defaults
+                  className={cn(toggleVariants({variant: 'pill', size: 'sm'}))}
+                >
+                  {seasonName(each.number)}
+                </Radio.Root>
+              ))}
+            </ScrollRow>
           </RadioGroup>
         ) : (
           <span className="text-sm font-semibold">{seasonName(season.number)}</span>
@@ -117,8 +122,8 @@ function Episodes({contentId}: {contentId: string}) {
 }
 
 /**
- * A TV Show Episode: its still, its number, title, runtime and when it comes out, its overview, and
- * the watched check once it's out. The still is grey before it comes out.
+ * A TV Show Episode: its still, its number, title, runtime and when it comes out, and the watched
+ * check once it's out. The still is grey before it comes out. Its overview would crowd the list.
  */
 function EpisodeRow({episode}: {episode: Media}) {
   const {t} = useTranslation('core');
@@ -127,7 +132,7 @@ function EpisodeRow({episode}: {episode: Media}) {
     <li className="flex items-start gap-4 py-2">
       <div
         className={cn(
-          'relative flex aspect-video w-28 shrink-0 items-center justify-center overflow-hidden rounded-md bg-accent text-subtle-foreground @md:w-40',
+          'relative flex aspect-video w-28 shrink-0 items-center justify-center overflow-hidden rounded-md bg-background text-muted-foreground @md:w-40',
           !facts.isOut && 'opacity-60 grayscale',
         )}
       >
@@ -153,14 +158,9 @@ function EpisodeRow({episode}: {episode: Media}) {
             {facts.releaseNote && <span className="font-semibold">{facts.releaseNote}</span>}
           </span>
         )}
-        {episode.overview && (
-          <span className="line-clamp-2 max-w-readable text-sm text-muted-foreground">
-            {episode.overview}
-          </span>
-        )}
       </div>
-      {/* Waits for Watch Progress */}
-      {facts.isOut && (
+      {/* Waits for Watch Progress. Its place stays, so the rows' texts line up */}
+      {facts.isOut ? (
         <Button
           variant="ghost"
           size="icon"
@@ -170,6 +170,8 @@ function EpisodeRow({episode}: {episode: Media}) {
         >
           <CircleIcon />
         </Button>
+      ) : (
+        <span className="size-9 shrink-0" />
       )}
     </li>
   );

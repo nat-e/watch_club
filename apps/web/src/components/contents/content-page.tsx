@@ -1,5 +1,5 @@
 import {type QueryClient, useSuspenseQuery} from '@tanstack/react-query';
-import {linkOptions, notFound} from '@tanstack/react-router';
+import {Link, linkOptions, notFound, useCanGoBack, useRouter} from '@tanstack/react-router';
 import {type Content, type ContentType, type ExternalContentId, hasCode} from '@watchclub/api';
 import {
   contentQuery,
@@ -11,21 +11,24 @@ import {
 } from '@watchclub/core/contents/content';
 import {cn} from 'cn';
 import {
+  ArrowLeftIcon,
   CircleIcon,
   CirclePlayIcon,
+  DownloadIcon,
   ExternalLinkIcon,
   LoaderCircleIcon,
   StarIcon,
 } from 'lucide-react';
-import {Fragment, type ReactNode, useId, useState} from 'react';
+import {Fragment, type ReactNode, type RefObject, useEffect, useId, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {EpisodesDialog} from '@/components/contents/episodes-dialog';
 import {Poster} from '@/components/contents/poster';
 import {RoundAction} from '@/components/contents/round-action';
 import {SizedImage} from '@/components/contents/sized-image';
 import {Page} from '@/components/layouts/page';
+import {ScrollRow} from '@/components/scroll-row';
 import {Badge} from '@/components/ui/badge';
-import {Button} from '@/components/ui/button';
+import {Button, buttonVariants} from '@/components/ui/button';
 import {SidebarTrigger} from '@/components/ui/sidebar';
 
 /** Returns the options of a link to the Content's page. */
@@ -79,11 +82,12 @@ export function ContentPagePending() {
 }
 
 /**
- * A Content's page: its header on its backdrop, then its cast. The pages of Sports Events and Books
- * only show their title for now.
+ * A Content's page: its header on its backdrop, under the bar, then its cast. The pages of Sports
+ * Events and Books only show their title for now.
  */
 export function ContentPage({externalContentId}: {externalContentId: ExternalContentId}) {
   const {data: content} = useSuspenseQuery(contentQuery(externalContentId));
+  const titleRef = useRef<HTMLHeadingElement>(null);
   if (content.content_type === 'sports_event' || content.content_type === 'book') {
     return <Page title={content.title} />;
   }
@@ -91,8 +95,10 @@ export function ContentPage({externalContentId}: {externalContentId: ExternalCon
   return (
     // A container, so that the header lays out by the page's width beside the sidebar
     <div className="@container flex flex-1 flex-col">
-      <ContentHeader content={content} />
-      <div className="mx-auto grid w-full max-w-panel grid-cols-1 content-start gap-6 px-page py-page-y">
+      <ContentBar title={content.title} titleRef={titleRef} />
+      <ContentHeader content={content} titleRef={titleRef} />
+      {/* One column, so a long line of text can't widen the page past the screen */}
+      <div className="grid grid-cols-1 content-start gap-12 px-page pt-6 pb-page-y">
         <Cast content={content} />
       </div>
     </div>
@@ -100,26 +106,118 @@ export function ContentPage({externalContentId}: {externalContentId: ExternalCon
 }
 
 /**
- * The poster, the title, its facts, its genres, the overview and the actions, on the dimmed
- * backdrop. Centered on phones, beside the poster on wide screens.
+ * The bar over the header: Back, and on phones the button that slides the sidebar in. The backdrop
+ * shows through it until the page scrolls, and it shows the Content's title once the header's has
+ * scrolled under it.
  */
-function ContentHeader({content}: {content: Content}) {
+function ContentBar({
+  title,
+  titleRef,
+}: {
+  title: string;
+  titleRef: RefObject<HTMLHeadingElement | null>;
+}) {
+  const barRef = useRef<HTMLDivElement>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isPastTitle, setIsPastTitle] = useState(false);
+  useEffect(() => {
+    const update = () => {
+      const titleBottom = titleRef.current?.getBoundingClientRect().bottom;
+      const barBottom = barRef.current?.getBoundingClientRect().bottom;
+      setIsScrolled(window.scrollY > 8);
+      setIsPastTitle(
+        titleBottom !== undefined && barBottom !== undefined && titleBottom < barBottom,
+      );
+    };
+    update();
+    window.addEventListener('scroll', update, {passive: true});
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, [titleRef]);
+
+  return (
+    <div
+      ref={barRef}
+      className={cn(
+        'sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b px-page transition-colors duration-200',
+        isScrolled ? 'bg-background' : 'border-transparent',
+      )}
+    >
+      <SidebarTrigger className="md:hidden" />
+      <BackLink />
+      {/* Screen readers read the header's title */}
+      <p
+        aria-hidden="true"
+        className={cn(
+          'truncate text-base font-semibold transition-opacity duration-200',
+          !isPastTitle && 'opacity-0',
+        )}
+      >
+        {title}
+      </p>
+    </div>
+  );
+}
+
+/**
+ * The link back to the previous page, or to Browse when the page opened first, such as from a
+ * link. A new tab opens Browse.
+ */
+function BackLink() {
+  const {t} = useTranslation('web');
+  const router = useRouter();
+  const canGoBack = useCanGoBack();
+  const label = t($ => $.web.contents.back);
+  return (
+    <Link
+      to="/browse"
+      aria-label={label}
+      title={label}
+      className={buttonVariants({variant: 'ghost', size: 'icon-sm'})}
+      onClick={event => {
+        const opensNewTab = event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0;
+        if (canGoBack && !opensNewTab) {
+          event.preventDefault();
+          router.history.back();
+        }
+      }}
+    >
+      <ArrowLeftIcon />
+    </Link>
+  );
+}
+
+/**
+ * The poster, the title, its facts, its genres, the overview and the actions, on the dimmed
+ * backdrop, which runs under the bar. Centered on phones, beside the poster on wide screens.
+ */
+function ContentHeader({
+  content,
+  titleRef,
+}: {
+  content: Content;
+  titleRef: RefObject<HTMLHeadingElement | null>;
+}) {
   const genreNames = useGenreNames();
   return (
-    <header className="relative isolate">
+    <header className="relative isolate -mt-16 pt-16">
       {content.backdrop && (
         <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden">
           <SizedImage image={content.backdrop} width="full" className="size-full object-cover" />
           <span className="absolute inset-0 bg-background/80" />
         </div>
       )}
-      {/* The page has no bar: its button that slides the sidebar in sits over the header */}
-      <SidebarTrigger className="absolute top-3 left-3 md:hidden" />
-      <div className="mx-auto flex max-w-panel flex-col items-center gap-4 px-page py-6 text-center @3xl:flex-row @3xl:items-start @3xl:gap-6 @3xl:py-12 @3xl:text-left">
-        <Poster image={content.poster} width={176} className="w-28 shadow-lg @3xl:w-44" />
+      <div className="flex flex-col items-center gap-4 px-page py-6 text-center @3xl:flex-row @3xl:items-start @3xl:gap-6 @3xl:py-12 @3xl:text-left">
+        <Poster image={content.poster} width={176} className="w-28 shadow-card @3xl:w-44" />
         <div className="flex w-full min-w-0 flex-1 flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <h1 className="font-heading text-3xl font-semibold text-balance @3xl:text-4xl">
+            <h1
+              ref={titleRef}
+              className="font-heading text-3xl font-semibold text-balance @3xl:text-4xl"
+            >
               {content.title}
             </h1>
             <Facts content={content} />
@@ -128,7 +226,9 @@ function ContentHeader({content}: {content: Content}) {
             <ul className="flex flex-wrap justify-center gap-1 @3xl:justify-start">
               {content.genres.map(genre => (
                 <li key={genre}>
-                  <Badge variant="secondary">{genreNames[genre]}</Badge>
+                  <Badge variant="secondary" className="border-border">
+                    {genreNames[genre]}
+                  </Badge>
                 </li>
               ))}
             </ul>
@@ -256,13 +356,13 @@ function Actions({content}: {content: Content}) {
   const {t} = useTranslation('core');
   return (
     <div className="flex flex-col gap-4 @3xl:flex-row @3xl:flex-wrap @3xl:items-start @3xl:gap-x-6">
-      <Button
-        size="lg"
-        disabled
-        className="w-full @max-3xl:mx-auto @max-3xl:max-w-sm @3xl:w-auto @3xl:min-w-64"
-      >
-        {t($ => $.core.contents.request)}
-      </Button>
+      {/* On a solid background, so the backdrop doesn't show through it while it's disabled */}
+      <span className="flex w-full rounded-md bg-background @max-3xl:mx-auto @max-3xl:max-w-sm @3xl:w-auto @3xl:min-w-64">
+        <Button size="lg" disabled className="h-12 w-full gap-2 px-6 text-base">
+          <DownloadIcon className="size-5" />
+          {t($ => $.core.contents.request)}
+        </Button>
+      </span>
       <div className="flex justify-center gap-4 @3xl:justify-start">
         {content.content_type === 'tv_show' && content.media_group_count > 0 && (
           <EpisodesDialog content={content} />
@@ -290,18 +390,18 @@ function Cast({content}: {content: Content}) {
   }
 
   return (
-    <section aria-labelledby={headingId} className="flex flex-col gap-4">
-      <h2 id={headingId} className="font-heading text-xl font-semibold tracking-tight">
+    <section aria-labelledby={headingId} className="flex min-w-0 flex-col gap-4">
+      <h2 id={headingId} className="font-heading text-xl font-semibold">
         {t($ => $.core.contents.cast)}
       </h2>
-      <ul className="flex snap-x gap-4 overflow-x-auto pb-2">
+      <ScrollRow list>
         {content.credits.map((credit, index) => {
           const role = creditRole(credit);
           return (
             // Credits keep their order, and have no ID
             // biome-ignore lint/suspicious/noArrayIndexKey: see above
-            <li key={index} className="flex w-24 shrink-0 snap-start flex-col items-center gap-2">
-              <span className="relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent text-sm font-semibold text-muted-foreground">
+            <li key={index} className="flex w-24 flex-col items-center gap-2">
+              <span className="relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary text-sm font-semibold text-muted-foreground">
                 {credit.photo ? (
                   <SizedImage
                     image={credit.photo}
@@ -319,7 +419,7 @@ function Cast({content}: {content: Content}) {
             </li>
           );
         })}
-      </ul>
+      </ScrollRow>
     </section>
   );
 }

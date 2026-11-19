@@ -19,6 +19,7 @@ import {Poster} from '@/components/contents/poster';
 import {SizedImage} from '@/components/contents/sized-image';
 import {Host} from '@/components/host';
 import {StatusScreen} from '@/components/layouts/status-screen';
+import {ScrollRow} from '@/components/scroll-row';
 
 /**
  * The screen of the Content whose External ID is the route's `id`, with its title in the header.
@@ -85,7 +86,7 @@ function ContentDetails({content}: {content: Content}) {
         <View className="items-center gap-1">
           <Text
             accessibilityRole="header"
-            className="text-center text-3xl font-semibold text-foreground"
+            className="text-center font-heading text-3xl text-foreground"
           >
             {content.title}
           </Text>
@@ -96,7 +97,7 @@ function ContentDetails({content}: {content: Content}) {
             {content.genres.map(genre => (
               <Text
                 key={genre}
-                className="rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
+                className="overflow-hidden rounded-full border border-border bg-secondary px-2 py-0.5 text-xs font-semibold text-secondary-foreground"
               >
                 {genreNames[genre]}
               </Text>
@@ -265,7 +266,7 @@ function RoundAction({
       className={`w-20 items-center gap-1 rounded-md ${disabled ? 'opacity-50' : ''}`}
     >
       {/* The border shows which one a TV's remote is on */}
-      <View className="size-12 items-center justify-center rounded-full border border-border bg-card focus:border-ring">
+      <View className="size-12 items-center justify-center rounded-full border border-border bg-secondary focus:border-ring">
         <SymbolView name={symbol} tintColor={String(foreground)} size={22} />
       </View>
       <Text className="text-center text-xs text-muted-foreground">{label}</Text>
@@ -283,21 +284,17 @@ function Cast({content}: {content: Content}) {
 
   return (
     <View className="gap-3 pt-4">
-      <Text accessibilityRole="header" className="px-4 text-xl font-semibold text-foreground">
+      <Text accessibilityRole="header" className="px-4 font-heading text-xl text-foreground">
         {t($ => $.core.contents.cast)}
       </Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerClassName="gap-4 px-4"
-      >
+      <ScrollRow contentContainerClassName="gap-4 px-4">
         {content.credits.map((credit, index) => {
           const role = creditRole(credit);
           return (
             // Credits keep their order, and have no ID
             // biome-ignore lint/suspicious/noArrayIndexKey: see above
             <View key={index} className="w-24 items-center gap-2" accessible>
-              <View className="size-20 items-center justify-center overflow-hidden rounded-full bg-accent">
+              <View className="size-20 items-center justify-center overflow-hidden rounded-full bg-secondary">
                 {credit.photo ? (
                   <SizedImage image={credit.photo} style={{width: 80, height: 80}} />
                 ) : (
@@ -322,7 +319,7 @@ function Cast({content}: {content: Content}) {
             </View>
           );
         })}
-      </ScrollView>
+      </ScrollRow>
     </View>
   );
 }

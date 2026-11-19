@@ -37,6 +37,7 @@ export function Episodes({contentId}: {contentId: string}) {
         season &&
         (seasons.length > 1 ? (
           <ChoiceChips
+            variant="pill"
             label={t($ => $.core.contents.episodes)}
             options={seasons.map(each => ({
               value: String(each.number),
@@ -60,8 +61,8 @@ export function Episodes({contentId}: {contentId: string}) {
 }
 
 /**
- * A TV Show Episode: its still, its number, title, runtime and when it comes out, and its overview.
- * The still is grey before it comes out.
+ * A TV Show Episode: its still, its number, title, runtime and when it comes out. The still is grey
+ * before it comes out. Its overview would crowd the list.
  */
 function EpisodeRow({episode}: {episode: Media}) {
   const facts = useEpisodeFacts(episode);
@@ -84,11 +85,6 @@ function EpisodeRow({episode}: {episode: Media}) {
         </Text>
         {notes.length > 0 && (
           <Text className="text-xs text-muted-foreground">{notes.join('  ')}</Text>
-        )}
-        {episode.overview && (
-          <Text numberOfLines={2} className="text-sm text-muted-foreground">
-            {episode.overview}
-          </Text>
         )}
       </View>
     </View>

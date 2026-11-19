@@ -23,7 +23,7 @@ export function RoundAction({
           'group/action flex w-20 flex-col items-center gap-1 rounded-md text-xs text-muted-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50',
         children: (
           <>
-            <span className="grid size-12 place-items-center rounded-full border bg-card text-foreground transition-colors group-hover/action:bg-accent group-active/action:bg-pressed [&_svg]:size-5">
+            <span className="grid size-12 place-items-center rounded-full border bg-secondary text-foreground transition-colors group-hover/action:bg-accent group-active/action:bg-pressed [&_svg]:size-5">
               {icon}
             </span>
             {label}

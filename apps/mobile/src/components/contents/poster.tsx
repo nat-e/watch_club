@@ -9,7 +9,7 @@ import {SizedImage} from '@/components/contents/sized-image';
 export function Poster({image, width}: {image: Image | null; width: number}) {
   return (
     <View
-      className="aspect-2/3 overflow-hidden rounded-md bg-accent"
+      className="aspect-2/3 overflow-hidden rounded-lg bg-accent"
       style={{width}}
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"

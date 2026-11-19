@@ -20,7 +20,7 @@ export function Poster({
   return (
     <div
       className={cn(
-        'relative flex aspect-2/3 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-accent text-subtle-foreground',
+        'relative flex aspect-2/3 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-accent text-subtle-foreground',
         className,
       )}
     >
