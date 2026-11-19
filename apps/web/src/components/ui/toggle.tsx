@@ -16,6 +16,12 @@ const toggleVariants = cva(
           "aria-pressed:border-primary-border aria-pressed:bg-primary-subtle aria-pressed:text-primary",
           "aria-checked:border-primary-border aria-checked:bg-primary-subtle aria-checked:text-primary",
         ],
+        // A pill, as in the Phoenix app, that switches between views, such as a TV Show's seasons:
+        // the current one grey
+        pill: [
+          "rounded-full font-semibold text-muted-foreground transition-colors not-aria-pressed:not-aria-checked:hover:bg-accent",
+          "aria-pressed:bg-selected aria-pressed:text-foreground aria-checked:bg-selected aria-checked:text-foreground",
+        ],
       },
       size: {
         default:
@@ -24,6 +30,8 @@ const toggleVariants = cva(
         lg: "h-10 min-w-10 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
       },
     },
+    // After the sizes' padding, which `cn` drops for this one
+    compoundVariants: [{ variant: "pill", class: "px-4" }],
     defaultVariants: {
       variant: "default",
       size: "default",
