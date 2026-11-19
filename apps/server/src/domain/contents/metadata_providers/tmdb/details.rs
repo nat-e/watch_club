@@ -4,6 +4,11 @@
 //! language: TMDB's translations, and its images and videos in each Locale's language. TMDB only
 //! translates TV Show Episodes in the language of the request, so each Locale has its own requests
 //! for them, which add up to 20 seasons each to the TV Show's details with `append_to_response`.
+//!
+//! Trailers and TV Show Episodes' texts are only in the Locales' languages, so they have no original
+//! language to fall back on. That would take more requests for little: TMDB has English summaries
+//! and trailers for nearly every show, and only some lack English titles for their TV Show
+//! Episodes, which then show their number only.
 
 use std::{collections::BTreeMap, fmt, mem};
 
