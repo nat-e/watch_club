@@ -1,12 +1,16 @@
 defmodule WatchClub.Playbacks.Playback.QualityLadder do
   @moduledoc """
-  Builds the list of HLS variants offered for a Video, from its Default Video Track.
+  Builds the list of HLS variants offered for a Video, its Qualities, from its Default Video
+  Track.
 
-  The "original" variant copies the file's video when it's 8-bit H.264, which browsers and TVs
-  decode. Otherwise it's encoded at the source's size, at a bitrate capped from the source's.
-  The ladder adds 720p / 480p / 360p rungs as long as the source is taller. Each rung carries
-  its width, height, video bitrate, H.264 level, codecs, and the bandwidth values exposed in the
-  master playlist. The codecs tell a Screen whether it can decode the rung.
+  The Original copies the file's video when it's 8-bit H.264, which browsers and TVs decode.
+  Otherwise it's encoded at the source's size, at a bitrate capped from the source's. The ladder
+  adds 720p / 480p / 360p rungs as long as the source is taller. Each rung carries its width,
+  height, video bitrate, H.264 level, codecs, and the bandwidth values exposed in the master
+  playlist. The codecs tell a Screen whether it can decode the rung.
+
+  A Quality's id is its name, such as 1080p, which the Player's menu shows, and which a Playback
+  Session's Quality matches from one Video to the next.
 
   A copy's bandwidth values are the peak and average bit rates of its segments, as RFC 8216
   defines them, measured from the bytes of the file's video in each segment. Every rung's
@@ -20,7 +24,6 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
     @moduledoc false
     @enforce_keys [
       :id,
-      :label,
       :width,
       :height,
       :copy?,
@@ -34,7 +37,6 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
 
     @type t :: %__MODULE__{
             id: String.t(),
-            label: String.t(),
             width: integer(),
             height: integer(),
             copy?: boolean(),
@@ -74,10 +76,13 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
   ]
 
   @encoded_rungs [
-    %{id: "720p", label: "720p", height: 720, video_bitrate: 2_800_000},
-    %{id: "480p", label: "480p", height: 480, video_bitrate: 1_400_000},
-    %{id: "360p", label: "360p", height: 360, video_bitrate: 800_000}
+    %{id: "720p", height: 720, video_bitrate: 2_800_000},
+    %{id: "480p", height: 480, video_bitrate: 1_400_000},
+    %{id: "360p", height: 360, video_bitrate: 800_000}
   ]
+
+  # The heights Video.js names a rendition wider than 16:9 by, from its width
+  @standard_heights [4320, 2160, 1440, 1080, 720, 480, 360, 240]
 
   # The peak and average bit rates of the audio segments, 160 kbit/s AAC in MPEG-TS, as measured
   @audio_peak_bit_rate 250_000
@@ -91,24 +96,34 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
   `start_time`, `end_time`, `duration` and `video_bytes`.
   """
   @spec build(Video.t(), [map()]) :: [Quality.t()]
-  def build(%Video{default_video_track: %VideoTrack{} = track} = video, segments) do
-    [
-      original(video, segments)
-      | for(rung <- @encoded_rungs, rung.height < track.height, do: encoded(rung, track))
-    ]
+  def build(%Video{default_video_track: %VideoTrack{} = track} = video, segments),
+    do: [original(video, segments) | Enum.map(encoded_rungs(track), &encoded(&1, track))]
+
+  @doc "The ids of the Video's Qualities, best first. Needs its `default_video_track` loaded."
+  @spec ids(Video.t()) :: [String.t()]
+  def ids(%Video{default_video_track: %VideoTrack{} = track}),
+    do: [original_id(track) | Enum.map(encoded_rungs(track), & &1.id)]
+
+  defp encoded_rungs(track), do: Enum.filter(@encoded_rungs, &(&1.height < track.height))
+
+  # Named as Video.js names it, by the standard height of its width when it's wider than 16:9: a
+  # 1920×800 Original is 1080p. Otherwise by its height, which is over every encoded rung's.
+  defp original_id(%VideoTrack{width: width, height: height}) do
+    widescreen_height = round(width * 9 / 16)
+
+    if width * 9 > height * 16 and widescreen_height in @standard_heights,
+      do: "#{widescreen_height}p",
+      else: "#{height}p"
   end
 
   defp original(%Video{default_video_track: track} = video, segments) do
-    label = "Original (#{track.height}p)"
-
     case track do
       %VideoTrack{codec: "h264", profile: profile, level: level}
       when is_map_key(@h264_profiles, profile) and is_integer(level) ->
         {peak_bit_rate, average_bit_rate} = copy_bit_rates(video, segments)
 
         %Quality{
-          id: "original",
-          label: label,
+          id: original_id(track),
           width: track.width,
           height: track.height,
           copy?: true,
@@ -129,7 +144,7 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
           |> min(@max_original_bitrate)
 
         encoded(
-          %{id: "original", label: label, height: track.height, video_bitrate: video_bitrate},
+          %{id: original_id(track), height: track.height, video_bitrate: video_bitrate},
           track
         )
     end
@@ -183,7 +198,6 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
 
     %Quality{
       id: rung.id,
-      label: rung.label,
       width: width,
       height: rung.height,
       copy?: false,

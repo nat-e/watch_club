@@ -62,7 +62,11 @@ const start = (context, { origin, token }) => {
 		request.autoplay = !paused;
 		playerManager.load(request).then(() => {
 			// Unless another Playback started meanwhile
-			if (playback.id === next.id) loadedPlaybackId = next.id;
+			if (playback.id !== next.id) return;
+			loadedPlaybackId = next.id;
+			// CAF starts at the start of the segment that holds the position
+			if (Math.abs(playerManager.getCurrentTimeSec() - position_seconds) > 1)
+				playerManager.seek(position_seconds);
 		});
 	};
 
@@ -83,11 +87,21 @@ const start = (context, { origin, token }) => {
 			.setActiveByIds(textIndex === -1 ? [] : [textTrackId(textIndex)]);
 	};
 
-	// On joining, again after reconnecting, and whenever the Playback Session changes
+	// On joining, again after reconnecting, and whenever the Playback Session changes. Another
+	// master playlist, which lists another Quality, plays again from where the TV is.
 	const play = (state) => {
-		if (state.playback.id === playback?.id) {
+		if (
+			state.playback.id === playback?.id &&
+			state.playback.path === playback.path
+		) {
 			playback = state.playback;
 			applyTracks();
+		} else if (state.playback.id === loadedPlaybackId) {
+			load({
+				...state,
+				position_seconds: playerManager.getCurrentTimeSec(),
+				paused: playerManager.getPlayerState() === PlayerState.PAUSED,
+			});
 		} else {
 			load(state);
 		}

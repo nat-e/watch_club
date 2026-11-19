@@ -2,7 +2,8 @@ defmodule WatchClubWeb.TvSocket do
   @moduledoc """
   The connection of a TV that plays a Playback Session. A TV has no login: the Player that casts
   gives it a signed token, which names the Playback Session, the TV and that Player. The TV acts
-  for the User who started the Playback Session, while it's active.
+  for the User who started the Playback Session, while it's active. Its browser's user agent goes
+  in its Problem Reports.
   """
   use Phoenix.Socket
 
@@ -26,14 +27,19 @@ defmodule WatchClubWeb.TvSocket do
   end
 
   @impl true
-  def connect(%{"token" => token}, socket, _connect_info) do
+  def connect(%{"token" => token}, socket, connect_info) do
     with {:ok, cast} <- Phoenix.Token.verify(Endpoint, @salt, token, max_age: :infinity),
          {:ok, %Session{ended_at: nil} = session} <-
            Playbacks.get_session_by_id(cast.session_id,
              load: :started_by,
              actor: SystemActor.actor()
            ) do
-      {:ok, assign(socket, cast: cast, user: session.started_by)}
+      {:ok,
+       assign(socket,
+         cast: cast,
+         user: session.started_by,
+         user_agent: connect_info.user_agent
+       )}
     else
       _invalid_token_or_ended_session -> :error
     end

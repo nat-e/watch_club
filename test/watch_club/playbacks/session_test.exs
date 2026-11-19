@@ -506,21 +506,40 @@ defmodule WatchClub.Playbacks.SessionTest do
     end
   end
 
+  describe "pick_quality/*" do
+    test "plays the Quality from now on" do
+      user = generate(user())
+      session = generate(playback_session(movie_media(), started_by: user))
+
+      assert %Session{quality: "720p"} = Playbacks.pick_quality!(session, "720p", actor: user)
+    end
+
+    test "fails once the Playback Session ended" do
+      user = generate(user())
+      session = generate(playback_session(movie_media(), started_by: user))
+      Playbacks.stop_casting!(session, actor: user)
+
+      Playbacks.pick_quality(session, "720p", actor: user)
+      |> assert_has_error(Ash.Error.Invalid, &match?(%Ash.Error.Changes.StaleRecord{}, &1))
+    end
+  end
+
   describe "cast/*" do
     test "makes the TV the Screen" do
       user = generate(user())
       session = generate(playback_session(movie_media(), started_by: user))
 
-      session = Playbacks.cast!(session, "tv", "Living Room TV", "player", actor: user)
+      session = Playbacks.cast!(session, "tv", "Living Room TV", "player", "CrKey", actor: user)
 
-      assert %Session{screen_id: "tv", tv_name: "Living Room TV"} = session
+      assert %Session{screen_id: "tv", tv_name: "Living Room TV", tv_user_agent: "CrKey"} =
+               session
     end
 
     test "fails once another Screen took the Playback Session" do
       user = generate(user())
       session = generate(playback_session(movie_media(), started_by: user, screen_id: "other"))
 
-      Playbacks.cast(session, "tv", "Living Room TV", "player", actor: user)
+      Playbacks.cast(session, "tv", "Living Room TV", "player", "CrKey", actor: user)
       |> assert_has_error(Ash.Error.Invalid, &match?(%Ash.Error.Changes.StaleRecord{}, &1))
     end
   end
@@ -531,12 +550,17 @@ defmodule WatchClub.Playbacks.SessionTest do
 
       session =
         generate(
-          playback_session(movie_media(), started_by: user, screen_id: "tv", tv_name: "TV")
+          playback_session(movie_media(),
+            started_by: user,
+            screen_id: "tv",
+            tv_name: "TV",
+            tv_user_agent: "CrKey"
+          )
         )
 
       session = Playbacks.leave_screen!(session, "tv", actor: user)
 
-      assert %Session{screen_id: nil, tv_name: nil, ended_at: nil} = session
+      assert %Session{screen_id: nil, tv_name: nil, tv_user_agent: nil, ended_at: nil} = session
     end
   end
 

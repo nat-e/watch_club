@@ -1,8 +1,8 @@
 defmodule WatchClub.Playbacks.ProblemReport do
   @moduledoc """
-  What a User reports from the Player about the Video of their Playback: what's wrong, an
-  optional comment, and what the Player showed then. The Playback gives the User, the Video and
-  the Content. Only the Instance Administrator reads and archives Problem Reports.
+  What a User reports from the Player or the Remote about the Video of their Playback: what's
+  wrong, an optional comment, and what the Screen showed then, the Player or the TV. The Playback
+  gives the User, the Video and the Content. Only the Instance Administrator reads and archives Problem Reports.
   """
 
   use Ash.Resource,
@@ -102,21 +102,22 @@ defmodule WatchClub.Playbacks.ProblemReport do
     end
 
     attribute :audio, :string do
-      description "The Audio Track the Player showed."
+      description "The Audio Track the Screen showed."
       public? true
     end
 
     attribute :subtitles, :string do
-      description "The Text Track the Player showed, or nil without subtitles."
+      description "The Text Track the Screen showed, or nil without subtitles."
       public? true
     end
 
     attribute :quality, :string do
-      description "The quality the Player showed, such as \"Auto, 720p\"."
+      description "The Quality the Screen showed, such as \"Auto, 720p\"."
       public? true
     end
 
     attribute :user_agent, :string do
+      description "The browser of the Screen."
       public? true
     end
 

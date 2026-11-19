@@ -29,7 +29,7 @@ defmodule WatchClubWeb.PlayerController do
 
     send_text_result(
       conn,
-      with_current_playback(params, &Hls.master_playlist(&1, query)),
+      with_current_playback(params, &Hls.master_playlist(&1, query, params["quality"])),
       @m3u8,
       "no-store"
     )

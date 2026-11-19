@@ -2,7 +2,7 @@ defmodule WatchClub.Playbacks.PlaybackTest do
   use WatchClub.DataCase, async: true
 
   alias WatchClub.Playbacks
-  alias WatchClub.Playbacks.Calculations.TextTrackChoices
+  alias WatchClub.Playbacks.Calculations.{QualityChoices, TextTrackChoices}
 
   describe "text_track_choices" do
     test "offers one Text Track per language and region among English, French and the original language" do
@@ -103,6 +103,44 @@ defmodule WatchClub.Playbacks.PlaybackTest do
       assert forced |> Map.values() |> Enum.map(& &1.title) |> Enum.sort() ==
                ["English forced", "Spanish forced"]
     end
+  end
+
+  describe "quality_choices" do
+    test "names the Original by its height, or by its width's standard height when it's wider than 16:9" do
+      assert quality_choices(video_track: %{width: 1920, height: 800}).choices ==
+               ["1080p", "720p", "480p", "360p"]
+
+      assert quality_choices(video_track: %{width: 1440, height: 1080}).choices ==
+               ["1080p", "720p", "480p", "360p"]
+
+      assert quality_choices(video_track: %{width: 720, height: 576}).choices ==
+               ["576p", "480p", "360p"]
+    end
+
+    test "plays the Quality of the Playback Session" do
+      assert %QualityChoices{picked: "720p"} = quality_choices(quality: "720p")
+    end
+
+    test "plays Auto when the Video doesn't have the Quality of the Playback Session" do
+      assert %QualityChoices{picked: nil} =
+               quality_choices(video_track: %{width: 640, height: 360}, quality: "720p")
+    end
+  end
+
+  # The Playback of a Video with this Default Video Track, 1920×1080 otherwise, in a Playback
+  # Session with this Quality
+  defp quality_choices(opts) do
+    video_track =
+      Map.merge(
+        %{stream_index: 0, codec: "h264"},
+        opts[:video_track] || %{width: 1920, height: 1080}
+      )
+
+    media = generate(video_media(generate(movie()), video: %{video_tracks: [video_track]}))
+    user = generate(user())
+    session = generate(playback_session(media, started_by: user, quality: opts[:quality]))
+
+    Ash.load!(session.current_playback, :quality_choices, actor: user).quality_choices
   end
 
   defp text_track_choices(media, user) do

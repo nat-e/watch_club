@@ -13,11 +13,12 @@ defmodule WatchClubWeb.Helpers.NowPlaying do
   alias WatchClub.Playbacks.{Playback, Session}
   alias WatchClubWeb.Helpers.{Parts, PlaybackPaths}
 
-  @doc "What to load on a Playback Session to describe what it plays, and its tracks."
+  @doc "What to load on a Playback Session to describe what it plays, its tracks and Qualities."
   def fields do
     [
       current_playback: [
         :text_track_choices,
+        :quality_choices,
         media: [video: [audio_tracks: [:display_label]] ++ video_fields()]
       ]
     ]

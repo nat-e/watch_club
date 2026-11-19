@@ -27,8 +27,11 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   # About 30 s and more than 24 s, most of the Player's buffer
   @segments_ahead 5
 
-  @doc "`query`, such as `?token=…`, follows every URI of the playlists, which need it."
-  def master_playlist(%Playback{media: %{video: %Video{} = video}} = playback, query) do
+  @doc """
+  `query`, such as `?token=…`, follows every URI of the playlists, which need it. With a
+  `quality_id`, it lists only that Quality, which a Screen then plays rather than adapting.
+  """
+  def master_playlist(%Playback{media: %{video: %Video{} = video}} = playback, query, quality_id) do
     metadata = %{
       video: video.default_video_track,
       audio_tracks: video.audio_tracks,
@@ -36,8 +39,9 @@ defmodule WatchClub.Playbacks.Playback.Hls do
       query: query
     }
 
-    qualities = QualityLadder.build(video, segments(video))
-    {:ok, IO.iodata_to_binary(Playlist.master(metadata, qualities))}
+    with {:ok, qualities} <- listed_qualities(video, quality_id) do
+      {:ok, IO.iodata_to_binary(Playlist.master(metadata, qualities))}
+    end
   end
 
   def video_playlist(%Video{} = video, variant_id, query) do
@@ -252,6 +256,13 @@ defmodule WatchClub.Playbacks.Playback.Hls do
 
   defp ensure_expected_subtitle_file(%TextTrack{} = track, file_name) do
     if file_name == "#{track.id}.vtt", do: :ok, else: {:error, :not_found}
+  end
+
+  defp listed_qualities(%Video{} = video, nil),
+    do: {:ok, QualityLadder.build(video, segments(video))}
+
+  defp listed_qualities(%Video{} = video, quality_id) do
+    with {:ok, quality} <- find_quality(video, quality_id), do: {:ok, [quality]}
   end
 
   defp find_quality(%Video{} = video, id) do

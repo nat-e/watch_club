@@ -275,11 +275,11 @@ A **User** takes a **Content** out of their **Continue Watching** until they **P
 _Avoid_: Hide from Home, remove, dismiss, mark as watched
 
 **Problem Report**:
-What a **User** reports from the **Player** about the **Video** they're playing: what's wrong, an optional comment, and what the **Player** showed at that moment.
+What a **User** reports from the **Player** or the **Remote** about the **Video** they're playing: what's wrong, an optional comment, and what the **Screen** showed at that moment.
 _Avoid_: Feedback, issue, bug report, ticket
 
 **Report a Problem**:
-Send a **Problem Report** to the **Instance Administrator** from the **Player**.
+Send a **Problem Report** to the **Instance Administrator** from the **Player** or the **Remote**.
 _Avoid_: Send feedback, flag, report an issue
 
 **Archive a Problem Report**:
@@ -299,8 +299,12 @@ A persisted visual stream within a video.
 _Avoid_: Stream metadata, playback option
 
 **Default Video Track**:
-The **Video Track** the **Player** uses for a **Video** and that the playback quality ladder is derived from.
+The **Video Track** the **Player** uses for a **Video** and that its **Qualities** are derived from.
 _Avoid_: Primary video stream, main track
+
+**Quality**:
+One of the sizes a **Screen** can play a **Video** in, named by its height, such as 1080p or 720p. Auto lets the **Screen** pick one for its connection.
+_Avoid_: Resolution, rendition, variant, rung, level, bitrate
 
 **Audio Track**:
 A persisted audio stream within a video.
@@ -619,7 +623,8 @@ _Avoid_: Group, aggregate, card, item
 - **Text Track Choices** never include a **Forced Text Track** or a picture-based **Text Track**. When a language and region has several **Text Tracks**, its choice is an **SDH Text Track** if the **User** has **Prefer SDH** and a regular one otherwise, when the **Video** has one; among equal ones, the first
 - While no **Text Track** is picked, the **Forced Text Track** in the **Preferred Subtitle Language** plays, otherwise the one in the audio's language, if any
 - An **Audio Track** without a language is taken to be in the original language of the **Content**
-- In the **Player** or the **Remote**, the **User** can switch to any **Audio Track** or **Text Track Choice**, or turn subtitles off
+- In the **Player** or the **Remote**, the **User** can switch to any **Audio Track** or **Text Track Choice**, or turn subtitles off, and to any **Quality** of the **Video**, or Auto
+- A **Playback Session** keeps the **Quality** picked: each next **Playback**, on any **Screen**, plays it, and a **Video** without a **Quality** of that name plays Auto
 - A **Playback Session** keeps the audio language and the subtitles, or no subtitles, of its **Content**: each next **Playback** of the same **Content**, on any **Screen**, starts with them, whether the **User** picked them or not; when its **Video** has no track in that language, its **Preferred Audio Track** or **Preferred Text Track** applies
 - During an **Intro** or a **Recap**, the **Player** offers to skip to its end
 - When the **Credits** of a **Video** start, or five seconds before its end when it has none, the **Player** counts down five seconds, then plays the next **Part**, else the next **TV Show Episode** if it has **Media**
@@ -643,6 +648,7 @@ _Avoid_: Group, aggregate, card, item
 - While the **Playback Session** plays on a **TV**, **Play** starts its new **Playback** on that **TV**
 - Any device of the **User** can open the **Remote**, including devices that can't **Cast**
 - The **Remote** never reports a position: the **TV** does
+- A **Problem Report** sent from the **Remote** describes what the **TV** plays
 - Leaving the **Remote** leaves the **TV** playing
 - The **Remote**'s Up next lists the files that play after the current one, one per row: the other **Parts** of what plays, then the next **TV Show Episodes** with **Media**
 - Every page shows the **Playback Session** playing on a **TV**, with a way to the **Remote**, only while that **TV** is connected
