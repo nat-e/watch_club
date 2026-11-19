@@ -37,4 +37,11 @@
   body {
     @apply bg-background font-sans text-foreground antialiased;
   }
+  /* Tailwind leaves buttons with the arrow: the hand shows what's clickable, as in the Phoenix
+     app. Radios, such as a search's scopes, are often drawn as buttons */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="radio"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
 }
