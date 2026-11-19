@@ -1,5 +1,5 @@
 import {QueryClient} from '@tanstack/react-query';
-import type {CurrentUser} from '@watchclub/api';
+import {type CurrentUser, getInstanceOptions, type Instance} from '@watchclub/api';
 import {currentUserQuery} from '@watchclub/core/accounts/current-user';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import {SessionStore} from '@/session-store';
@@ -38,6 +38,17 @@ const ALICE: CurrentUser = {
     languages_without_subtitles: ['en'],
   },
   username: 'alice',
+};
+// biome-ignore-end lint/style/useNamingConvention: the API uses snake_case field names
+
+// biome-ignore-start lint/style/useNamingConvention: the API uses snake_case field names
+const KFLIX: Instance = {
+  name: 'Kflix',
+  version: '0.1.0',
+  needs_setup: false,
+  web_sentry_dsn: null,
+  mobile_sentry_dsn: null,
+  sentry_environment: 'production',
 };
 // biome-ignore-end lint/style/useNamingConvention: the API uses snake_case field names
 
@@ -80,6 +91,8 @@ function fakeApi({down = false, password = 'passw0rd'} = {}): Received[] {
       }
       case '/api/auth/logout':
         return new Response(null, {status: 204});
+      case '/api/instance':
+        return Response.json(KFLIX);
       default:
         return Response.json({code: 'not_found', message: 'Not found'}, {status: 404});
     }
@@ -124,20 +137,23 @@ describe('SessionStore', () => {
     expect(received.at(-1)).toEqual({url: `${INSTANCE}/api/auth/logout`, token: 'token-1'});
   });
 
-  it('caches the User before it has the token, so the app needs not ask for them', async () => {
+  it('caches the User and the Instance before it has the token, so the app needs not ask for them', async () => {
     fakeApi();
     const queryClient = new QueryClient();
     const store = await startApp(queryClient);
     const cachedWhenSignedIn: unknown[] = [];
     store.subscribe(() => {
       if (store.getSession()?.hasToken) {
-        cachedWhenSignedIn.push(queryClient.getQueryData(currentUserQuery.queryKey));
+        cachedWhenSignedIn.push(
+          queryClient.getQueryData(currentUserQuery.queryKey),
+          queryClient.getQueryData(getInstanceOptions().queryKey),
+        );
       }
     });
 
     await store.signIn(INSTANCE, {username: 'alice', password: 'passw0rd'});
 
-    expect(cachedWhenSignedIn).toEqual([ALICE]);
+    expect(cachedWhenSignedIn).toEqual([ALICE, KFLIX]);
   });
 
   it('keeps neither the Instance nor a token when the credentials are wrong', async () => {

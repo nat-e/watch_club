@@ -9,6 +9,7 @@ import {
   useSearchHint,
   useSearchScopeNames,
 } from '@watchclub/core/contents/search';
+import {useInstanceName} from '@watchclub/core/instance';
 import {cn} from 'cn';
 import {
   BookIcon,
@@ -229,10 +230,11 @@ export function SearchScopes({
 /** The filter that keeps only the Library's Content, disabled until search covers the Library. */
 function InLibraryFilter() {
   const {t} = useTranslation('web');
+  const instanceName = useInstanceName();
   return (
     <Toggle variant="chip" size="sm" disabled className="ml-auto">
       <LibraryIcon />
-      {t($ => $.web.search.inLibrary)}
+      {t($ => $.web.search.inLibrary, {name: instanceName})}
     </Toggle>
   );
 }

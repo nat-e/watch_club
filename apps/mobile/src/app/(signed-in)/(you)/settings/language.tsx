@@ -1,6 +1,7 @@
 import {useMutation} from '@tanstack/react-query';
 import {useCurrentUser} from '@watchclub/core/accounts/current-user';
 import {savePreferencesMutation} from '@watchclub/core/accounts/preferences';
+import {useInstanceName} from '@watchclub/core/instance';
 import {LOCALES, useLocaleNames} from '@watchclub/core/l10n';
 import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner-native';
@@ -10,6 +11,7 @@ import {ChoiceScreen} from '@/components/layouts/choice-screen';
 export default function Language() {
   const {t, i18n} = useTranslation('core');
   const localeNames = useLocaleNames();
+  const instanceName = useInstanceName();
   const user = useCurrentUser();
   const save = useMutation(savePreferencesMutation);
 
@@ -26,7 +28,7 @@ export default function Language() {
       }}
       isSaving={save.isPending}
       hasFailed={save.isError}
-      hint={t($ => $.core.settings.preferencesDescription)}
+      hint={t($ => $.core.settings.preferencesDescription, {name: instanceName})}
     />
   );
 }

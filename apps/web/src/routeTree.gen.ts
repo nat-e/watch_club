@@ -26,7 +26,6 @@ import { Route as ShellMoviesIdRouteImport } from './routes/_shell/movies/$id'
 import { Route as ShellShowsIdRouteImport } from './routes/_shell/shows/$id'
 import { Route as ShellSportsIdRouteImport } from './routes/_shell/sports/$id'
 import { Route as ShellAdminAdminProblemReportsRouteImport } from './routes/_shell/_admin/admin/problem-reports'
-import { Route as ShellAdminAdminSettingsRouteImport } from './routes/_shell/_admin/admin/settings'
 import { Route as ShellAdminAdminUsersRouteImport } from './routes/_shell/_admin/admin/users'
 import { Route as ShellAdminAdminMediaIndexRouteImport } from './routes/_shell/_admin/admin/media/index'
 import { Route as ShellAdminAdminMediaSourcesRouteImport } from './routes/_shell/_admin/admin/media/sources'
@@ -114,11 +113,6 @@ const ShellAdminAdminProblemReportsRoute =
     path: '/admin/problem-reports',
     getParentRoute: () => ShellAdminRoute,
   } as any)
-const ShellAdminAdminSettingsRoute = ShellAdminAdminSettingsRouteImport.update({
-  id: '/admin/settings',
-  path: '/admin/settings',
-  getParentRoute: () => ShellAdminRoute,
-} as any)
 const ShellAdminAdminUsersRoute = ShellAdminAdminUsersRouteImport.update({
   id: '/admin/users',
   path: '/admin/users',
@@ -152,7 +146,6 @@ export interface FileRoutesByFullPath {
   '/shows/$id': typeof ShellShowsIdRoute
   '/sports/$id': typeof ShellSportsIdRoute
   '/admin/problem-reports': typeof ShellAdminAdminProblemReportsRoute
-  '/admin/settings': typeof ShellAdminAdminSettingsRoute
   '/admin/users': typeof ShellAdminAdminUsersRoute
   '/admin/media/sources': typeof ShellAdminAdminMediaSourcesRoute
   '/admin/media/': typeof ShellAdminAdminMediaIndexRoute
@@ -172,7 +165,6 @@ export interface FileRoutesByTo {
   '/shows/$id': typeof ShellShowsIdRoute
   '/sports/$id': typeof ShellSportsIdRoute
   '/admin/problem-reports': typeof ShellAdminAdminProblemReportsRoute
-  '/admin/settings': typeof ShellAdminAdminSettingsRoute
   '/admin/users': typeof ShellAdminAdminUsersRoute
   '/admin/media/sources': typeof ShellAdminAdminMediaSourcesRoute
   '/admin/media': typeof ShellAdminAdminMediaIndexRoute
@@ -196,7 +188,6 @@ export interface FileRoutesById {
   '/_shell/shows/$id': typeof ShellShowsIdRoute
   '/_shell/sports/$id': typeof ShellSportsIdRoute
   '/_shell/_admin/admin/problem-reports': typeof ShellAdminAdminProblemReportsRoute
-  '/_shell/_admin/admin/settings': typeof ShellAdminAdminSettingsRoute
   '/_shell/_admin/admin/users': typeof ShellAdminAdminUsersRoute
   '/_shell/_admin/admin/media/sources': typeof ShellAdminAdminMediaSourcesRoute
   '/_shell/_admin/admin/media/': typeof ShellAdminAdminMediaIndexRoute
@@ -218,7 +209,6 @@ export interface FileRouteTypes {
     | '/shows/$id'
     | '/sports/$id'
     | '/admin/problem-reports'
-    | '/admin/settings'
     | '/admin/users'
     | '/admin/media/sources'
     | '/admin/media/'
@@ -238,7 +228,6 @@ export interface FileRouteTypes {
     | '/shows/$id'
     | '/sports/$id'
     | '/admin/problem-reports'
-    | '/admin/settings'
     | '/admin/users'
     | '/admin/media/sources'
     | '/admin/media'
@@ -261,7 +250,6 @@ export interface FileRouteTypes {
     | '/_shell/shows/$id'
     | '/_shell/sports/$id'
     | '/_shell/_admin/admin/problem-reports'
-    | '/_shell/_admin/admin/settings'
     | '/_shell/_admin/admin/users'
     | '/_shell/_admin/admin/media/sources'
     | '/_shell/_admin/admin/media/'
@@ -393,13 +381,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellAdminAdminProblemReportsRouteImport
       parentRoute: typeof ShellAdminRoute
     }
-    '/_shell/_admin/admin/settings': {
-      id: '/_shell/_admin/admin/settings'
-      path: '/admin/settings'
-      fullPath: '/admin/settings'
-      preLoaderRoute: typeof ShellAdminAdminSettingsRouteImport
-      parentRoute: typeof ShellAdminRoute
-    }
     '/_shell/_admin/admin/users': {
       id: '/_shell/_admin/admin/users'
       path: '/admin/users'
@@ -426,7 +407,6 @@ declare module '@tanstack/react-router' {
 
 interface ShellAdminRouteChildren {
   ShellAdminAdminProblemReportsRoute: typeof ShellAdminAdminProblemReportsRoute
-  ShellAdminAdminSettingsRoute: typeof ShellAdminAdminSettingsRoute
   ShellAdminAdminUsersRoute: typeof ShellAdminAdminUsersRoute
   ShellAdminAdminMediaSourcesRoute: typeof ShellAdminAdminMediaSourcesRoute
   ShellAdminAdminMediaIndexRoute: typeof ShellAdminAdminMediaIndexRoute
@@ -434,7 +414,6 @@ interface ShellAdminRouteChildren {
 
 const ShellAdminRouteChildren: ShellAdminRouteChildren = {
   ShellAdminAdminProblemReportsRoute: ShellAdminAdminProblemReportsRoute,
-  ShellAdminAdminSettingsRoute: ShellAdminAdminSettingsRoute,
   ShellAdminAdminUsersRoute: ShellAdminAdminUsersRoute,
   ShellAdminAdminMediaSourcesRoute: ShellAdminAdminMediaSourcesRoute,
   ShellAdminAdminMediaIndexRoute: ShellAdminAdminMediaIndexRoute,

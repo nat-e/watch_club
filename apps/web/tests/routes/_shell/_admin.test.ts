@@ -38,6 +38,7 @@ async function open(path: string, user: CurrentUser | null): Promise<string> {
   const queryClient = new QueryClient();
   queryClient.setQueryData(currentUserQuery.queryKey, user);
   const instance: Instance = {
+    name: 'WatchClub',
     version: '0.1.0',
     // biome-ignore-start lint/style/useNamingConvention: the API uses snake_case field names
     needs_setup: false,

@@ -410,7 +410,7 @@
     },
     "/api/instance": {
       "get": {
-        "summary": "Returns the information apps need about the WatchClub instance before signing in.",
+        "summary": "Returns the information apps need about the WatchClub instance, which they read before signing\nin too.",
         "operationId": "get_instance",
         "responses": {
           "200": {
@@ -1212,8 +1212,9 @@
       },
       "Instance": {
         "type": "object",
-        "description": "The information apps need about the WatchClub instance before signing in.",
+        "description": "The information apps need about the WatchClub instance, which they read before signing in too.",
         "required": [
+          "name",
           "version",
           "needs_setup",
           "web_sentry_dsn",
@@ -1227,6 +1228,10 @@
               "null"
             ],
             "description": "The Sentry DSN the mobile apps report their crashes and errors to, or null when they report\nnone"
+          },
+          "name": {
+            "type": "string",
+            "description": "The Instance Name, which the host chooses"
           },
           "needs_setup": {
             "type": "boolean",

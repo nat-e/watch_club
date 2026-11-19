@@ -64,6 +64,7 @@ async fn serve(config: Config) -> anyhow::Result<()> {
         listener,
         watch_club::router(ApiContext {
             db: db.clone(),
+            instance_name: config.instance_name.into(),
             apps_sentry: AppsSentry {
                 web_dsn: config.observability.web_sentry_dsn.map(Arc::from),
                 mobile_dsn: config.observability.mobile_sentry_dsn.map(Arc::from),

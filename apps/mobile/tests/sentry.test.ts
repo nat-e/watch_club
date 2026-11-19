@@ -44,6 +44,7 @@ function fakeInstances() {
       throw new TypeError('Failed to fetch');
     }
     return Response.json({
+      name: 'WatchClub',
       version: '0.1.0',
       // biome-ignore-start lint/style/useNamingConvention: the API uses snake_case field names
       needs_setup: false,

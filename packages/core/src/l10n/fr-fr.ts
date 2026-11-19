@@ -48,7 +48,7 @@ export default {
     failed: "La recherche n'a pas fonctionné.",
     hint_books: 'Cherche parmi tous les livres.',
     hint_moviesAndTvShows:
-      'Cherche parmi tous les films et séries, même ceux qui ne sont pas encore sur WatchClub.',
+      'Cherche parmi tous les films et séries, même ceux qui ne sont pas encore sur {{name}}.',
     hint_sportsEvents: 'Cherche parmi tous les événements sportifs.',
     noResults: 'Aucun résultat',
     nothingFound: "On n'a rien trouvé pour « {{query}} ».",
@@ -81,7 +81,7 @@ export default {
       "Quand l'audio est dans l'une de ces langues, seuls les sous-titres forcés s'affichent, pour les panneaux ou les répliques dans une autre langue.",
     originalLanguage: 'Langue originale',
     preferences: 'Préférences',
-    preferencesDescription: 'Choisis la langue utilisée dans WatchClub.',
+    preferencesDescription: 'Choisis la langue utilisée dans {{name}}.',
     save: 'Enregistrer',
     subtitles: 'Sous-titres',
     subtitlesOff: 'Désactivés',
