@@ -38,7 +38,3 @@ Add to the plan:
 
 - What the port drops or changes compared with Phoenix's behavior and schema, so the user can object.
 - How the mobile app adapts Phoenix's screens, in a few lines: no prototype shows it.
-
-## Build
-
-Copy the feature's terms from Phoenix's `CONTEXT.md` into this one. Bring its doc from Phoenix's `docs/` into `docs/`, rewritten for this stack.
