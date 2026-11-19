@@ -10,7 +10,7 @@ defmodule WatchClubWeb.PlayerPage do
 
   import WatchClubWeb.Live.Player.PlayerComponents
 
-  alias WatchClubWeb.Live.Player.ReportProblemLive
+  alias WatchClubWeb.Components.Playbacks.ReportProblemLive
   alias WatchClubWeb.TvSocket
 
   @playback_session_fields [
