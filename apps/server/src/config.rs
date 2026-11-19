@@ -16,6 +16,8 @@ pub struct Config {
     pub database_url: SecretString,
     /// The port the server listens on, from `PORT`
     pub port: u16,
+    /// The Instance Name, from `INSTANCE_NAME`: `WatchClub` by default
+    pub instance_name: String,
     /// The API Read Access Token the server calls TMDB with, from `TMDB_API_TOKEN`
     pub tmdb_api_token: SecretString,
     /// The API token the server calls Hardcover with, from `HARDCOVER_API_TOKEN`
@@ -89,6 +91,7 @@ impl Config {
             port: required_var("PORT")?
                 .parse()
                 .context("PORT isn't a port number")?,
+            instance_name: instance_name()?,
             tmdb_api_token: required_var("TMDB_API_TOKEN")?.into(),
             hardcover_api_token: required_var("HARDCOVER_API_TOKEN")?.into(),
             observability: ObservabilityConfig::from_env()?,
@@ -144,6 +147,18 @@ impl Exports {
             logs: exports("LOGS")?,
         })
     }
+}
+
+/// The most characters an Instance Name has, so the texts that show it stay short.
+const INSTANCE_NAME_MAX_LENGTH: usize = 30;
+
+/// Returns the Instance Name the host chose in `INSTANCE_NAME`, or `WatchClub`.
+fn instance_name() -> anyhow::Result<String> {
+    let name = optional_var("INSTANCE_NAME").unwrap_or_else(|| "WatchClub".to_owned());
+    if name.chars().count() > INSTANCE_NAME_MAX_LENGTH {
+        bail!("INSTANCE_NAME can't be longer than {INSTANCE_NAME_MAX_LENGTH} characters");
+    }
+    Ok(name)
 }
 
 /// Reads the URL of the Postgres database from `DATABASE_URL`, for tools that only need the

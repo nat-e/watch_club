@@ -1,4 +1,4 @@
-//! The WatchClub instance: whether it's set up yet, and Setup, where its first visitor creates
+//! The WatchClub instance: its name, whether it's set up yet, and Setup, where its first visitor creates
 //! the Instance Administrator.
 
 use std::sync::Arc;
@@ -35,13 +35,15 @@ pub(super) fn routes() -> OpenApiRouter<ApiContext> {
         .routes(routes!(create_instance_administrator))
 }
 
-/// Returns the information apps need about the WatchClub instance before signing in.
+/// Returns the information apps need about the WatchClub instance, which they read before signing
+/// in too.
 #[utoipa::path(get, path = "/instance", responses((status = OK, body = GetInstanceResponse)))]
 async fn get_instance(
     State(context): State<ApiContext>,
 ) -> Result<Json<GetInstanceResponse>, ApiError> {
     let needs_setup = !accounts::has_instance_administrator(&context.db).await?;
     Ok(Json(GetInstanceResponse {
+        name: context.instance_name,
         version: env!("CARGO_PKG_VERSION"),
         needs_setup,
         web_sentry_dsn: context.apps_sentry.web_dsn,
@@ -50,10 +52,13 @@ async fn get_instance(
     }))
 }
 
-/// The information apps need about the WatchClub instance before signing in.
+/// The information apps need about the WatchClub instance, which they read before signing in too.
 #[derive(Serialize, ToSchema)]
 #[schema(as = Instance)]
 struct GetInstanceResponse {
+    /// The Instance Name, which the host chooses
+    #[schema(value_type = String)]
+    name: Arc<str>,
     /// The server's version
     version: &'static str,
     /// Whether Setup still has to create the Instance Administrator

@@ -23,6 +23,8 @@ mod web;
 #[derive(Clone, Debug, FromRef)]
 pub struct ApiContext {
     pub db: db::Pool,
+    /// The name Users see for the Instance, which `GET /api/instance` gives the apps
+    pub instance_name: Arc<str>,
     pub apps_sentry: AppsSentry,
     pub metadata_providers: domain::contents::MetadataProviders,
 }

@@ -23,6 +23,8 @@ docker run --detach --publish 4000:4000 \
 
 Database migrations run on start.
 
+Name your instance with `INSTANCE_NAME`, up to 30 characters: the apps show it instead of WatchClub.
+
 To see what the server is doing, through its logs, OpenTelemetry or Sentry, read [docs/observability.md](docs/observability.md).
 
 ## Contributing

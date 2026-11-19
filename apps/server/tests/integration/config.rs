@@ -69,6 +69,16 @@ fn starts_without_the_optional_settings() {
 }
 
 #[test]
+fn fails_when_the_instance_name_is_too_long() {
+    let errors = startup_error_with(&[("INSTANCE_NAME", "The Very Long Name of Our Watch Club")]);
+
+    assert!(
+        errors.contains("INSTANCE_NAME can't be longer than 30 characters"),
+        "{errors}"
+    );
+}
+
+#[test]
 fn fails_when_the_log_level_is_invalid() {
     let errors = startup_error_with(&[("LOG_LEVEL", "watch_club=loud")]);
 
