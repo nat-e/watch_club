@@ -74,7 +74,7 @@ impl<T> Translations<T> {
     }
 
     /// Returns the value for the Locale: the Locale's, else English's, else the original's.
-    fn pick(&self, locale: Locale) -> Option<&T> {
+    fn find_best(&self, locale: Locale) -> Option<&T> {
         self.find_translated(|language| language.suits(locale))
             .or_else(|| self.find_translated(Language::is_english))
             .or(self.original.as_ref())
@@ -122,11 +122,11 @@ impl ContentTranslations {
                 locale,
                 title: self
                     .titles
-                    .pick(locale)
+                    .find_best(locale)
                     .map_or(original_title, String::as_str),
-                overview: self.overviews.pick(locale).map(String::as_str),
-                poster: self.posters.pick(locale),
-                trailer_url: self.trailer_urls.pick(locale).map(String::as_str),
+                overview: self.overviews.find_best(locale).map(String::as_str),
+                poster: self.posters.find_best(locale),
+                trailer_url: self.trailer_urls.find_best(locale).map(String::as_str),
             })
     }
 }
@@ -152,8 +152,8 @@ impl MediaTranslations {
     pub(super) fn localize(&self) -> impl Iterator<Item = MediaLocalization<'_>> {
         Locale::ALL.into_iter().map(|locale| MediaLocalization {
             locale,
-            title: self.titles.pick(locale).map(String::as_str),
-            overview: self.overviews.pick(locale).map(String::as_str),
+            title: self.titles.find_best(locale).map(String::as_str),
+            overview: self.overviews.find_best(locale).map(String::as_str),
         })
     }
 }
@@ -181,7 +181,7 @@ mod tests {
     }
 
     #[test]
-    fn picks_the_locales_text() {
+    fn finds_the_locales_text() {
         let titles = translations(
             Some("Le Fabuleux Destin d'Amélie Poulain"),
             &[
@@ -190,8 +190,8 @@ mod tests {
             ],
         );
 
-        assert_eq!(titles.pick(Locale::FrFr).unwrap(), "Amélie Poulain");
-        assert_eq!(titles.pick(Locale::EnUs).unwrap(), "Amélie");
+        assert_eq!(titles.find_best(Locale::FrFr).unwrap(), "Amélie Poulain");
+        assert_eq!(titles.find_best(Locale::EnUs).unwrap(), "Amélie");
     }
 
     #[test]
@@ -201,7 +201,7 @@ mod tests {
             &[("en", Some("US"), "The Matrix"), ("fr", None, "Matrix")],
         );
 
-        assert_eq!(titles.pick(Locale::FrFr).unwrap(), "Matrix");
+        assert_eq!(titles.find_best(Locale::FrFr).unwrap(), "Matrix");
     }
 
     #[test]
@@ -214,7 +214,7 @@ mod tests {
             ],
         );
 
-        assert_eq!(titles.pick(Locale::FrFr).unwrap(), "Breaking Bad (UK)");
+        assert_eq!(titles.find_best(Locale::FrFr).unwrap(), "Breaking Bad (UK)");
     }
 
     #[test]
@@ -224,7 +224,7 @@ mod tests {
             &[("de", Some("DE"), "Chihiros Reise")],
         );
 
-        assert_eq!(titles.pick(Locale::FrFr).unwrap(), "千と千尋の神隠し");
+        assert_eq!(titles.find_best(Locale::FrFr).unwrap(), "千と千尋の神隠し");
     }
 
     #[test]
