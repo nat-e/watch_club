@@ -38,6 +38,7 @@ use crate::{
             Translations,
         },
     },
+    utils::time::minutes_to_seconds,
 };
 
 /// The address of TMDB's API
@@ -133,7 +134,7 @@ impl Tmdb {
             group_number: None,
             number_in_group: None,
             release_date: movie.release_date,
-            runtime_seconds: movie.runtime.and_then(minutes_to_seconds),
+            runtime_seconds: movie.runtime.map(minutes_to_seconds),
             image: None,
             texts: MediaTranslations::default(),
         };
@@ -174,12 +175,6 @@ impl Tmdb {
     }
 }
 
-/// Returns a runtime in seconds from TMDB's minutes, or None for TMDB's 0, which means it doesn't
-/// know.
-fn minutes_to_seconds(minutes: i32) -> Option<i32> {
-    (minutes > 0).then(|| minutes.saturating_mul(60))
-}
-
 /// The details of a Movie or a TV Show, with what `DETAILS_APPENDS` adds. TMDB names some fields
 /// differently for each: a TV Show's `name` is a Movie's `title`.
 #[derive(Debug, Deserialize)]
@@ -205,6 +200,7 @@ struct Details {
     poster_path: Option<String>,
     backdrop_path: Option<String>,
     /// A Movie's runtime, in minutes
+    #[serde(default, deserialize_with = "optional_minutes")]
     runtime: Option<i32>,
     /// A TV Show's seasons
     #[serde(default)]
@@ -533,6 +529,12 @@ struct TmdbExternalIds {
 fn optional_text<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Option<String>, D::Error> {
     let text = Option::<String>::deserialize(deserializer)?;
     Ok(text.filter(|text| !text.is_empty()))
+}
+
+/// Reads a runtime in minutes that TMDB sends as 0, or null, when it doesn't know it.
+fn optional_minutes<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Option<i32>, D::Error> {
+    let minutes = Option::<i32>::deserialize(deserializer)?;
+    Ok(minutes.filter(|&minutes| minutes > 0))
 }
 
 /// Reads a date that TMDB sends as `YYYY-MM-DD`, or empty, or null, when it has none.

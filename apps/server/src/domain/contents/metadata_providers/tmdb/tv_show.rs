@@ -14,15 +14,18 @@ use serde::{
 };
 
 use super::{
-    BASE_LOCALE, DETAILS_APPENDS, MAX_APPENDS, Tmdb, TmdbId, minutes_to_seconds, optional_date,
+    BASE_LOCALE, DETAILS_APPENDS, MAX_APPENDS, Tmdb, TmdbId, optional_date, optional_minutes,
     optional_text, still,
 };
-use crate::domain::{
-    accounts::Locale,
-    contents::{
-        ContentMetadata, ExternalContentId, Language, LookUpError, MediaMetadata,
-        MediaTranslations, MediaType,
+use crate::{
+    domain::{
+        accounts::Locale,
+        contents::{
+            ContentMetadata, ExternalContentId, Language, LookUpError, MediaMetadata,
+            MediaTranslations, MediaType,
+        },
     },
+    utils::time::minutes_to_seconds,
 };
 
 impl Tmdb {
@@ -110,7 +113,7 @@ fn episodes(seasons_by_locale: Vec<(Locale, Vec<Season>)>) -> Vec<MediaMetadata>
                         group_number: Some(season.season_number),
                         number_in_group: Some(episode.number),
                         release_date: episode.air_date,
-                        runtime_seconds: episode.runtime.and_then(minutes_to_seconds),
+                        runtime_seconds: episode.runtime.map(minutes_to_seconds),
                         image: episode.still_path.as_deref().and_then(still),
                         texts: MediaTranslations::default(),
                     });
@@ -204,6 +207,7 @@ struct Episode {
     #[serde(default, deserialize_with = "optional_date")]
     air_date: Option<Date>,
     /// In minutes
+    #[serde(default, deserialize_with = "optional_minutes")]
     runtime: Option<i32>,
     still_path: Option<String>,
 }

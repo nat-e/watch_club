@@ -604,6 +604,20 @@ async fn fetch_tv_show_leaves_out_the_titles_tmdb_makes_up_for_untranslated_epis
 }
 
 #[tokio::test]
+async fn fetch_tv_show_takes_tmdbs_runtime_of_0_as_unknown() {
+    let tmdb = FakeTmdb::start().await;
+    let mut details = tv_show(1..=1, 1..=1);
+    details["season/1"]["episodes"][0]["runtime"] = json!(0);
+    tmdb.answer_in("/tv/456", Locale::EnUs, details).await;
+    tmdb.answer_in("/tv/456", Locale::FrFr, appended_seasons(1..=1))
+        .await;
+
+    let tv_show = tmdb.client().fetch_tv_show(TmdbId::new(456)).await.unwrap();
+
+    assert_eq!(tv_show.media[0].runtime_seconds, None);
+}
+
+#[tokio::test]
 async fn fetch_fails_with_not_found_when_tmdb_has_nothing_with_the_id() {
     let tmdb = FakeTmdb::start().await;
     Mock::given(method("GET"))
