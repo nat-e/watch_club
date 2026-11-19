@@ -580,3 +580,8 @@ msgstr[1] ""
 #, elixir-autogen, elixir-format
 msgid "See every unmatched file"
 msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_source_card.ex
+#, elixir-autogen, elixir-format
+msgid "Every 15 minutes"
+msgstr ""

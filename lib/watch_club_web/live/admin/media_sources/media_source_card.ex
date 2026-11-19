@@ -3,7 +3,9 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaSourceCard do
   Card for a `Media Source` on the Media Sources list page. Top row
   carries the source-type mark, name, media-type pill, source identifier
   (path or URL+root), and a single ellipsis menu. Bottom row carries the
-  schedule placeholder and the last-import status.
+  import schedule and the last-import status.
+
+  Load the Media Source's `latest_import`, `implementation` and `scheduled_imports?`.
   """
   use WatchClubWeb, :component
 
@@ -101,7 +103,10 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaSourceCard do
           <span class="text-text-subtle">
             {dgettext("admin_media_imports", "Schedule")}
           </span>
-          <span class="ml-tight text-text">
+          <span :if={@media_source.scheduled_imports?} class="ml-tight text-text">
+            {dgettext("admin_media_imports", "Every 15 minutes")}
+          </span>
+          <span :if={!@media_source.scheduled_imports?} class="ml-tight text-text">
             {dgettext("admin_media_imports", "Manual only")}
           </span>
         </div>
