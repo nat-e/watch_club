@@ -467,7 +467,7 @@ classDiagram
 
 A Screen, the Player or the TV a Playback Session plays on, is a live connection and isn't stored: `screen_id` only names the one holding the Playback Session.
 
-A Playback Session's `quality` is the id of the Quality its Screens play, such as `720p`, or nil for Auto. Qualities aren't stored: `QualityLadder` derives them from the Default Video Track, and names each by its height, so the id matches the Quality of the same name in the next Videos.
+A Playback Session's `quality` is the id of the Quality its Screens play, such as `720p`, or nil for Auto. Qualities aren't stored: `QualityLadder` derives them from the Default Video Track, and names each as the Player's menu does, so the id matches the Quality of the same name in the next Videos.
 
 ## History
 

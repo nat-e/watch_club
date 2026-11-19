@@ -303,8 +303,8 @@ The **Video Track** the **Player** uses for a **Video** and that its **Qualities
 _Avoid_: Primary video stream, main track
 
 **Quality**:
-One of the sizes a **Screen** can play a **Video** in, named by its height, such as 1080p or 720p. Auto lets the **Screen** pick one for its connection.
-_Avoid_: Resolution, rendition, variant, rung, level, bitrate
+One of the sizes a **Screen** can play a **Video** in, named as the **Player** names it, such as 1080p or 720p: a 1920×800 **Video** is 1080p. Auto lets the **Screen** pick one for its connection.
+_Avoid_: Resolution, rendition, bitrate
 
 **Audio Track**:
 A persisted audio stream within a video.

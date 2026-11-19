@@ -23,12 +23,15 @@ const start = (context, { origin, token }) => {
 		params: { token },
 	});
 	const channel = socket.channel("tv", {});
-	// The Playback asked for, and the one the TV reports about once it loaded
+	// The Playback asked for, where it starts, and the one the TV reports about once it loaded
 	let playback;
+	let loading;
 	let loadedPlaybackId;
 
 	const load = ({ playback: next, position_seconds, paused }) => {
 		playback = next;
+		const thisLoad = { position_seconds, paused };
+		loading = thisLoad;
 		loadedPlaybackId = undefined;
 		const media = new cast.framework.messages.MediaInformation();
 		media.contentId = new URL(next.path, origin).href;
@@ -61,8 +64,8 @@ const start = (context, { origin, token }) => {
 		request.currentTime = position_seconds;
 		request.autoplay = !paused;
 		playerManager.load(request).then(() => {
-			// Unless another Playback started meanwhile
-			if (playback.id !== next.id) return;
+			// Unless another load started meanwhile
+			if (loading !== thisLoad) return;
 			loadedPlaybackId = next.id;
 			// CAF starts at the start of the segment that holds the position
 			if (Math.abs(playerManager.getCurrentTimeSec() - position_seconds) > 1)
@@ -88,22 +91,22 @@ const start = (context, { origin, token }) => {
 	};
 
 	// On joining, again after reconnecting, and whenever the Playback Session changes. Another
-	// master playlist, which lists another Quality, plays again from where the TV is.
+	// master playlist, which lists another Quality, plays again from where the TV is, or from
+	// where it was about to start.
 	const play = (state) => {
-		if (
-			state.playback.id === playback?.id &&
-			state.playback.path === playback.path
-		) {
+		if (state.playback.id !== playback?.id) {
+			load(state);
+		} else if (state.playback.path !== playback.path) {
+			const where = loadedPlaybackId
+				? {
+						position_seconds: playerManager.getCurrentTimeSec(),
+						paused: playerManager.getPlayerState() === PlayerState.PAUSED,
+					}
+				: loading;
+			load({ ...state, ...where });
+		} else {
 			playback = state.playback;
 			applyTracks();
-		} else if (state.playback.id === loadedPlaybackId) {
-			load({
-				...state,
-				position_seconds: playerManager.getCurrentTimeSec(),
-				paused: playerManager.getPlayerState() === PlayerState.PAUSED,
-			});
-		} else {
-			load(state);
 		}
 	};
 
