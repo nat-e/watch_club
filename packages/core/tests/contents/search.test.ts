@@ -17,6 +17,8 @@ function movie(externalId: number): SearchResult {
     overview: null,
     poster: null,
     creators: [],
+    date: null,
+    league: null,
     // biome-ignore-end lint/style/useNamingConvention: the API uses snake_case field names
   };
 }
@@ -77,10 +79,24 @@ describe('searchResultDetails', () => {
       creators: ['René Goscinny', 'Albert Uderzo'],
     };
 
-    expect(searchResultDetails(book)).toEqual(['2001', 'René Goscinny, Albert Uderzo']);
+    expect(searchResultDetails(book, 'en-US')).toEqual(['2001', 'René Goscinny, Albert Uderzo']);
+  });
+
+  it("gives a Sports Event's date in the language, then its league", () => {
+    const sportsEvent: SearchResult = {
+      ...movie(1),
+      // biome-ignore lint/style/useNamingConvention: the API uses snake_case field names
+      content_type: 'sports_event',
+      year: 2024,
+      date: '2024-09-15',
+      league: 'Boxing',
+    };
+
+    expect(searchResultDetails(sportsEvent, 'en-US')).toEqual(['Sep 15, 2024', 'Boxing']);
+    expect(searchResultDetails(sportsEvent, 'fr-FR')).toEqual(['15 sept. 2024', 'Boxing']);
   });
 
   it('leaves out what the result lacks', () => {
-    expect(searchResultDetails({...movie(1), year: null})).toEqual([]);
+    expect(searchResultDetails({...movie(1), year: null}, 'en-US')).toEqual([]);
   });
 });

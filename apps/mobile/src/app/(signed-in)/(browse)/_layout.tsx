@@ -10,6 +10,7 @@ export default function BrowseLayout() {
       <Stack.Screen name="browse" options={{title: t($ => $.core.browse.title)}} />
       <Stack.Screen name="movies/[id]" options={{title: ''}} />
       <Stack.Screen name="shows/[id]" options={{title: ''}} />
+      <Stack.Screen name="sports/[id]" options={{title: ''}} />
       <Stack.Screen name="books/[id]" options={{title: ''}} />
     </Stack>
   );

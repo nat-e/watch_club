@@ -5,14 +5,17 @@ export default {
   contents: {
     loadFailed_book: "We couldn't load this book. Try again in a moment.",
     loadFailed_movie: "We couldn't load this movie. Try again in a moment.",
+    loadFailed_sportsEvent: "We couldn't load this sports event. Try again in a moment.",
     loadFailed_tvShow: "We couldn't load this TV show. Try again in a moment.",
     notFound_book: "We couldn't find this book.",
     notFound_movie: "We couldn't find this movie.",
+    notFound_sportsEvent: "We couldn't find this sports event.",
     notFound_tvShow: "We couldn't find this TV show.",
   },
   contentTypes: {
     book: 'Book',
     movie: 'Movie',
+    sportsEvent: 'Sports event',
     tvShow: 'TV show',
   },
   controls: {
@@ -44,6 +47,7 @@ export default {
     failed: "The search didn't work.",
     hint_books: 'Find any book.',
     hint_moviesAndTvShows: "Find any movie or TV show, even ones that aren't on WatchClub yet.",
+    hint_sportsEvents: 'Find any sports event.',
     noResults: 'No results',
     nothingFound: "We didn't find anything for “{{query}}”.",
     resultCount_one: '{{count}} result',
@@ -53,6 +57,7 @@ export default {
     scopes: {
       books: 'Books',
       moviesAndTvShows: 'Movies and TV shows',
+      sportsEvents: 'Sports',
     },
     search: 'Search',
     searching: 'Searching…',

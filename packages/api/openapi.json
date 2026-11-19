@@ -936,7 +936,7 @@
           },
           "external_id": {
             "type": "string",
-            "description": "The Content's ID at the Metadata Provider of its type, such as its TMDB ID"
+            "description": "The Content's ID at the Metadata Provider of its type, such as its TMDB ID, or `ev-028133` at\nsportarr.net"
           }
         }
       },
@@ -946,6 +946,7 @@
         "enum": [
           "movie",
           "tv_show",
+          "sports_event",
           "book"
         ]
       },
@@ -1346,7 +1347,9 @@
               "year",
               "overview",
               "poster",
-              "creators"
+              "creators",
+              "date",
+              "league"
             ],
             "properties": {
               "creators": {
@@ -1354,7 +1357,22 @@
                 "items": {
                   "type": "string"
                 },
-                "description": "The people credited for making it, most important first, such as a Book's authors. None for\nMovies and TV Shows for now"
+                "description": "The people credited for making it, most important first, such as a Book's authors. None for\nMovies, TV Shows and Sports Events for now"
+              },
+              "date": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date",
+                "description": "The day a Sports Event takes place, when sportarr.net knows it. Null for other Content"
+              },
+              "league": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The league or competition of a Sports Event, such as UFC or Formula 1, when sportarr.net\nknows it. Null for other Content"
               },
               "overview": {
                 "type": [
@@ -1410,7 +1428,7 @@
             "items": {
               "$ref": "#/components/schemas/SearchResult"
             },
-            "description": "The results, most relevant first. Only the last page can have none, unless TMDB's pages\nin between have only people"
+            "description": "The results, most relevant first, or the latest first for Sports Events. Only the last page\ncan have none, unless TMDB's pages in between have only people"
           }
         }
       },
@@ -1419,6 +1437,7 @@
         "description": "The Content Types a search looks for, each at the Metadata Provider of its types.",
         "enum": [
           "movies_and_tv_shows",
+          "sports_events",
           "books"
         ]
       },

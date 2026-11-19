@@ -8,7 +8,10 @@ use wiremock::{
     matchers::{method, path, query_param},
 };
 
-use crate::support::{self, Client, FakeHardcover, FakeTmdb, fake_hardcover, fake_tmdb::fixture};
+use crate::support::{
+    self, Client, FakeHardcover, FakeSportarr, FakeTmdb, fake_hardcover, fake_sportarr,
+    fake_tmdb::fixture,
+};
 
 #[database_test]
 async fn returns_a_page_of_movies_and_tv_shows_in_the_users_language(db: PgPool) {
@@ -61,6 +64,8 @@ async fn returns_a_page_of_movies_and_tv_shows_in_the_users_language(db: PgPool)
                 {"url": "https://image.tmdb.org/t/p/w780/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg", "width": 780, "height": 1170},
             ],
             "creators": [],
+            "date": null,
+            "league": null,
         })
     );
     assert_eq!(results[2].get("poster"), Some(&json!(null)));
@@ -100,6 +105,52 @@ async fn returns_a_page_of_books(db: PgPool) {
                 "height": 500,
             }],
             "creators": ["René Goscinny", "Albert Uderzo"],
+            "date": null,
+            "league": null,
+        })
+    );
+}
+
+#[database_test]
+async fn returns_the_sports_events_on_one_page(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    let user = support::create_user(&db, "ada").await;
+    let sportarr = FakeSportarr::start().await;
+    sportarr
+        .answer(
+            "/search/event/canelo%25berlanga",
+            fake_sportarr::fixture("search_events"),
+        )
+        .await;
+    let mut browser = Client::with_metadata_providers(&db, sportarr.metadata_providers());
+    browser.sign_in(&user).await;
+
+    let response = browser
+        .get("/api/search?query=canelo%20berlanga&scope=sports_events")
+        .await;
+
+    assert_eq!(response.status, StatusCode::OK, "{response:?}");
+    assert_eq!(response.body["next_page"], json!(null));
+    let results = response.body["results"].as_array().unwrap();
+    assert_eq!(results.len(), 18);
+    assert_eq!(
+        results[3],
+        json!({
+            "content_type": "sports_event",
+            "external_id": "ev-575969",
+            "title": "Canelo Álvarez vs Edgar Berlanga",
+            "year": 2024,
+            "overview": "Mexico locks horns with Puerto Rico once again, as 168lbs king Canelo \
+                Alvarez (61-2-2) takes on Edgar Berlanga (22-0). With Alvarez putting his Super \
+                middleweight titles on the line, can he extend his reign at the divisions summit?",
+            "poster": [{
+                "url": "https://sportarr.net/static/images/event/58/58ab0873-e360-4e8f-b6ea-eed1f9378de4/poster_thesportsdb_b6a5111271d5.jpg?v=g1-b6a5111271d5",
+                "width": 680,
+                "height": 1000,
+            }],
+            "creators": [],
+            "date": "2024-09-15",
+            "league": "Boxing",
         })
     );
 }

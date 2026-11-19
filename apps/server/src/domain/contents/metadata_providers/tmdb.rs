@@ -77,7 +77,7 @@ impl Tmdb {
     /// Returns a TMDB at another address, such as a fake one in tests.
     pub fn with_base_url(token: &SecretString, base_url: &str) -> anyhow::Result<Self> {
         Ok(Self {
-            api: ApiClient::new(base_url, token)?,
+            api: ApiClient::new(base_url, Some(token))?,
         })
     }
 
@@ -175,6 +175,8 @@ fn search_result(result: MultiSearchResult) -> Option<SearchResult> {
             overview: movie.overview,
             poster: movie.poster_path.as_deref().and_then(poster),
             creators: Vec::new(),
+            date: None,
+            league: None,
         }),
         MultiSearchResult::TvShow(tv_show) => Some(SearchResult {
             id: ContentId::TvShow(TmdbId(tv_show.id)),
@@ -183,6 +185,8 @@ fn search_result(result: MultiSearchResult) -> Option<SearchResult> {
             overview: tv_show.overview,
             poster: tv_show.poster_path.as_deref().and_then(poster),
             creators: Vec::new(),
+            date: None,
+            league: None,
         }),
         MultiSearchResult::Person => None,
     }

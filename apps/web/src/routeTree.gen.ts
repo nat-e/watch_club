@@ -24,6 +24,7 @@ import { Route as SignedOutSignInRouteImport } from './routes/_signed-out/sign-i
 import { Route as ShellBooksIdRouteImport } from './routes/_shell/books/$id'
 import { Route as ShellMoviesIdRouteImport } from './routes/_shell/movies/$id'
 import { Route as ShellShowsIdRouteImport } from './routes/_shell/shows/$id'
+import { Route as ShellSportsIdRouteImport } from './routes/_shell/sports/$id'
 import { Route as ShellAdminAdminProblemReportsRouteImport } from './routes/_shell/_admin/admin/problem-reports'
 import { Route as ShellAdminAdminSettingsRouteImport } from './routes/_shell/_admin/admin/settings'
 import { Route as ShellAdminAdminUsersRouteImport } from './routes/_shell/_admin/admin/users'
@@ -102,6 +103,11 @@ const ShellShowsIdRoute = ShellShowsIdRouteImport.update({
   path: '/shows/$id',
   getParentRoute: () => ShellRoute,
 } as any)
+const ShellSportsIdRoute = ShellSportsIdRouteImport.update({
+  id: '/sports/$id',
+  path: '/sports/$id',
+  getParentRoute: () => ShellRoute,
+} as any)
 const ShellAdminAdminProblemReportsRoute =
   ShellAdminAdminProblemReportsRouteImport.update({
     id: '/admin/problem-reports',
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/books/$id': typeof ShellBooksIdRoute
   '/movies/$id': typeof ShellMoviesIdRoute
   '/shows/$id': typeof ShellShowsIdRoute
+  '/sports/$id': typeof ShellSportsIdRoute
   '/admin/problem-reports': typeof ShellAdminAdminProblemReportsRoute
   '/admin/settings': typeof ShellAdminAdminSettingsRoute
   '/admin/users': typeof ShellAdminAdminUsersRoute
@@ -163,6 +170,7 @@ export interface FileRoutesByTo {
   '/books/$id': typeof ShellBooksIdRoute
   '/movies/$id': typeof ShellMoviesIdRoute
   '/shows/$id': typeof ShellShowsIdRoute
+  '/sports/$id': typeof ShellSportsIdRoute
   '/admin/problem-reports': typeof ShellAdminAdminProblemReportsRoute
   '/admin/settings': typeof ShellAdminAdminSettingsRoute
   '/admin/users': typeof ShellAdminAdminUsersRoute
@@ -186,6 +194,7 @@ export interface FileRoutesById {
   '/_shell/books/$id': typeof ShellBooksIdRoute
   '/_shell/movies/$id': typeof ShellMoviesIdRoute
   '/_shell/shows/$id': typeof ShellShowsIdRoute
+  '/_shell/sports/$id': typeof ShellSportsIdRoute
   '/_shell/_admin/admin/problem-reports': typeof ShellAdminAdminProblemReportsRoute
   '/_shell/_admin/admin/settings': typeof ShellAdminAdminSettingsRoute
   '/_shell/_admin/admin/users': typeof ShellAdminAdminUsersRoute
@@ -207,6 +216,7 @@ export interface FileRouteTypes {
     | '/books/$id'
     | '/movies/$id'
     | '/shows/$id'
+    | '/sports/$id'
     | '/admin/problem-reports'
     | '/admin/settings'
     | '/admin/users'
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/books/$id'
     | '/movies/$id'
     | '/shows/$id'
+    | '/sports/$id'
     | '/admin/problem-reports'
     | '/admin/settings'
     | '/admin/users'
@@ -248,6 +259,7 @@ export interface FileRouteTypes {
     | '/_shell/books/$id'
     | '/_shell/movies/$id'
     | '/_shell/shows/$id'
+    | '/_shell/sports/$id'
     | '/_shell/_admin/admin/problem-reports'
     | '/_shell/_admin/admin/settings'
     | '/_shell/_admin/admin/users'
@@ -367,6 +379,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellShowsIdRouteImport
       parentRoute: typeof ShellRoute
     }
+    '/_shell/sports/$id': {
+      id: '/_shell/sports/$id'
+      path: '/sports/$id'
+      fullPath: '/sports/$id'
+      preLoaderRoute: typeof ShellSportsIdRouteImport
+      parentRoute: typeof ShellRoute
+    }
     '/_shell/_admin/admin/problem-reports': {
       id: '/_shell/_admin/admin/problem-reports'
       path: '/admin/problem-reports'
@@ -437,6 +456,7 @@ interface ShellRouteChildren {
   ShellBooksIdRoute: typeof ShellBooksIdRoute
   ShellMoviesIdRoute: typeof ShellMoviesIdRoute
   ShellShowsIdRoute: typeof ShellShowsIdRoute
+  ShellSportsIdRoute: typeof ShellSportsIdRoute
 }
 
 const ShellRouteChildren: ShellRouteChildren = {
@@ -451,6 +471,7 @@ const ShellRouteChildren: ShellRouteChildren = {
   ShellBooksIdRoute: ShellBooksIdRoute,
   ShellMoviesIdRoute: ShellMoviesIdRoute,
   ShellShowsIdRoute: ShellShowsIdRoute,
+  ShellSportsIdRoute: ShellSportsIdRoute,
 }
 
 const ShellRouteWithChildren = ShellRoute._addFileChildren(ShellRouteChildren)

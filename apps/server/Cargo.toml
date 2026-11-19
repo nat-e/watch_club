@@ -45,7 +45,7 @@ croner = { version = "4.0.3", default-features = false, features = ["jiff"] }
 # `catch_unwind`, which turns a panicking job into a failed attempt
 futures-util = { version = "0.3.34", default-features = false, features = ["std"] }
 getrandom = "0.4.3"
-jiff = "0.2.43"
+jiff = { version = "0.2.43", features = ["serde"] }
 jiff-sqlx = { version = "0.2.2", features = ["postgres"] }
 opentelemetry = "0.33.1"
 # `experimental_span_attributes` copies the fields of the request's or job's span onto its logs

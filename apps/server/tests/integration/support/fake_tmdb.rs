@@ -42,7 +42,7 @@ impl FakeTmdb {
     }
 
     /// Returns the Metadata Providers of an instance that finds Movies and TV Shows in this TMDB,
-    /// and calls a Hardcover that nothing answers.
+    /// and calls other Metadata Providers that nothing answers.
     pub fn metadata_providers(&self) -> MetadataProviders {
         MetadataProviders {
             tmdb: self.client(),

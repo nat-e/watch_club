@@ -108,6 +108,8 @@ async fn search_returns_the_movies_and_tv_shows_without_the_people_in_the_locale
                 })
             ),
             creators: Vec::new(),
+            date: None,
+            league: None,
         }
     );
     assert_eq!(found.results[2].poster, None);

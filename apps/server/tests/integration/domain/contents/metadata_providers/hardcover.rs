@@ -82,6 +82,8 @@ async fn search_returns_the_best_matches_and_most_read_books_first_with_their_cr
             }]),
             // Without the translators
             creators: vec!["René Goscinny".to_owned(), "Albert Uderzo".to_owned()],
+            date: None,
+            league: None,
         }
     );
     // The fixture is the first page of 194 Books

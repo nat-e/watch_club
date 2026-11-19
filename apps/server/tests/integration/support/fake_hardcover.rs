@@ -44,7 +44,7 @@ impl FakeHardcover {
     }
 
     /// Returns the Metadata Providers of an instance that finds Books in this Hardcover, and calls
-    /// a TMDB that nothing answers.
+    /// other Metadata Providers that nothing answers.
     pub fn metadata_providers(&self) -> MetadataProviders {
         MetadataProviders {
             hardcover: self.client(),

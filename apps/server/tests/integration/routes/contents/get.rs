@@ -3,7 +3,10 @@ use serde_json::json;
 use sqlx::PgPool;
 use watch_club_test_macros::database_test;
 
-use crate::support::{self, Client, FakeHardcover, FakeTmdb, fake_hardcover, fake_tmdb::fixture};
+use crate::support::{
+    self, Client, FakeHardcover, FakeSportarr, FakeTmdb, fake_hardcover, fake_sportarr,
+    fake_tmdb::fixture,
+};
 
 #[database_test]
 async fn returns_a_movie(db: PgPool) {
@@ -40,6 +43,30 @@ async fn returns_a_tv_show(db: PgPool) {
 
     assert_eq!(response.status, StatusCode::OK, "{response:?}");
     assert_eq!(response.body["title"], "The Office");
+}
+
+#[database_test]
+async fn returns_a_sports_event(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    let user = support::create_user(&db, "ada").await;
+    let sportarr = FakeSportarr::start().await;
+    sportarr
+        .answer("/lookup/event/ev-575969", fake_sportarr::fixture("event"))
+        .await;
+    let mut browser = Client::with_metadata_providers(&db, sportarr.metadata_providers());
+    browser.sign_in(&user).await;
+
+    let response = browser.get("/api/contents/sports_event/ev-575969").await;
+
+    assert_eq!(response.status, StatusCode::OK, "{response:?}");
+    assert_eq!(
+        response.body,
+        json!({
+            "content_type": "sports_event",
+            "external_id": "ev-575969",
+            "title": "Canelo Álvarez vs Edgar Berlanga",
+        })
+    );
 }
 
 #[database_test]
@@ -106,7 +133,7 @@ async fn refuses_an_unknown_type_of_content(db: PgPool) {
     let mut browser = Client::new(&db);
     browser.sign_in(&user).await;
 
-    let response = browser.get("/api/contents/sports_event/194").await;
+    let response = browser.get("/api/contents/podcast/194").await;
 
     assert_eq!(response.status, StatusCode::BAD_REQUEST);
     assert_eq!(response.body["code"], "invalid_request");

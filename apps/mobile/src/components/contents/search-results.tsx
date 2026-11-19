@@ -77,10 +77,17 @@ function SearchScopes({
   );
 }
 
-/** A search result's poster, title, type, year and creators, which opens its Content's screen. */
+/**
+ * A search result's poster, title, type and details, such as its year, which opens its Content's
+ * screen.
+ */
 function SearchResultRow({result}: {result: SearchResult}) {
+  const {i18n} = useTranslation();
   const contentTypeNames = useContentTypeNames();
-  const facts = [contentTypeNames[result.content_type], ...searchResultDetails(result)].join(' · ');
+  const facts = [
+    contentTypeNames[result.content_type],
+    ...searchResultDetails(result, i18n.language),
+  ].join(' · ');
   return (
     <Pressable
       accessibilityRole="button"
@@ -92,6 +99,9 @@ function SearchResultRow({result}: {result: SearchResult}) {
             break;
           case 'tv_show':
             router.push({pathname: '/shows/[id]', params});
+            break;
+          case 'sports_event':
+            router.push({pathname: '/sports/[id]', params});
             break;
           case 'book':
             router.push({pathname: '/books/[id]', params});

@@ -1,6 +1,6 @@
 /**
- * Content search: the Movies and TV Shows, or the Books, that match what a User types, as both apps
- * show them.
+ * Content search: the Movies and TV Shows, the Sports Events, or the Books, that match what a User
+ * types, as both apps show them.
  */
 import {infiniteQueryOptions, useInfiniteQuery} from '@tanstack/react-query';
 import {type SearchResult, type SearchScope, searchInfiniteOptions} from '@watchclub/api';
@@ -11,7 +11,11 @@ import {useTranslation} from 'react-i18next';
 const TYPING_PAUSE = 300;
 
 /** Every search scope, in the order the apps list them */
-export const SEARCH_SCOPES: readonly SearchScope[] = ['movies_and_tv_shows', 'books'];
+export const SEARCH_SCOPES: readonly SearchScope[] = [
+  'movies_and_tv_shows',
+  'sports_events',
+  'books',
+];
 
 /** The scope a search starts with */
 export const DEFAULT_SEARCH_SCOPE: SearchScope = 'movies_and_tv_shows';
@@ -96,6 +100,7 @@ export function useSearchScopeNames(): Record<SearchScope, string> {
   return {
     // biome-ignore-start lint/style/useNamingConvention: the API's search scopes are snake_case
     movies_and_tv_shows: t($ => $.core.search.scopes.moviesAndTvShows),
+    sports_events: t($ => $.core.search.scopes.sportsEvents),
     books: t($ => $.core.search.scopes.books),
     // biome-ignore-end lint/style/useNamingConvention: the API's search scopes are snake_case
   };
@@ -109,19 +114,27 @@ export function useSearchHint(scope: SearchScope): string {
   switch (scope) {
     case 'movies_and_tv_shows':
       return t($ => $.core.search.hint, {context: 'moviesAndTvShows'});
+    case 'sports_events':
+      return t($ => $.core.search.hint, {context: 'sportsEvents'});
     case 'books':
       return t($ => $.core.search.hint, {context: 'books'});
   }
 }
 
 /**
- * Returns the facts a search result shows after its Content Type, when it has them: its year, then
- * its creators.
+ * Returns the facts a search result shows after its Content Type, when it has them: a Sports
+ * Event's date, or the year of other Content, then a Sports Event's league, then the creators.
+ * Dates are written as `language`, such as `fr-FR`, writes them.
  */
-export function searchResultDetails(result: SearchResult): string[] {
+export function searchResultDetails(result: SearchResult, language: string): string[] {
   const details: string[] = [];
-  if (result.year !== null) {
+  if (result.date !== null) {
+    details.push(formatDate(result.date, language));
+  } else if (result.year !== null) {
     details.push(String(result.year));
+  }
+  if (result.league !== null) {
+    details.push(result.league);
   }
   if (result.creators.length > 0) {
     details.push(result.creators.join(', '));
@@ -144,6 +157,13 @@ export function useTypedQuery(text: string): string {
     };
   }, [text]);
   return query;
+}
+
+/** Returns a day, such as `2024-09-15`, as `language` writes it, such as "Sep 15, 2024". */
+function formatDate(date: string, language: string): string {
+  // A date and time without a time zone is in the device's, which formats it, so the day stays
+  const midnight = new Date(`${date}T00:00`);
+  return midnight.toLocaleDateString(language, {year: 'numeric', month: 'short', day: 'numeric'});
 }
 
 /** Returns the results without the ones already listed. */

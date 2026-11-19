@@ -79,7 +79,7 @@ impl Hardcover {
         let token = token.expose_secret();
         let token = token.strip_prefix("Bearer ").unwrap_or(token).trim();
         Ok(Self {
-            api: ApiClient::new(base_url, &SecretString::from(token))?,
+            api: ApiClient::new(base_url, Some(&SecretString::from(token)))?,
         })
     }
 
@@ -181,6 +181,8 @@ fn search_result(book: BookDocument) -> SearchResult {
         overview: book.description,
         poster: book.image.and_then(cover),
         creators: creators(book.contributions),
+        date: None,
+        league: None,
     }
 }
 
