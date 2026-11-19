@@ -146,7 +146,9 @@ defmodule WatchClub.MediaSources.ImportTest do
         end
       end)
 
-      stub(ProbeMock, :keyframes, fn _path, _stream_index -> {:ok, [0.0, 2.002]} end)
+      stub(ProbeMock, :keyframes, fn _path, _stream_index ->
+        {:ok, [{0.0, 250_000}, {2.002, 180_000}]}
+      end)
 
       media_import = start_media_import!(media_source.id, actor: admin)
 

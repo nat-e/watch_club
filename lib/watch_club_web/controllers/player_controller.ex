@@ -16,6 +16,7 @@ defmodule WatchClubWeb.PlayerController do
     media: [
       video: [
         :keyframe_seconds,
+        :keyframe_interval_bytes,
         :default_video_track,
         :text_tracks,
         audio_tracks: [:display_label, :language_code]

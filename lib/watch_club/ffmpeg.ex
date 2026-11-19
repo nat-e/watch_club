@@ -81,45 +81,122 @@ defmodule WatchClub.Ffmpeg do
   end
 
   @doc """
-  The times of the keyframes of the video stream at `stream_index`, in seconds from the file's
-  start, as `-ss` counts them. They come from the Cues of a Matroska file, and otherwise from
-  every packet `ffprobe` reads in the whole file. Returns `{:error, message}` when `ffprobe`
-  fails or finds no keyframe.
+  The keyframes of the video stream at `stream_index`, in order, each with its time in seconds
+  from the file's start, as `-ss` counts them, and the bytes of the stream's frames from it to
+  the next keyframe. They come from the Cues of a Matroska file that states the bit rate of
+  every stream, and otherwise from every packet `ffprobe` reads in the whole file. Returns
+  `{:error, message}` when `ffprobe` fails or finds no keyframe.
   """
   @impl true
   def keyframes(path, stream_index) when is_binary(path) do
     with {:ok, ffprobe} <- find_executable("ffprobe"),
-         {:ok, start_time} <- start_time(ffprobe, path),
-         {:ok, times} <- keyframe_times(ffprobe, path, stream_index) do
-      {:ok, Enum.map(times, &Float.round(&1 - start_time, 6))}
+         {:ok, file} <- probe_stated_bit_rates(ffprobe, path),
+         {:ok, keyframes} <- read_keyframes(ffprobe, path, stream_index, file) do
+      {:ok,
+       Enum.map(keyframes, fn {time, bytes} ->
+         {Float.round(time - file.start_time, 6), bytes}
+       end)}
     end
   end
 
-  defp start_time(ffprobe, path) do
-    args = ["-v", "error", "-show_entries", "format=start_time", "-of", "csv=p=0", path]
+  # The file's start and end, in seconds of its timestamps, and the bit rates it states for the
+  # streams its frames hold, by index, nil for a stream that doesn't. mkvmerge and MakeMKV state
+  # them in BPS tags, which ffprobe suffixes with the tag's language when it has one. Otherwise
+  # the decoder gives the bit rate of a constant bit rate codec, or of a stream's first frame.
+  defp probe_stated_bit_rates(ffprobe, path) do
+    args = [
+      "-v",
+      "error",
+      "-show_entries",
+      "format=start_time,duration:stream=index,codec_type,bit_rate:stream_tags" <>
+        ":stream_disposition=attached_pic",
+      "-of",
+      "json",
+      path
+    ]
 
-    case System.cmd(ffprobe, args) do
-      {output, 0} ->
-        case Float.parse(output) do
-          {start_time, _rest} -> {:ok, start_time}
-          # N/A when no stream has a timestamp
-          :error -> {:ok, 0.0}
+    with {:ok, json} <- run_probe(ffprobe, args),
+         {:ok, %{"format" => format, "streams" => streams}} <- decode_probe_json(json) do
+      # No start time when no stream has a timestamp
+      start_time = parse_number(format["start_time"]) || 0.0
+      duration = parse_number(format["duration"])
+
+      # Attachments, such as fonts and cover pictures, aren't frames
+      bit_rates =
+        for stream <- streams,
+            stream["codec_type"] != "attachment",
+            stream["disposition"]["attached_pic"] != 1,
+            into: %{} do
+          tags = stream["tags"] || %{}
+
+          bps =
+            tags["BPS"] ||
+              Enum.find_value(tags, fn {name, value} ->
+                if String.starts_with?(name, "BPS-"), do: value
+              end)
+
+          {stream["index"], parse_number(bps || stream["bit_rate"])}
         end
 
-      {_output, status} ->
-        {:error, "ffprobe exited with #{status} while reading the start time"}
+      {:ok,
+       %{
+         start_time: start_time,
+         end_time: duration && start_time + duration,
+         bit_rates: bit_rates
+       }}
     end
   end
 
-  defp keyframe_times(ffprobe, path, stream_index) do
-    case MatroskaCues.keyframe_times(path, stream_index) do
-      {:ok, times} -> {:ok, times}
-      :error -> scan_keyframe_times(ffprobe, path, stream_index)
+  defp parse_number(nil), do: nil
+
+  defp parse_number(string) do
+    case Float.parse(string) do
+      {number, ""} -> number
+      _not_a_number -> nil
     end
   end
 
-  # `+genpts` gives a time to packets without one, as in AVI files
-  defp scan_keyframe_times(ffprobe, path, stream_index) do
+  defp read_keyframes(ffprobe, path, stream_index, file) do
+    case keyframes_from_cues(path, stream_index, file) do
+      {:ok, keyframes} -> {:ok, keyframes}
+      :error -> scan_keyframes(ffprobe, path, stream_index)
+    end
+  end
+
+  # The Cues give where each keyframe starts in the file, so the bytes from one keyframe to the
+  # next hold every stream's frames and the container's headers. Everything but the video is
+  # taken out at its average bit rate: the file's, from the Cues, minus the one it states for the
+  # video. The stated bit rates are trusted only when they add up to the file's: ffmpeg keeps
+  # them when it re-encodes a stream.
+  defp keyframes_from_cues(path, stream_index, %{bit_rates: bit_rates, end_time: end_time}) do
+    with true <- is_float(end_time) and Enum.all?(Map.values(bit_rates), &is_float/1),
+         {:ok, [{first_time, _bytes} | _] = keyframes} <-
+           MatroskaCues.keyframes(path, stream_index),
+         true <- end_time > first_time,
+         {times, interval_bytes} = Enum.unzip(keyframes),
+         stated_bit_rate = bit_rates |> Map.values() |> Enum.sum(),
+         file_bit_rate = Enum.sum(interval_bytes) * 8 / (end_time - first_time),
+         true <- abs(stated_bit_rate - file_bit_rate) <= file_bit_rate * 0.03 do
+      other_bytes_per_second = (file_bit_rate - bit_rates[stream_index]) / 8
+      durations = Enum.zip_with(times, tl(times) ++ [end_time], &(&2 - &1))
+
+      keyframes =
+        Enum.zip_with([times, interval_bytes, durations], fn [time, bytes, duration] ->
+          {time, round(bytes - other_bytes_per_second * duration)}
+        end)
+
+      # Every keyframe has bytes of its own
+      if Enum.all?(keyframes, fn {_time, bytes} -> bytes > 0 end),
+        do: {:ok, keyframes},
+        else: :error
+    else
+      _unusable -> :error
+    end
+  end
+
+  # `+genpts` gives a time to packets without one, as in AVI files. Sorted by display time, as
+  # segments cut them, each packet counts toward the keyframe shown at or before it.
+  defp scan_keyframes(ffprobe, path, stream_index) do
     args = [
       "-v",
       "error",
@@ -128,7 +205,7 @@ defmodule WatchClub.Ffmpeg do
       "-select_streams",
       Integer.to_string(stream_index),
       "-show_entries",
-      "packet=pts_time,flags",
+      "packet=pts_time,size,flags",
       "-of",
       "csv=p=0",
       path
@@ -136,17 +213,36 @@ defmodule WatchClub.Ffmpeg do
 
     case System.cmd(ffprobe, args) do
       {output, 0} ->
-        times =
+        packets =
           for line <- String.split(output, "\n", trim: true),
-              [time, flags | _side_data] <- [String.split(line, ",")],
-              String.contains?(flags, "K"),
-              {time, ""} <- [Float.parse(time)] do
-            time
+              [time, size, flags | _side_data] <- [String.split(line, ",")],
+              {time, ""} <- [Float.parse(time)],
+              {size, ""} <- [Integer.parse(size)] do
+            {time, size, String.contains?(flags, "K")}
           end
 
-        case times |> Enum.sort() |> Enum.dedup() do
+        keyframes =
+          packets
+          |> Enum.sort_by(fn {time, _size, _keyframe?} -> time end)
+          |> Enum.reduce([], fn
+            {time, size, true}, [] ->
+              [{time, size}]
+
+            {time, size, true}, [{keyframe, _bytes} | _] = keyframes when time > keyframe ->
+              [{time, size} | keyframes]
+
+            {_time, size, _keyframe?}, [{keyframe, bytes} | earlier] ->
+              [{keyframe, bytes + size} | earlier]
+
+            # Before the first keyframe
+            {_time, _size, false}, [] ->
+              []
+          end)
+          |> Enum.reverse()
+
+        case keyframes do
           [] -> {:error, "ffprobe found no keyframes"}
-          times -> {:ok, times}
+          keyframes -> {:ok, keyframes}
         end
 
       {_output, status} ->

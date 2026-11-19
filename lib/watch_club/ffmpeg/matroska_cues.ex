@@ -1,8 +1,8 @@
 defmodule WatchClub.Ffmpeg.MatroskaCues do
   @moduledoc """
   Reads the keyframes of a Matroska file's video track from its Cues: the index of keyframes
-  that muxers write for seeking. It reads a few kilobytes where a scan of the file's frames
-  reads all of it.
+  that muxers write for seeking, with their positions in the file. It reads a few kilobytes
+  where a scan of the file's frames reads all of it.
 
   The Segment's SeekHead tells where its Info, Tracks and Cues are; elements that come before
   the first Cluster are found without it.
@@ -29,52 +29,75 @@ defmodule WatchClub.Ffmpeg.MatroskaCues do
   @cue_time 0xB3
   @cue_track_positions 0xB7
   @cue_track 0xF7
+  @cue_cluster_position 0xF1
+  @cue_relative_position 0xF0
 
   # Matroska's default: timestamps count milliseconds
   @default_timestamp_scale 1_000_000
 
   @doc """
-  The times, in seconds of the file's timestamps, of the keyframes that the Cues list for the
-  video stream at `stream_index`, in order. ffmpeg numbers a Matroska file's streams in the
-  order of its tracks. `:error` when the file isn't Matroska, or its Cues are missing, list no
-  keyframe of that stream, or can't be read.
+  The keyframes that the Cues list for the video stream at `stream_index`, in order, each with
+  its time in seconds of the file's timestamps, and the bytes of the file from it to the next
+  keyframe, or to the end of the Clusters. These bytes hold every track's frames. ffmpeg numbers
+  a Matroska file's streams in the order of its tracks. `:error` when the file isn't Matroska,
+  or its Cues are missing, list no keyframe of that stream, or can't be read.
   """
-  @spec keyframe_times(String.t(), non_neg_integer()) :: {:ok, [float()]} | :error
-  def keyframe_times(path, stream_index) do
+  @spec keyframes(String.t(), non_neg_integer()) :: {:ok, [{float(), pos_integer()}]} | :error
+  def keyframes(path, stream_index) do
     File.open!(path, [:read, :raw, :binary], fn file ->
-      offsets = element_offsets(file)
+      {segment_start, offsets} = element_offsets(file)
       track_number = track_number(body!(file, offsets, @tracks), stream_index)
       scale = timestamp_scale(body!(file, offsets, @info))
 
-      body!(file, offsets, @cues)
-      |> children()
-      |> Enum.flat_map(fn
-        {@cue_point, cue_point} -> cue_time(cue_point, track_number)
-        _void_or_checksum -> []
-      end)
-      |> Enum.map(&(&1 * scale / 1_000_000_000))
-      |> Enum.sort()
-      |> Enum.dedup()
-      |> case do
-        [] -> :error
-        times -> {:ok, times}
-      end
+      cue_points =
+        body!(file, offsets, @cues)
+        |> children()
+        |> Enum.flat_map(fn
+          {@cue_point, cue_point} -> cue_point(cue_point, track_number)
+          _void_or_checksum -> []
+        end)
+        |> Enum.sort()
+        |> Enum.dedup_by(fn {time, _cluster, _relative} -> time end)
+
+      if cue_points == [], do: throw(:unusable)
+
+      # A few bytes before each keyframe, as it leaves out its Cluster's header
+      positions =
+        Enum.map(cue_points, fn {_time, cluster, relative} ->
+          segment_start + cluster + relative
+        end)
+
+      {_time, last_cluster, _relative} = List.last(cue_points)
+      # A truncated file ends inside its last Cluster
+      {:ok, file_size} = :file.position(file, :eof)
+      clusters_end = min(clusters_end(file, segment_start + last_cluster), file_size)
+      ends = tl(positions) ++ [clusters_end]
+
+      keyframes =
+        Enum.zip_with([cue_points, positions, ends], fn [{time, _cluster, _relative}, from, to] ->
+          {time * scale / 1_000_000_000, to - from}
+        end)
+
+      if Enum.all?(keyframes, fn {_time, bytes} -> bytes > 0 end),
+        do: {:ok, keyframes},
+        else: :error
     end)
   catch
     :unusable -> :error
   end
 
-  # The offsets of the Segment's top-level elements, by ID: those before its first Cluster, and
-  # those its SeekHead points to
+  # Where the Segment's body starts, and the offsets of its top-level elements, by ID: those
+  # before its first Cluster, and those its SeekHead points to
   defp element_offsets(file) do
     with {:ok, @ebml, body, size} when is_integer(size) <- header_at(file, 0),
          {:ok, @segment, segment_start, _size} <- header_at(file, body + size) do
       offsets = offsets_before_cluster(file, segment_start, %{})
 
       if offsets[@seek_head] do
-        Map.merge(seek_entries(body!(file, offsets, @seek_head), segment_start), offsets)
+        seek_entries = seek_entries(body!(file, offsets, @seek_head), segment_start)
+        {segment_start, Map.merge(seek_entries, offsets)}
       else
-        offsets
+        {segment_start, offsets}
       end
     else
       _not_matroska -> throw(:unusable)
@@ -130,24 +153,37 @@ defmodule WatchClub.Ffmpeg.MatroskaCues do
     end
   end
 
-  # The CuePoint's time when one of its positions is in the track
-  defp cue_time(cue_point, track_number) do
+  # The CuePoint's time, and the positions of its Cluster in the Segment and of the keyframe in
+  # the Cluster's body, when one of its positions is in the track
+  defp cue_point(cue_point, track_number) do
     elements = children(cue_point)
 
-    tracks =
-      for {@cue_track_positions, positions} <- elements do
-        case Map.new(children(positions)) do
-          %{@cue_track => track} -> unsigned(track)
-          _incomplete -> throw(:unusable)
-        end
+    positions =
+      for {@cue_track_positions, positions} <- elements, do: Map.new(children(positions))
+
+    with {@cue_time, time} <- List.keyfind(elements, @cue_time, 0),
+         true <- positions != [] and Enum.all?(positions, &is_map_key(&1, @cue_track)) do
+      case Enum.find(positions, &(unsigned(&1[@cue_track]) == track_number)) do
+        %{@cue_cluster_position => cluster, @cue_relative_position => relative} ->
+          [{unsigned(time), unsigned(cluster), unsigned(relative)}]
+
+        nil ->
+          []
+
+        _without_positions ->
+          throw(:unusable)
       end
+    else
+      _incomplete -> throw(:unusable)
+    end
+  end
 
-    case List.keyfind(elements, @cue_time, 0) do
-      {@cue_time, time} when tracks != [] ->
-        if track_number in tracks, do: [unsigned(time)], else: []
-
-      _incomplete ->
-        throw(:unusable)
+  # The end of the Cluster at `offset` and of the Clusters that follow it
+  defp clusters_end(file, offset) do
+    case header_at(file, offset) do
+      {:ok, @cluster, body, size} when is_integer(size) -> clusters_end(file, body + size)
+      {:ok, @cluster, _body, nil} -> throw(:unusable)
+      _other_element_or_end -> offset
     end
   end
 

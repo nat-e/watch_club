@@ -243,6 +243,7 @@ classDiagram
     string container
     integer bit_rate
     float[] keyframe_seconds
+    integer[] keyframe_interval_bytes
   }
   class Part {
     uuid id

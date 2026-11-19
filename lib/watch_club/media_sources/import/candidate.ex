@@ -137,8 +137,8 @@ defmodule WatchClub.MediaSources.Import.Candidate do
     @moduledoc """
     The technical shape of the file — container, duration, and the list of
     streams. Extracted by probing the file bytes (and discovering sidecar
-    text-track files for videos). A video also gets its File Fingerprint and its
-    keyframes.
+    text-track files for videos). A video also gets its File Fingerprint, its
+    keyframes and its video's bytes between them.
     """
 
     @type t :: %__MODULE__{}
@@ -149,6 +149,7 @@ defmodule WatchClub.MediaSources.Import.Candidate do
       :duration_seconds,
       :bit_rate,
       :keyframe_seconds,
+      :keyframe_interval_bytes,
       video_tracks: [],
       audio_tracks: [],
       text_tracks: []

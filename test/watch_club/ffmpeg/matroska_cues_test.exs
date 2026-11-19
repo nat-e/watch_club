@@ -9,13 +9,14 @@ defmodule WatchClub.Ffmpeg.MatroskaCuesTest do
              "../../support/fixtures/matroska/audio_then_video_keyframe_every_second.mkv"
            ])
 
-  describe "keyframe_times/2" do
-    test "lists the keyframes of the video stream" do
-      assert MatroskaCues.keyframe_times(@fixture, 1) == {:ok, [0.0, 1.0, 2.0, 3.0]}
+  describe "keyframes/2" do
+    test "lists the keyframes of the video stream, with the bytes to the next one" do
+      assert MatroskaCues.keyframes(@fixture, 1) ==
+               {:ok, [{0.0, 5669}, {1.0, 5174}, {2.0, 5269}, {3.0, 5366}]}
     end
 
     test "returns an error for a stream that isn't video" do
-      assert MatroskaCues.keyframe_times(@fixture, 0) == :error
+      assert MatroskaCues.keyframes(@fixture, 0) == :error
     end
 
     @tag :tmp_dir
@@ -23,7 +24,7 @@ defmodule WatchClub.Ffmpeg.MatroskaCuesTest do
       # The last CuePoint claims one byte more than the Cues hold
       path = damage!(tmp_dir, <<0xBB, 0x90, 0xB3>>, <<0xBB, 0x91, 0xB3>>)
 
-      assert MatroskaCues.keyframe_times(path, 1) == :error
+      assert MatroskaCues.keyframes(path, 1) == :error
     end
 
     @tag :tmp_dir
@@ -31,7 +32,28 @@ defmodule WatchClub.Ffmpeg.MatroskaCuesTest do
       # The last CueTrack becomes a Void element of the same size
       path = damage!(tmp_dir, <<0xF7, 0x81, 0x02>>, <<0xEC, 0x81, 0x00>>)
 
-      assert MatroskaCues.keyframe_times(path, 1) == :error
+      assert MatroskaCues.keyframes(path, 1) == :error
+    end
+
+    @tag :tmp_dir
+    test "returns an error when a CuePoint of the stream doesn't say where in its Cluster",
+         %{tmp_dir: tmp_dir} do
+      # The last CueRelativePosition becomes a Void element of the same size
+      path = damage!(tmp_dir, <<0xF0, 0x81, 0x39>>, <<0xEC, 0x81, 0x00>>)
+
+      assert MatroskaCues.keyframes(path, 1) == :error
+    end
+
+    @tag :tmp_dir
+    test "returns an error when the last Cluster's size is unknown", %{tmp_dir: tmp_dir} do
+      path =
+        damage!(
+          tmp_dir,
+          <<0x1F, 0x43, 0xB6, 0x75, 0x55, 0x29>>,
+          <<0x1F, 0x43, 0xB6, 0x75, 0x7F, 0xFF>>
+        )
+
+      assert MatroskaCues.keyframes(path, 1) == :error
     end
 
     @tag :tmp_dir
@@ -43,7 +65,7 @@ defmodule WatchClub.Ffmpeg.MatroskaCuesTest do
           <<0x2A, 0xD7, 0xB1, 0x83, 0, 0, 0>>
         )
 
-      assert MatroskaCues.keyframe_times(path, 1) == :error
+      assert MatroskaCues.keyframes(path, 1) == :error
     end
 
     @tag :tmp_dir
@@ -55,7 +77,7 @@ defmodule WatchClub.Ffmpeg.MatroskaCuesTest do
         "RIFF" <> <<4096::little-32>> <> "AVI " <> :crypto.strong_rand_bytes(4096)
       )
 
-      assert MatroskaCues.keyframe_times(path, 0) == :error
+      assert MatroskaCues.keyframes(path, 0) == :error
     end
   end
 

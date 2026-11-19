@@ -33,7 +33,8 @@ defmodule WatchClub.Playbacks.Playback.Hls do
       query: query
     }
 
-    {:ok, IO.iodata_to_binary(Playlist.master(metadata, QualityLadder.build(video)))}
+    qualities = QualityLadder.build(video, segments(video))
+    {:ok, IO.iodata_to_binary(Playlist.master(metadata, qualities))}
   end
 
   def video_playlist(%Video{} = video, variant_id, query) do
@@ -72,21 +73,39 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   end
 
   defp render_media_playlist(%Video{} = video, query) do
-    durations = Enum.map(segments(video), &Float.round(&1.end_time - &1.start_time, 6))
+    durations = Enum.map(segments(video), & &1.duration)
     IO.iodata_to_binary(Playlist.segments(durations, query))
   end
 
-  # The Video's segments, in order: the first starts with the file, the others on a keyframe
-  defp segments(%Video{keyframe_seconds: keyframes, duration_seconds: duration}) do
-    starts =
+  # The Video's segments, in order: the first starts with the file, the others on a keyframe.
+  # Each holds the bytes of the Default Video Track from its keyframes, 0 for a Video imported
+  # before they were measured.
+  defp segments(%Video{keyframe_seconds: keyframes, duration_seconds: duration} = video) do
+    interval_bytes = video.keyframe_interval_bytes || List.duplicate(0, length(keyframes))
+
+    segments =
       keyframes
-      |> Enum.reduce([0.0], fn keyframe, [start | _] = starts ->
-        next_mark = (Float.floor(start / @segment_duration) + 1) * @segment_duration
-        if keyframe >= next_mark and keyframe < duration, do: [keyframe | starts], else: starts
+      |> Enum.zip(interval_bytes)
+      |> Enum.reduce([%{start_time: 0.0, video_bytes: 0}], fn {keyframe, bytes},
+                                                              [segment | previous] = segments ->
+        next_mark = (Float.floor(segment.start_time / @segment_duration) + 1) * @segment_duration
+
+        if keyframe >= next_mark and keyframe < duration do
+          [%{start_time: keyframe, video_bytes: bytes} | segments]
+        else
+          [%{segment | video_bytes: segment.video_bytes + bytes} | previous]
+        end
       end)
       |> Enum.reverse()
 
-    Enum.zip_with(starts, tl(starts) ++ [duration], &%{start_time: &1, end_time: &2})
+    end_times = Enum.map(tl(segments), & &1.start_time) ++ [duration]
+
+    Enum.zip_with(segments, end_times, fn segment, end_time ->
+      Map.merge(segment, %{
+        end_time: end_time,
+        duration: Float.round(end_time - segment.start_time, 6)
+      })
+    end)
   end
 
   defp find_segment(%Video{} = video, index) do
@@ -103,7 +122,9 @@ defmodule WatchClub.Playbacks.Playback.Hls do
       {:ok, output_path}
     else
       job =
-        Map.merge(segment, %{
+        segment
+        |> Map.take([:start_time, :end_time])
+        |> Map.merge(%{
           source_path: playback.media.path,
           output_path: output_path,
           stream_index: playback.media.video.default_video_track.stream_index
@@ -216,7 +237,7 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   end
 
   defp find_quality(%Video{} = video, id) do
-    case Enum.find(QualityLadder.build(video), &(&1.id == id)) do
+    case Enum.find(QualityLadder.build(video, segments(video)), &(&1.id == id)) do
       nil -> {:error, :not_found}
       quality -> {:ok, quality}
     end
