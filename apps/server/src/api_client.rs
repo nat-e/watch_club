@@ -32,18 +32,24 @@ pub(crate) struct ApiClient {
 }
 
 impl ApiClient {
-    /// Returns a client of the API at `base_url`, which signs in with `token` as a bearer token.
-    pub(crate) fn new(base_url: &str, token: &SecretString) -> anyhow::Result<Self> {
+    /// Returns a client of the API at `base_url`, which signs in with `token` as a bearer token, or
+    /// calls it anonymously without one.
+    pub(crate) fn new(base_url: &str, token: Option<&SecretString>) -> anyhow::Result<Self> {
         let base_url = Url::parse(base_url).with_context(|| format!("{base_url} isn't a URL"))?;
         anyhow::ensure!(!base_url.cannot_be_a_base(), "{base_url} can't have paths");
 
-        let mut authorization = HeaderValue::try_from(format!("Bearer {}", token.expose_secret()))
-            .context("the API token can't go in a header")?;
-        // Keeps it out of logs and debug output
-        authorization.set_sensitive(true);
+        let mut headers = HeaderMap::new();
+        if let Some(token) = token {
+            let mut authorization =
+                HeaderValue::try_from(format!("Bearer {}", token.expose_secret()))
+                    .context("the API token can't go in a header")?;
+            // Keeps it out of logs and debug output
+            authorization.set_sensitive(true);
+            headers.insert(AUTHORIZATION, authorization);
+        }
 
         let client = reqwest::Client::builder()
-            .default_headers(HeaderMap::from_iter([(AUTHORIZATION, authorization)]))
+            .default_headers(headers)
             .user_agent(USER_AGENT)
             .connect_timeout(Duration::from_secs(5))
             .timeout(Duration::from_secs(10))

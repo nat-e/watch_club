@@ -743,7 +743,7 @@
     },
     "/api/search": {
       "get": {
-        "summary": "Returns a page of the Content of the scope that matches the query, most relevant first, with\ntheir texts in the signed-in User's language when their Metadata Provider has them.",
+        "summary": "Returns a page of the Content of the scope that matches the query, in their Metadata Provider's\norder, with their texts in the signed-in User's language when it has them.",
         "operationId": "search",
         "parameters": [
           {
@@ -946,6 +946,7 @@
         "enum": [
           "movie",
           "tv_show",
+          "sports_event",
           "book"
         ]
       },
@@ -1348,7 +1349,7 @@
             "type": "object",
             "required": [
               "title",
-              "year",
+              "date",
               "overview",
               "poster",
               "creators"
@@ -1359,7 +1360,15 @@
                 "items": {
                   "type": "string"
                 },
-                "description": "The people credited for making it, most important first, such as a Book's authors. None for\nMovies and TV Shows for now"
+                "description": "The people or organizations that make it, the most important first, such as a Book's authors\nor a Sports Event's league, when its Metadata Provider says"
+              },
+              "date": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date",
+                "description": "The day it came out, first aired or takes place, when its Metadata Provider knows it"
               },
               "overview": {
                 "type": [
@@ -1379,14 +1388,6 @@
               },
               "title": {
                 "type": "string"
-              },
-              "year": {
-                "type": [
-                  "integer",
-                  "null"
-                ],
-                "format": "int32",
-                "description": "The year of its release, or of its first episode, when its Metadata Provider knows it"
               }
             }
           }
@@ -1415,7 +1416,7 @@
             "items": {
               "$ref": "#/components/schemas/SearchResult"
             },
-            "description": "The results, most relevant first. Only the last page can have none, unless TMDB's pages\nin between have only people"
+            "description": "The results, in their Metadata Provider's order. Pages before the last can have none"
           }
         }
       },
@@ -1424,6 +1425,7 @@
         "description": "The Content Types a search looks for, each at the Metadata Provider of its types.",
         "enum": [
           "movies_and_tv_shows",
+          "sports_events",
           "books"
         ]
       },

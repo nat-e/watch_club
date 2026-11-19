@@ -19,6 +19,7 @@ import {
   type LucideIcon,
   SearchXIcon,
   TriangleAlertIcon,
+  TrophyIcon,
   TvIcon,
 } from 'lucide-react';
 import {Fragment} from 'react';
@@ -33,18 +34,22 @@ const CONTENT_TYPE_ICONS: Record<ContentType, LucideIcon> = {
   movie: FilmIcon,
   // biome-ignore lint/style/useNamingConvention: the API's Content Types are snake_case
   tv_show: TvIcon,
+  // biome-ignore lint/style/useNamingConvention: the API's Content Types are snake_case
+  sports_event: TrophyIcon,
   book: BookIcon,
 };
 
 const SEARCH_SCOPE_ICONS: Record<SearchScope, LucideIcon> = {
   // biome-ignore lint/style/useNamingConvention: the API's search scopes are snake_case
   movies_and_tv_shows: ClapperboardIcon,
+  // biome-ignore lint/style/useNamingConvention: the API's search scopes are snake_case
+  sports_events: TrophyIcon,
   books: BookIcon,
 };
 
 /**
- * A search result's poster, title, type, year and creators, and its overview with `overview`, for a
- * row to wrap.
+ * A search result's poster, title, type and details, such as its year, and its overview with
+ * `overview`, for a row to wrap.
  */
 export function SearchResultSummary({
   result,
@@ -53,6 +58,7 @@ export function SearchResultSummary({
   result: SearchResult;
   overview?: boolean;
 }) {
+  const {i18n} = useTranslation();
   const contentTypeNames = useContentTypeNames();
   const Icon = CONTENT_TYPE_ICONS[result.content_type];
   return (
@@ -65,7 +71,7 @@ export function SearchResultSummary({
             <Icon className="size-4 text-subtle-foreground" />
             {contentTypeNames[result.content_type]}
           </span>
-          {searchResultDetails(result).map(detail => (
+          {searchResultDetails(result, i18n.language).map(detail => (
             <Fragment key={detail}>
               {/* i18next-instrument-ignore: a separator, the same in every language */}
               <span aria-hidden="true">·</span>

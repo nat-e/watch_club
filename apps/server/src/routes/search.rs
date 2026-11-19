@@ -30,8 +30,8 @@ pub(super) fn routes() -> OpenApiRouter<ApiContext> {
 #[openapi(components(schemas(SearchScope)))]
 struct SearchSchemas;
 
-/// Returns a page of the Content of the scope that matches the query, most relevant first, with
-/// their texts in the signed-in User's language when their Metadata Provider has them.
+/// Returns a page of the Content of the scope that matches the query, in their Metadata Provider's
+/// order, with their texts in the signed-in User's language when it has them.
 #[utoipa::path(
     get,
     path = "/search",

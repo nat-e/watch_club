@@ -61,6 +61,11 @@ function useMessages(contentType: ContentType): {notFound: string; loadFailed: s
         notFound: t($ => $.core.contents.notFound, {context: 'tvShow'}),
         loadFailed: t($ => $.core.contents.loadFailed, {context: 'tvShow'}),
       };
+    case 'sports_event':
+      return {
+        notFound: t($ => $.core.contents.notFound, {context: 'sportsEvent'}),
+        loadFailed: t($ => $.core.contents.loadFailed, {context: 'sportsEvent'}),
+      };
     case 'book':
       return {
         notFound: t($ => $.core.contents.notFound, {context: 'book'}),

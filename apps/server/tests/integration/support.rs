@@ -4,6 +4,7 @@
 mod client;
 mod database;
 pub mod fake_hardcover;
+pub mod fake_sportarr;
 pub mod fake_tmdb;
 
 use std::process::Command;
@@ -19,7 +20,8 @@ use watch_club::{
 };
 
 pub use self::{
-    client::Client, database::TestDatabase, fake_hardcover::FakeHardcover, fake_tmdb::FakeTmdb,
+    client::Client, database::TestDatabase, fake_hardcover::FakeHardcover,
+    fake_sportarr::FakeSportarr, fake_tmdb::FakeTmdb,
 };
 
 /// Every test User's password
@@ -52,6 +54,7 @@ pub fn job_context(db: &Pool) -> JobContext {
 pub fn unreachable_metadata_providers() -> MetadataProviders {
     MetadataProviders {
         tmdb: fake_tmdb::unreachable(),
+        sportarr: fake_sportarr::unreachable(),
         hardcover: fake_hardcover::unreachable(),
     }
 }

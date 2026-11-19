@@ -1,0 +1,43 @@
+{
+  "data": [
+    {
+      "idEvent": "ev-575969",
+      "hubShortId": "ev-575969",
+      "hubId": "58ab0873-e360-4e8f-b6ea-eed1f9378de4",
+      "tsdbId": "2144989",
+      "strEvent": "Canelo Álvarez vs Edgar Berlanga",
+      "strEventAlternate": null,
+      "strSport": "Combat",
+      "idLeague": "lg-000081",
+      "strLeague": "Boxing",
+      "strSeason": "2024",
+      "intRound": "102",
+      "strHomeTeam": null,
+      "idHomeTeam": "",
+      "strAwayTeam": null,
+      "idAwayTeam": "",
+      "dateEvent": "2024-09-15",
+      "strTime": "00:00:00",
+      "strTimestamp": "2024-09-15T00:00:00+00:00",
+      "broadcastDate": "2024-09-14",
+      "broadcastTimezone": "America/New_York",
+      "strVenue": "T-Mobile Arena",
+      "strCountry": "US",
+      "strPoster": "https://sportarr.net/static/images/event/58/58ab0873-e360-4e8f-b6ea-eed1f9378de4/poster_thesportsdb_b6a5111271d5.jpg?v=g1-b6a5111271d5",
+      "strThumb": "https://sportarr.net/static/images/event/58/58ab0873-e360-4e8f-b6ea-eed1f9378de4/thumbnail_thesportsdb_e17bcb5a9770.jpg?v=g1-e17bcb5a9770",
+      "strBanner": null,
+      "strFanart": "https://sportarr.net/static/images/event/58/58ab0873-e360-4e8f-b6ea-eed1f9378de4/backdrop_thesportsdb_3e52cef8a113.jpg?v=g1-3e52cef8a113",
+      "strSquare": "https://sportarr.net/static/images/event/58/58ab0873-e360-4e8f-b6ea-eed1f9378de4/square_thesportsdb_f523eaaf50c7.jpg?v=g1-f523eaaf50c7",
+      "strMap": null,
+      "strVideo": null,
+      "strFilename": "Boxing 2024-09-15 Canelo Álvarez vs Edgar Berlanga",
+      "strCity": "Las Vegas, Nevada",
+      "strResult": null,
+      "intSpectators": null,
+      "intHomeScore": null,
+      "intAwayScore": null,
+      "strStatus": "completed",
+      "strDescriptionEN": "Mexico locks horns with Puerto Rico once again, as 168lbs king Canelo Alvarez (61-2-2) takes on Edgar Berlanga (22-0). With Alvarez putting his Super middleweight titles on the line, can he extend his reign at the divisions summit?"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 use std::num::NonZeroU32;
 
+use jiff::civil::date;
 use secrecy::SecretString;
 use serde_json::{Value, json};
 use watch_club::domain::contents::{
@@ -30,6 +31,7 @@ fn book(id: u32, title: &str) -> Value {
         "id": id.to_string(),
         "title": title,
         "release_year": null,
+        "release_date": null,
         "description": null,
         "image": {"url": null, "width": null, "height": null, "color": null},
         "contributions": [],
@@ -65,7 +67,7 @@ async fn search_returns_the_best_matches_and_most_read_books_first_with_their_cr
         SearchResult {
             id: ContentId::Book(HardcoverId::new(474_594)),
             title: "Asterix and the Golden Sickle".to_owned(),
-            year: Some(1961),
+            date: Some(date(1961, 1, 1)),
             overview: Some(
                 "Getafix has broken his golden sickle, so Asterix and Obelix visit Lutetia to buy \
                  a new one for him. But the sicklesmith—a cousin of Obelix—has vanished without a \
@@ -119,7 +121,7 @@ async fn search_leaves_out_what_hardcover_lacks() {
         .unwrap();
 
     let result = &found.results[0];
-    assert_eq!(result.year, None);
+    assert_eq!(result.date, None);
     assert_eq!(result.overview, None);
     assert_eq!(result.poster, None);
     assert_eq!(result.creators, [] as [String; 0]);

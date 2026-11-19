@@ -1,6 +1,6 @@
 /**
- * Content search: the Movies and TV Shows, or the Books, that match what a User types, as both apps
- * show them.
+ * Content search: the Movies and TV Shows, the Sports Events, or the Books, that match what a User
+ * types, as both apps show them.
  */
 import {infiniteQueryOptions, useInfiniteQuery} from '@tanstack/react-query';
 import {type SearchResult, type SearchScope, searchInfiniteOptions} from '@watchclub/api';
@@ -12,7 +12,11 @@ import {useInstanceName} from '../instance';
 const TYPING_PAUSE = 300;
 
 /** Every search scope, in the order the apps list them */
-export const SEARCH_SCOPES: readonly SearchScope[] = ['movies_and_tv_shows', 'books'];
+export const SEARCH_SCOPES: readonly SearchScope[] = [
+  'movies_and_tv_shows',
+  'sports_events',
+  'books',
+];
 
 /** The scope a search starts with */
 export const DEFAULT_SEARCH_SCOPE: SearchScope = 'movies_and_tv_shows';
@@ -97,6 +101,7 @@ export function useSearchScopeNames(): Record<SearchScope, string> {
   return {
     // biome-ignore-start lint/style/useNamingConvention: the API's search scopes are snake_case
     movies_and_tv_shows: t($ => $.core.search.scopes.moviesAndTvShows),
+    sports_events: t($ => $.core.search.scopes.sportsEvents),
     books: t($ => $.core.search.scopes.books),
     // biome-ignore-end lint/style/useNamingConvention: the API's search scopes are snake_case
   };
@@ -111,19 +116,29 @@ export function useSearchHint(scope: SearchScope): string {
   switch (scope) {
     case 'movies_and_tv_shows':
       return t($ => $.core.search.hint, {context: 'moviesAndTvShows', name: instanceName});
+    case 'sports_events':
+      return t($ => $.core.search.hint, {context: 'sportsEvents'});
     case 'books':
       return t($ => $.core.search.hint, {context: 'books'});
   }
 }
 
 /**
- * Returns the facts a search result shows after its Content Type, when it has them: its year, then
- * its creators.
+ * Returns the facts a search result shows after its Content Type, when it has them: a Sports
+ * Event's day, as `language`, such as `fr-FR`, writes it, or the year of other Content, then its
+ * creators, such as a Book's authors or a Sports Event's league.
  */
-export function searchResultDetails(result: SearchResult): string[] {
+export function searchResultDetails(result: SearchResult, language: string): string[] {
   const details: string[] = [];
-  if (result.year !== null) {
-    details.push(String(result.year));
+  if (result.date !== null) {
+    // A date and time without a time zone is in the device's, which formats it, so the day stays
+    const midnight = new Date(`${result.date}T00:00`);
+    // Only Sports Events need their day to tell them apart
+    details.push(
+      result.content_type === 'sports_event'
+        ? midnight.toLocaleDateString(language, {year: 'numeric', month: 'short', day: 'numeric'})
+        : String(midnight.getFullYear()),
+    );
   }
   if (result.creators.length > 0) {
     details.push(result.creators.join(', '));

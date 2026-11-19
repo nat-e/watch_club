@@ -5,14 +5,17 @@ export default {
   contents: {
     loadFailed_book: "On n'a pas pu charger ce livre. Réessaie dans un instant.",
     loadFailed_movie: "On n'a pas pu charger ce film. Réessaie dans un instant.",
+    loadFailed_sportsEvent: "On n'a pas pu charger ce contenu. Réessaie dans un instant.",
     loadFailed_tvShow: "On n'a pas pu charger cette série. Réessaie dans un instant.",
     notFound_book: "On n'a pas trouvé ce livre.",
     notFound_movie: "On n'a pas trouvé ce film.",
+    notFound_sportsEvent: "On n'a pas trouvé ce contenu.",
     notFound_tvShow: "On n'a pas trouvé cette série.",
   },
   contentTypes: {
     book: 'Livre',
     movie: 'Film',
+    sportsEvent: 'Événement sportif',
     tvShow: 'Série',
   },
   controls: {
@@ -46,6 +49,7 @@ export default {
     hint_books: 'Cherche parmi tous les livres.',
     hint_moviesAndTvShows:
       'Cherche parmi tous les films et séries, même ceux qui ne sont pas encore sur {{name}}.',
+    hint_sportsEvents: 'Cherche parmi tous les événements sportifs.',
     noResults: 'Aucun résultat',
     nothingFound: "On n'a rien trouvé pour « {{query}} ».",
     resultCount_one: '{{count}} résultat',
@@ -56,6 +60,7 @@ export default {
     scopes: {
       books: 'Livres',
       moviesAndTvShows: 'Films et séries',
+      sportsEvents: 'Sport',
     },
     search: 'Rechercher',
     searching: 'Recherche…',

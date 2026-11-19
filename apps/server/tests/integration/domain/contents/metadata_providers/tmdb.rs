@@ -1,5 +1,6 @@
 use std::num::NonZeroU32;
 
+use jiff::civil::date;
 use serde_json::{Value, json};
 use watch_club::domain::{
     accounts::Locale,
@@ -39,6 +40,14 @@ fn movie(id: u32, title: &str) -> Value {
         "vote_count": 0,
         "adult": false,
     })
+}
+
+/// Returns a TMDB search result for a video with this ID and title: what TMDB lists as a movie but
+/// flags as not truly one, such as a filmed sports event.
+fn video(id: u32, title: &str) -> Value {
+    let mut video = movie(id, title);
+    video["video"] = json!(true);
+    video
 }
 
 /// Returns a TMDB search result for a person.
@@ -81,7 +90,7 @@ async fn search_returns_the_movies_and_tv_shows_without_the_people_in_the_locale
         SearchResult {
             id: ContentId::Movie(TmdbId::new(194)),
             title: "Amélie".to_owned(),
-            year: Some(2001),
+            date: Some(date(2001, 4, 25)),
             overview: Some(
                 "At a tiny Parisian café, the adorable yet painfully shy Amélie accidentally \
                  discovers a gift for helping others. Soon Amelie is spending her days as a \
@@ -120,7 +129,33 @@ async fn search_returns_the_movies_and_tv_shows_without_the_people_in_the_locale
 }
 
 #[tokio::test]
-async fn search_reads_the_next_page_when_one_has_only_people() {
+async fn search_leaves_out_the_videos() {
+    let tmdb = FakeTmdb::start().await;
+    tmdb.answer(
+        "/search/multi",
+        search_page(
+            1,
+            1,
+            &json!([
+                video(1_228_562, "UFC 300: Pereira vs. Hill"),
+                movie(1366, "Rocky")
+            ]),
+        ),
+    )
+    .await;
+
+    let found = tmdb
+        .client()
+        .search("ufc", NonZeroU32::MIN, Locale::EnUs)
+        .await
+        .unwrap();
+
+    let titles: Vec<_> = found.results.iter().map(|result| &result.title).collect();
+    assert_eq!(titles, ["Rocky"]);
+}
+
+#[tokio::test]
+async fn search_reads_the_next_page_when_one_has_only_people_and_videos() {
     let tmdb = FakeTmdb::start().await;
     Mock::given(method("GET"))
         .and(path("/search/multi"))
@@ -128,7 +163,7 @@ async fn search_reads_the_next_page_when_one_has_only_people() {
         .respond_with(ResponseTemplate::new(200).set_body_json(search_page(
             1,
             3,
-            &json!([person(1)]),
+            &json!([person(1), video(4, "Amélie Live")]),
         )))
         .expect(1)
         .mount(&tmdb.server)
@@ -184,7 +219,7 @@ async fn search_reads_5_pages_at_most() {
 }
 
 #[tokio::test]
-async fn search_leaves_out_the_overview_and_year_tmdb_sends_empty() {
+async fn search_leaves_out_the_overview_and_date_tmdb_sends_empty() {
     let tmdb = FakeTmdb::start().await;
     tmdb.answer(
         "/search/multi",
@@ -199,7 +234,7 @@ async fn search_leaves_out_the_overview_and_year_tmdb_sends_empty() {
         .unwrap();
 
     let result = &found.results[0];
-    assert_eq!((result.year, result.overview.as_deref()), (None, None));
+    assert_eq!((result.date, result.overview.as_deref()), (None, None));
 }
 
 #[tokio::test]

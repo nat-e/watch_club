@@ -1,6 +1,7 @@
 mod image;
 mod metadata_providers {
     mod hardcover;
+    mod sportarr;
     mod tmdb;
 }
 
@@ -9,7 +10,8 @@ use std::num::NonZeroU32;
 use watch_club::domain::{
     accounts::Locale,
     contents::{
-        self, Content, ContentId, ContentType, HardcoverId, SearchResults, SearchScope, TmdbId,
+        self, Content, ContentId, ContentType, HardcoverId, SearchResults, SearchScope, SportarrId,
+        TmdbId,
     },
 };
 use wiremock::{
@@ -17,7 +19,9 @@ use wiremock::{
     matchers::{method, path, query_param},
 };
 
-use crate::support::{FakeHardcover, FakeTmdb, fake_hardcover, fake_tmdb::fixture};
+use crate::support::{
+    FakeHardcover, FakeSportarr, FakeTmdb, fake_hardcover, fake_sportarr, fake_tmdb::fixture,
+};
 
 #[tokio::test]
 async fn search_finds_movies_and_tv_shows_on_tmdb_without_the_spaces_around_the_query() {
@@ -42,6 +46,29 @@ async fn search_finds_movies_and_tv_shows_on_tmdb_without_the_spaces_around_the_
     .unwrap();
 
     assert_eq!(found.results.len(), 5);
+}
+
+#[tokio::test]
+async fn search_finds_sports_events_on_sportarr() {
+    let sportarr = FakeSportarr::start().await;
+    sportarr
+        .answer(
+            "/search/event/canelo",
+            fake_sportarr::fixture("search_events"),
+        )
+        .await;
+
+    let found = contents::search(
+        &sportarr.metadata_providers(),
+        "canelo",
+        SearchScope::SportsEvents,
+        NonZeroU32::MIN,
+        Locale::FrFr,
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(found.results[0].title, "Canelo Álvarez vs Christian Mbilli");
 }
 
 #[tokio::test]
@@ -88,7 +115,7 @@ async fn look_up_finds_a_movie_on_tmdb() {
     tmdb.answer("/movie/194", fixture("movie_details")).await;
     let id = ContentId::Movie(TmdbId::new(194));
 
-    let content = contents::look_up(&tmdb.metadata_providers(), id, Locale::FrFr)
+    let content = contents::look_up(&tmdb.metadata_providers(), id.clone(), Locale::FrFr)
         .await
         .unwrap();
 
@@ -112,6 +139,21 @@ async fn look_up_finds_a_tv_show_on_tmdb() {
         .unwrap();
 
     assert_eq!(content.title, "The Office");
+}
+
+#[tokio::test]
+async fn look_up_finds_a_sports_event_on_sportarr() {
+    let sportarr = FakeSportarr::start().await;
+    sportarr
+        .answer("/lookup/event/ev-575969", fake_sportarr::fixture("event"))
+        .await;
+    let id = ContentId::SportsEvent(SportarrId::new("ev-575969"));
+
+    let content = contents::look_up(&sportarr.metadata_providers(), id, Locale::FrFr)
+        .await
+        .unwrap();
+
+    assert_eq!(content.title, "Canelo Álvarez vs Edgar Berlanga");
 }
 
 #[tokio::test]
@@ -150,6 +192,14 @@ fn content_id_reads_the_hardcover_id_of_a_book() {
     for text in ["asterix", "2147483648"] {
         assert_eq!(ContentId::parse(ContentType::Book, text), None, "{text}");
     }
+}
+
+#[test]
+fn content_id_reads_the_sportarr_id_of_a_sports_event() {
+    assert_eq!(
+        ContentId::parse(ContentType::SportsEvent, "ev-028133"),
+        Some(ContentId::SportsEvent(SportarrId::new("ev-028133")))
+    );
 }
 
 #[test]

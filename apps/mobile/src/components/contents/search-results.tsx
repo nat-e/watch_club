@@ -12,9 +12,9 @@ import {router} from 'expo-router';
 import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {ActivityIndicator, FlatList, Pressable, Text, View} from 'react-native';
+import {ChoiceChips} from '@/components/choice-chips';
 import {Poster} from '@/components/contents/poster';
 import {Host} from '@/components/host';
-import {SegmentedControl} from '@/components/segmented-control';
 import {Description, useAnnouncement} from '@/components/text';
 
 /**
@@ -53,7 +53,7 @@ export function SearchResults({
 }
 
 /**
- * The control that picks the scope a search looks in, one per Metadata Provider, as their results
+ * The pills that pick the scope a search looks in, one per Metadata Provider, as their results
  * can't share one list.
  */
 function SearchScopes({
@@ -66,21 +66,26 @@ function SearchScopes({
   const {t} = useTranslation('core');
   const scopeNames = useSearchScopeNames();
   return (
-    <View className="px-4 py-2">
-      <SegmentedControl
-        label={t($ => $.core.search.scope)}
-        segments={SEARCH_SCOPES.map(option => ({value: option, label: scopeNames[option]}))}
-        value={scope}
-        onChange={onScopeChange}
-      />
-    </View>
+    <ChoiceChips
+      label={t($ => $.core.search.scope)}
+      options={SEARCH_SCOPES.map(option => ({value: option, label: scopeNames[option]}))}
+      value={scope}
+      onChange={onScopeChange}
+    />
   );
 }
 
-/** A search result's poster, title, type, year and creators, which opens its Content's screen. */
+/**
+ * A search result's poster, title, type and details, such as its year, which opens its Content's
+ * screen.
+ */
 function SearchResultRow({result}: {result: SearchResult}) {
+  const {i18n} = useTranslation();
   const contentTypeNames = useContentTypeNames();
-  const facts = [contentTypeNames[result.content_type], ...searchResultDetails(result)].join(' · ');
+  const facts = [
+    contentTypeNames[result.content_type],
+    ...searchResultDetails(result, i18n.language),
+  ].join(' · ');
   return (
     <Pressable
       accessibilityRole="button"
@@ -92,6 +97,9 @@ function SearchResultRow({result}: {result: SearchResult}) {
             break;
           case 'tv_show':
             router.push({pathname: '/shows/[id]', params});
+            break;
+          case 'sports_event':
+            router.push({pathname: '/sports/[id]', params});
             break;
           case 'book':
             router.push({pathname: '/books/[id]', params});

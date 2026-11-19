@@ -88,6 +88,10 @@ _Avoid_: Film
 Content whose content type is TV show.
 _Avoid_: Show, series
 
+**Sports Event**:
+Content whose content type is sports event, such as a UFC event or a Formula 1 race. Its metadata comes from sportarr.net, in English only.
+_Avoid_: Sport, match, fight, game
+
 **Content Type**:
 The kind of content, such as movie, TV show, sports event, or book.
 _Avoid_: Media type, category
@@ -138,7 +142,8 @@ _Avoid_: Discover
 
 - A **Content** is identified by its **Content Type**, **Metadata Provider** and **External ID**; different **Content Types** may share the same **External ID**
 - A **Content** has exactly one **Content Type**
-- A **User** can search for any **Movie** or **TV Show** on TMDB, in the **Library** or not
+- A **User** can search for any **Movie** or **TV Show** on TMDB, **Sports Event** on sportarr.net, or **Book** on Hardcover, in the **Library** or not
+- Searching for **Movies** leaves out what TMDB flags as videos rather than movies, such as filmed sports events, concerts and compilations: **Sports Events** come from sportarr.net
 
 ## Flagged ambiguities
 

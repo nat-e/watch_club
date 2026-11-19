@@ -8,7 +8,10 @@ use wiremock::{
     matchers::{method, path, query_param},
 };
 
-use crate::support::{self, Client, FakeHardcover, FakeTmdb, fake_hardcover, fake_tmdb::fixture};
+use crate::support::{
+    self, Client, FakeHardcover, FakeSportarr, FakeTmdb, fake_hardcover, fake_sportarr,
+    fake_tmdb::fixture,
+};
 
 #[database_test]
 async fn returns_a_page_of_movies_and_tv_shows_in_the_users_language(db: PgPool) {
@@ -46,7 +49,7 @@ async fn returns_a_page_of_movies_and_tv_shows_in_the_users_language(db: PgPool)
             "content_type": "movie",
             "external_id": "194",
             "title": "Amélie",
-            "year": 2001,
+            "date": "2001-04-25",
             "overview": "At a tiny Parisian café, the adorable yet painfully shy Amélie accidentally \
                 discovers a gift for helping others. Soon Amelie is spending her days as a \
                 matchmaker, guardian angel, and all-around do-gooder. But when she bumps into a \
@@ -90,7 +93,7 @@ async fn returns_a_page_of_books(db: PgPool) {
             "content_type": "book",
             "external_id": "474596",
             "title": "Asterix and the Goths",
-            "year": 1963,
+            "date": "1963-09-01",
             "overview": "Des espions Goths ont infiltré la Gaule afin de capturer le meilleur druide \
                 lors de leur rencontre annuelle dans la forêt des Carnutes. C'est le druide \
                 Panoramix qui gagne. à partir de 6 ans.",
@@ -100,6 +103,46 @@ async fn returns_a_page_of_books(db: PgPool) {
                 "height": 500,
             }],
             "creators": ["René Goscinny", "Albert Uderzo"],
+        })
+    );
+}
+
+#[database_test]
+async fn returns_the_sports_events_on_one_page(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    let user = support::create_user(&db, "ada").await;
+    let sportarr = FakeSportarr::start().await;
+    sportarr
+        .answer(
+            "/search/event/canelo%25berlanga",
+            fake_sportarr::fixture("search_events"),
+        )
+        .await;
+    let mut browser = Client::with_metadata_providers(&db, sportarr.metadata_providers());
+    browser.sign_in(&user).await;
+
+    let response = browser
+        .get("/api/search?query=canelo%20berlanga&scope=sports_events")
+        .await;
+
+    assert_eq!(response.status, StatusCode::OK, "{response:?}");
+    assert_eq!(response.body["next_page"], json!(null));
+    let results = response.body["results"].as_array().unwrap();
+    assert_eq!(results.len(), 18);
+    assert_eq!(
+        results[3],
+        json!({
+            "content_type": "sports_event",
+            "external_id": "ev-575969",
+            "title": "Canelo Álvarez vs Edgar Berlanga",
+            "date": "2024-09-15",
+            "overview": null,
+            "poster": [{
+                "url": "https://sportarr.net/static/images/event/58/58ab0873-e360-4e8f-b6ea-eed1f9378de4/poster_thesportsdb_b6a5111271d5.jpg?v=g1-b6a5111271d5",
+                "width": 680,
+                "height": 1000,
+            }],
+            "creators": ["Boxing"],
         })
     );
 }
