@@ -1,24 +1,24 @@
 import {Pressable, ScrollView, Text} from 'react-native';
 
 /** The options of `ChoiceChips`, and the one picked. */
-interface ChoiceChipsProps<T extends string> {
+interface ChoiceChipsProps<Value extends string> {
   /** The purpose of the options, which screen readers announce */
   label: string;
-  options: ReadonlyArray<{value: T; label: string}>;
-  value: T;
-  onChange: (value: T) => void;
+  options: ReadonlyArray<{value: Value; label: string}>;
+  value: Value;
+  onChange: (value: Value) => void;
 }
 
 /**
  * A row of pills of which one is picked, such as a search's scopes, drawn like the web app's chips:
  * the picked one pink on a dark pink, the others outlined. It scrolls sideways when they don't fit.
  */
-export function ChoiceChips<T extends string>({
+export function ChoiceChips<Value extends string>({
   label,
   options,
   value,
   onChange,
-}: ChoiceChipsProps<T>) {
+}: ChoiceChipsProps<Value>) {
   return (
     <ScrollView
       horizontal
@@ -37,11 +37,12 @@ export function ChoiceChips<T extends string>({
             onPress={() => {
               onChange(option.value);
             }}
-            className={
+            // The border shows which one a TV's remote is on, picked or not
+            className={`rounded-full border px-4 py-1.5 focus:border-ring ${
               isPicked
-                ? 'rounded-full border border-primary-border bg-primary-subtle px-4 py-1.5'
-                : 'rounded-full border border-input px-4 py-1.5 active:bg-pressed focus:bg-accent'
-            }
+                ? 'border-primary-border bg-primary-subtle'
+                : 'border-input active:bg-pressed focus:bg-accent'
+            }`}
           >
             <Text
               className={
