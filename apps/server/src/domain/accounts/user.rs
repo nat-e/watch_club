@@ -342,8 +342,8 @@ pub enum DeleteUserError {
 }
 
 /// Deletes the User, which signs them out on every device.
-#[tracing::instrument(skip_all, fields(user.id = %user))]
-pub async fn delete_user(db: &Pool, user: UserId) -> Result<(), DeleteUserError> {
+#[tracing::instrument(skip_all, fields(user.id = %user_id))]
+pub async fn delete_user(db: &Pool, user_id: UserId) -> Result<(), DeleteUserError> {
     // Deletes the User unless they're the Instance Administrator, and returns them as they were
     let target = sqlx::query!(
         r#"
@@ -357,7 +357,7 @@ pub async fn delete_user(db: &Pool, user: UserId) -> Result<(), DeleteUserError>
         SELECT username AS "username!", is_instance_administrator AS "is_instance_administrator!"
         FROM target
         "#,
-        user as UserId,
+        user_id as UserId,
     )
     .with_operation("DELETE", "users")
     .fetch_optional(db)
@@ -540,7 +540,7 @@ pub async fn delete_expired_sessions(db: &Pool) -> Result<u64, InternalError> {
 /// returns its token.
 async fn create_session(
     db: impl PgExecutor<'_>,
-    user: UserId,
+    user_id: UserId,
 ) -> Result<SessionToken, InternalError> {
     let token = SessionToken::random().context("failed to generate a session token")?;
     // The database's clock, which `session_user` checks the expiry against
@@ -550,7 +550,7 @@ async fn create_session(
         VALUES ($1, $2, now() + make_interval(secs => $3))
         "#,
         &token.hash(),
-        user as UserId,
+        user_id as UserId,
         SESSION_LIFETIME.as_secs_f64(),
     )
     .execute(db)

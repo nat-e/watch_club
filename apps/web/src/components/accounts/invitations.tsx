@@ -301,7 +301,7 @@ function InvitationForm({
         if (invitation === null) {
           await create.mutateAsync(maxUses);
         } else {
-          await updateInvitation.mutateAsync({invitation: invitation.id, maxUses});
+          await updateInvitation.mutateAsync({invitationId: invitation.id, maxUses});
         }
       } catch (error) {
         return hasCode(error, 'max_uses_too_low')

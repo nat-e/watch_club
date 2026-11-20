@@ -12,11 +12,11 @@ export const usersQuery = queryOptions(listUsersOptions());
  * Users, also when it fails, as the User may be gone already.
  */
 export const deleteUserMutation = mutationOptions({
-  mutationFn: async (user: UserId) => {
+  mutationFn: async (userId: UserId) => {
     // biome-ignore lint/style/useNamingConvention: the API's fields are snake_case
-    await deleteUser({path: {user_id: user}, throwOnError: true});
+    await deleteUser({path: {user_id: userId}, throwOnError: true});
   },
-  onSettled: async (_result, _error, _user, _onMutateResult, {client}) => {
+  onSettled: async (_result, _error, _userId, _onMutateResult, {client}) => {
     await client.invalidateQueries({queryKey: usersQuery.queryKey});
   },
 });

@@ -16,7 +16,7 @@ import {currentUserQuery, updateCurrentUser} from './current-user';
 /** Changes to some of a User's Preferences. */
 interface PreferenceChanges {
   /** The User who made them */
-  user: UserId;
+  userId: UserId;
   /** The new values, which leave the others as they are */
   changes: Partial<UserPreferences>;
 }
@@ -26,10 +26,10 @@ interface PreferenceChanges {
  * the app follow them, such as by switching to their new Locale. Fails once another User signed in.
  */
 export const savePreferencesMutation = mutationOptions({
-  mutationFn: async ({user, changes}: PreferenceChanges, {client: queryClient}) => {
+  mutationFn: async ({userId, changes}: PreferenceChanges, {client: queryClient}) => {
     const current = queryClient.getQueryData(currentUserQuery.queryKey);
     // The User may have signed out while an earlier save ran, so the session is someone else's
-    if (current?.id !== user) {
+    if (current?.id !== userId) {
       throw new Error('the User who changed these preferences signed out');
     }
     const {data: saved} = await updatePreferences({

@@ -21,7 +21,7 @@ export default function Language() {
       options={LOCALES.map(locale => ({value: locale, label: localeNames[locale]}))}
       value={user.preferences.locale}
       save={async locale => {
-        await save.mutateAsync({user: user.id, changes: {locale}});
+        await save.mutateAsync({userId: user.id, changes: {locale}});
         // In the new Locale, as the app now is, rather than in this render's
         const tNew = i18n.getFixedT(locale, 'core');
         toast.success(tNew($ => $.core.settings.languageSaved));

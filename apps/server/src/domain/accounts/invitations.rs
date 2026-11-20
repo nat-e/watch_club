@@ -139,10 +139,10 @@ pub enum UpdateInvitationError {
 }
 
 /// Changes the Invitation's Max Uses, or removes the limit when None, and returns the Invitation.
-#[tracing::instrument(skip_all, fields(invitation.id = %invitation))]
+#[tracing::instrument(skip_all, fields(invitation.id = %invitation_id))]
 pub async fn update_invitation(
     db: &Pool,
-    invitation: InvitationId,
+    invitation_id: InvitationId,
     max_uses: Option<NonZeroU32>,
 ) -> Result<Invitation, UpdateInvitationError> {
     let changed = sqlx::query_as!(
@@ -153,7 +153,7 @@ pub async fn update_invitation(
         WHERE id = $1
         RETURNING id, code, max_uses, uses, expires_at
         "#,
-        invitation as InvitationId,
+        invitation_id as InvitationId,
         max_uses.map(|max_uses| i64::from(max_uses.get())),
     )
     .with_operation("UPDATE", "invitations")
@@ -182,14 +182,14 @@ pub enum DeleteInvitationError {
 }
 
 /// Deletes the Invitation, so that nobody can redeem it anymore. The Users it created stay.
-#[tracing::instrument(skip_all, fields(invitation.id = %invitation))]
+#[tracing::instrument(skip_all, fields(invitation.id = %invitation_id))]
 pub async fn delete_invitation(
     db: &Pool,
-    invitation: InvitationId,
+    invitation_id: InvitationId,
 ) -> Result<(), DeleteInvitationError> {
     let deleted = sqlx::query!(
         "DELETE FROM invitations WHERE id = $1",
-        invitation as InvitationId,
+        invitation_id as InvitationId,
     )
     .with_operation("DELETE", "invitations")
     .execute(db)

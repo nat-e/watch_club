@@ -103,10 +103,10 @@ async fn insert_user(db: &Pool, username: &str, is_instance_administrator: bool)
 }
 
 /// Ends the User's sessions as if their lifetime had run out.
-pub async fn expire_sessions(db: &Pool, user: UserId) {
+pub async fn expire_sessions(db: &Pool, user_id: UserId) {
     sqlx::query!(
         "UPDATE sessions SET expires_at = now() - interval '1 second' WHERE user_id = $1",
-        user as UserId,
+        user_id as UserId,
     )
     .execute(db)
     .await
@@ -130,10 +130,10 @@ pub async fn create_invitation(db: &Pool, code: &str, max_uses: Option<i64>) -> 
 }
 
 /// Makes the Invitation expire, as if its time had run out.
-pub async fn expire_invitation(db: &Pool, invitation: InvitationId) {
+pub async fn expire_invitation(db: &Pool, invitation_id: InvitationId) {
     sqlx::query!(
         "UPDATE invitations SET expires_at = now() - interval '1 second' WHERE id = $1",
-        invitation as InvitationId,
+        invitation_id as InvitationId,
     )
     .execute(db)
     .await

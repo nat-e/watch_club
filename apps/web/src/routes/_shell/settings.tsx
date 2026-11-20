@@ -45,7 +45,7 @@ function LanguageSection() {
     defaultValues: {locale: user.preferences.locale},
     onSubmit: async ({value, createValidationError}) => {
       try {
-        await save.mutateAsync({user: user.id, changes: {locale: value.locale}});
+        await save.mutateAsync({userId: user.id, changes: {locale: value.locale}});
       } catch {
         return createValidationError(t($ => $.core.errors.somethingWentWrong));
       }
@@ -99,7 +99,7 @@ function AudioAndSubtitlesSection() {
     // biome-ignore-end lint/style/useNamingConvention: the API's fields
     onSubmit: async ({value, createValidationError}) => {
       try {
-        await save.mutateAsync({user: user.id, changes: value});
+        await save.mutateAsync({userId: user.id, changes: value});
       } catch {
         return createValidationError(t($ => $.core.errors.somethingWentWrong));
       }

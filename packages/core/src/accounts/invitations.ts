@@ -22,7 +22,7 @@ export function invitationCheckQuery(code: string) {
 
 /** New Max Uses for an Invitation. */
 interface MaxUsesChange {
-  invitation: InvitationId;
+  invitationId: InvitationId;
   /** The most Users it can create, or null for no limit */
   maxUses: number | null;
 }
@@ -45,10 +45,10 @@ export const createInvitationMutation = mutationOptions({
  * `max_uses_too_low` when the Invitation created more Users already.
  */
 export const updateInvitationMutation = mutationOptions({
-  mutationFn: async ({invitation, maxUses}: MaxUsesChange) => {
+  mutationFn: async ({invitationId, maxUses}: MaxUsesChange) => {
     const {data} = await updateInvitation({
       // biome-ignore lint/style/useNamingConvention: the API's fields are snake_case
-      path: {invitation_id: invitation},
+      path: {invitation_id: invitationId},
       // biome-ignore lint/style/useNamingConvention: the API's fields are snake_case
       body: {max_uses: maxUses},
       throwOnError: true,
@@ -62,12 +62,12 @@ export const updateInvitationMutation = mutationOptions({
 
 /** The mutation that deletes an Invitation. The Users it created stay. */
 export const deleteInvitationMutation = mutationOptions({
-  mutationFn: async (invitation: InvitationId) => {
+  mutationFn: async (invitationId: InvitationId) => {
     // biome-ignore lint/style/useNamingConvention: the API's fields are snake_case
-    await deleteInvitation({path: {invitation_id: invitation}, throwOnError: true});
+    await deleteInvitation({path: {invitation_id: invitationId}, throwOnError: true});
   },
   // Also when it fails, as the Invitation may be gone already
-  onSettled: (_result, _error, _invitation, _onMutateResult, {client}) =>
+  onSettled: (_result, _error, _invitationId, _onMutateResult, {client}) =>
     refreshInvitations(client),
 });
 
