@@ -7,6 +7,7 @@ mod health;
 mod instance;
 mod invitations;
 mod me;
+mod password_reset;
 mod search;
 mod users;
 
@@ -35,6 +36,7 @@ pub(crate) fn routes() -> OpenApiRouter<ApiContext> {
         .merge(me::routes())
         .merge(users::routes())
         .merge(invitations::routes())
+        .merge(password_reset::routes())
         .merge(search::routes())
         .merge(contents::routes())
         // Unknown API paths aren't found, rather than showing the web app

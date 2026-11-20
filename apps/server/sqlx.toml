@@ -24,6 +24,9 @@
 [macros.table-overrides.'sessions']
 'user_id' = "::watch_club::domain::accounts::UserId"
 
+[macros.table-overrides.'password_reset_links']
+'user_id' = "::watch_club::domain::accounts::UserId"
+
 [macros.table-overrides.'invitations']
 'id' = "::watch_club::domain::accounts::InvitationId"
 

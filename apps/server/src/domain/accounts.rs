@@ -1,8 +1,10 @@
-//! The accounts of Users: Setup, Invitations, signing in and out, the list of Users, and User
-//! Preferences.
+//! The accounts of Users: Setup, Invitations, signing in and out, passwords, the list of Users, and
+//! User Preferences.
 
 mod invitations;
+mod passwords;
 mod preferences;
+mod token;
 mod user;
 
 pub use self::{
@@ -10,6 +12,10 @@ pub use self::{
         DeleteInvitationError, Invitation, InvitationId, RedeemInvitationError,
         UpdateInvitationError, create_invitation, delete_invitation, is_redeemable,
         list_redeemable_invitations, redeem_invitation, update_invitation,
+    },
+    passwords::{
+        ChangePasswordError, CreatePasswordResetLinkError, ResetPasswordError, change_password,
+        create_password_reset_link, password_reset_username, reset_password,
     },
     preferences::{AudioLanguage, Locale, TrackLanguage, UserPreferences, save_preferences},
     user::{

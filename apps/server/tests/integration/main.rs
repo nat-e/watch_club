@@ -8,6 +8,7 @@ mod config;
 mod domain {
     mod accounts {
         mod invitations;
+        mod passwords;
         mod preferences;
         mod user;
     }
@@ -40,13 +41,19 @@ mod routes {
         mod list_media;
     }
     mod me {
+        mod change_password;
         mod get;
         mod update_preferences;
+    }
+    mod password_reset {
+        mod check;
+        mod reset;
     }
     mod search {
         mod get;
     }
     mod users {
+        mod create_password_reset_link;
         mod delete;
         mod list;
     }

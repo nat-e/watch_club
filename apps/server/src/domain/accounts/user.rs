@@ -4,11 +4,9 @@
 use std::fmt;
 
 use anyhow::Context;
-use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use jiff::{SignedDuration, Timestamp};
-use secrecy::{ExposeSecret, ExposeSecretMut, SecretBox, SecretString};
+use secrecy::{ExposeSecret, SecretString};
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 use sqlx::{PgExecutor, postgres::PgBindIterExt};
 use sqlx_otel::QueryAnnotateExt;
 use tokio::sync::Semaphore;
@@ -16,7 +14,7 @@ use tracing::{Instrument, Level};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-use super::{AudioLanguage, Locale, TrackLanguage, UserPreferences};
+use super::{AudioLanguage, Locale, TrackLanguage, UserPreferences, token::SecretToken};
 use crate::{
     db::{Pool, Transaction},
     domain::InternalError,
@@ -130,7 +128,7 @@ pub enum UsernameError {
     InvalidCharacters,
 }
 
-/// A password for a new account: at least 8 characters, kept exactly as typed.
+/// A new password: at least 8 characters, kept exactly as typed.
 #[derive(Debug)]
 pub struct Password(SecretString);
 
@@ -362,31 +360,21 @@ pub const SESSION_LIFETIME: SignedDuration = SignedDuration::from_hours(24 * 30)
 /// The secret that keeps a User signed in on one device. The database only stores its hash, so
 /// a leaked database signs nobody in.
 #[derive(Debug)]
-pub struct SessionToken(SecretBox<[u8; 32]>);
+pub struct SessionToken(SecretToken);
 
 impl SessionToken {
-    fn random() -> Result<Self, getrandom::Error> {
-        let mut bytes = SecretBox::<[u8; 32]>::default();
-        getrandom::fill(bytes.expose_secret_mut())?;
-        Ok(Self(bytes))
-    }
-
     /// Reads a token in the form [`encode`](Self::encode) gives, or returns None.
     pub fn decode(text: &str) -> Option<Self> {
-        let mut bytes = SecretBox::<[u8; 32]>::default();
-        let length = URL_SAFE_NO_PAD
-            .decode_slice(text, bytes.expose_secret_mut())
-            .ok()?;
-        (length == bytes.expose_secret().len()).then_some(Self(bytes))
+        SecretToken::decode(text).map(Self)
     }
 
     /// Returns the token as text that fits in a cookie or a header.
     pub fn encode(&self) -> String {
-        URL_SAFE_NO_PAD.encode(self.0.expose_secret())
+        self.0.encode()
     }
 
-    fn hash(&self) -> [u8; 32] {
-        Sha256::digest(self.0.expose_secret()).into()
+    pub(super) fn hash(&self) -> [u8; 32] {
+        self.0.hash()
     }
 }
 
@@ -447,12 +435,7 @@ async fn check_credentials(
         return Ok(None);
     };
 
-    let hash = row.password_hash;
-    let password_matches = hash_slowly(move || {
-        password_auth::verify_password(password.expose_secret(), &hash).is_ok()
-    })
-    .await;
-    if !password_matches {
+    if !password_matches(password, row.password_hash).await {
         return Ok(None);
     }
 
@@ -465,6 +448,15 @@ async fn check_credentials(
         languages_without_subtitles: row.languages_without_subtitles,
         is_instance_administrator: row.is_instance_administrator,
     })))
+}
+
+/// Returns whether the password is the one `password_hash` was made from, which takes a moment on
+/// purpose.
+pub(super) async fn password_matches(password: SecretString, password_hash: String) -> bool {
+    hash_slowly(move || {
+        password_auth::verify_password(password.expose_secret(), &password_hash).is_ok()
+    })
+    .await
 }
 
 /// Returns the User the token keeps signed in, or None once their session ended or expired.
@@ -519,7 +511,9 @@ pub(super) async fn create_session(
     db: impl PgExecutor<'_>,
     user_id: UserId,
 ) -> Result<SessionToken, InternalError> {
-    let token = SessionToken::random().context("failed to generate a session token")?;
+    let token = SecretToken::random()
+        .map(SessionToken)
+        .context("failed to generate a session token")?;
     // The database's clock, which `session_user` checks the expiry against
     sqlx::query!(
         r#"

@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO password_reset_links (user_id, token_hash, expires_at)\n        VALUES ($1, $2, now() + make_interval(secs => $3))\n        ON CONFLICT (user_id) DO UPDATE\n        SET token_hash = excluded.token_hash, expires_at = excluded.expires_at\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bytea",
+        "Float8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b9eaa6937367f484f40dd198a06e6134ab5fcb4eed539e1eb7820576af6515c5"
+}
