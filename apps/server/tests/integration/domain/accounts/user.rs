@@ -4,8 +4,8 @@ use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use sqlx::{PgPool, postgres::PgPoolOptions};
 use watch_club::db::Pool;
 use watch_club::domain::accounts::{
-    self, AudioLanguage, CreateInstanceAdministratorError, CurrentUser, Locale, Password,
-    PasswordError, SessionToken, TrackLanguage, UserPreferences, Username, UsernameError,
+    self, AudioLanguage, CreateInstanceAdministratorError, CurrentUser, Locale, NewCredentials,
+    Password, PasswordError, SessionToken, TrackLanguage, UserPreferences, Username, UsernameError,
 };
 use watch_club_test_macros::database_test;
 
@@ -106,8 +106,7 @@ mod create_instance_administrator {
         let db = watch_club::db::instrument(db);
         let (admin, _) = accounts::create_instance_administrator(
             &db,
-            Username::parse("ada").unwrap(),
-            Password::parse("secret password".into()).unwrap(),
+            NewCredentials::parse("ada", "secret password".into()).unwrap(),
             Locale::FrFr,
         )
         .await
@@ -129,8 +128,7 @@ mod create_instance_administrator {
         let db = watch_club::db::instrument(db);
         let (admin, token) = accounts::create_instance_administrator(
             &db,
-            Username::parse("ada").unwrap(),
-            Password::parse("secret password".into()).unwrap(),
+            NewCredentials::parse("ada", "secret password".into()).unwrap(),
             Locale::FrFr,
         )
         .await
@@ -154,8 +152,7 @@ mod create_instance_administrator {
 
         let created = accounts::create_instance_administrator(
             &db,
-            Username::parse("ada").unwrap(),
-            Password::parse("secret password".into()).unwrap(),
+            NewCredentials::parse("ada", "secret password".into()).unwrap(),
             Locale::EnUs,
         )
         .await;
@@ -173,8 +170,7 @@ mod create_instance_administrator {
 
         let created = accounts::create_instance_administrator(
             &db,
-            Username::parse(&admin.username).unwrap(),
-            Password::parse("secret password".into()).unwrap(),
+            NewCredentials::parse(&admin.username, "secret password".into()).unwrap(),
             Locale::EnUs,
         )
         .await;
@@ -199,8 +195,7 @@ mod create_instance_administrator {
 
         let created = accounts::create_instance_administrator(
             &db,
-            Username::parse("ada").unwrap(),
-            Password::parse("secret password".into()).unwrap(),
+            NewCredentials::parse("ada", "secret password".into()).unwrap(),
             Locale::EnUs,
         )
         .await;

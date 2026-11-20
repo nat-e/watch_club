@@ -27,6 +27,8 @@ pub(crate) enum ApiError {
     InvalidRequest(String),
     #[error("not signed in")]
     Unauthorized,
+    #[error("only the Instance Administrator can do this")]
+    Forbidden,
     #[error(transparent)]
     Internal(#[from] InternalError),
 }
@@ -37,6 +39,7 @@ pub(crate) enum ApiError {
 pub(crate) enum ApiErrorKind {
     InvalidRequest,
     Unauthorized,
+    Forbidden,
     Internal,
 }
 
@@ -45,6 +48,7 @@ impl ApiErrorKind {
         match self {
             Self::InvalidRequest => StatusCode::BAD_REQUEST,
             Self::Unauthorized => StatusCode::UNAUTHORIZED,
+            Self::Forbidden => StatusCode::FORBIDDEN,
             Self::Internal => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
@@ -53,6 +57,7 @@ impl ApiErrorKind {
         match self {
             Self::InvalidRequest => "invalid_request",
             Self::Unauthorized => "unauthorized",
+            Self::Forbidden => "forbidden",
             Self::Internal => "internal_error",
         }
     }
@@ -81,6 +86,7 @@ impl ApiError {
         match self {
             Self::InvalidRequest(_) => ApiErrorKind::InvalidRequest,
             Self::Unauthorized => ApiErrorKind::Unauthorized,
+            Self::Forbidden => ApiErrorKind::Forbidden,
             Self::Internal(_) => ApiErrorKind::Internal,
         }
     }
@@ -90,7 +96,7 @@ impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let kind = self.kind();
         let message = match &self {
-            Self::InvalidRequest(_) | Self::Unauthorized => self.to_string(),
+            Self::InvalidRequest(_) | Self::Unauthorized | Self::Forbidden => self.to_string(),
             // The cause stays in the logs
             Self::Internal(_) => "internal error".to_owned(),
         };
@@ -100,7 +106,7 @@ impl IntoResponse for ApiError {
         };
         let mut response = (kind.status(), Json(body)).into_response();
         match self {
-            Self::InvalidRequest(_) => {}
+            Self::InvalidRequest(_) | Self::Forbidden => {}
             Self::Unauthorized => {
                 let challenge = HeaderValue::from_static("Bearer");
                 response.headers_mut().insert(WWW_AUTHENTICATE, challenge);

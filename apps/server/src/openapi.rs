@@ -41,22 +41,26 @@ fn add_security_schemes(document: &mut openapi::OpenApi) {
 
 /// Adds the responses of `ApiError` to the endpoints that can send them.
 ///
-/// A 400 goes to those that take a body or parameters, a 401 to those that need a session, and a
-/// 500 to all of them, so that each `#[utoipa::path]` lists only the failures specific to its
-/// endpoint.
+/// A 400 goes to those that take a body or parameters, a 401 to those that need a session, a 403
+/// to those that need the `instance_administrator` role, and a 500 to all of them, so that each
+/// `#[utoipa::path]` lists only the failures specific to its endpoint.
 fn add_error_responses(document: &mut openapi::OpenApi) {
+    let instance_administrator =
+        SecurityRequirement::new("session_cookie", ["instance_administrator"]);
     for item in document.paths.paths.values_mut() {
         for operation in operations(item) {
+            let requirements = operation.security.as_deref().unwrap_or_default();
             // Unless one of its requirements is the empty one, which makes the session optional
-            let needs_session = operation.security.as_ref().is_some_and(|requirements| {
-                !requirements.is_empty() && !requirements.contains(&SecurityRequirement::default())
-            });
+            let needs_session =
+                !requirements.is_empty() && !requirements.contains(&SecurityRequirement::default());
+            let needs_instance_administrator = requirements.contains(&instance_administrator);
             let kinds = [
                 (
                     operation.request_body.is_some() || operation.parameters.is_some(),
                     ApiErrorKind::InvalidRequest,
                 ),
                 (needs_session, ApiErrorKind::Unauthorized),
+                (needs_instance_administrator, ApiErrorKind::Forbidden),
                 (true, ApiErrorKind::Internal),
             ];
             for (sends, kind) in kinds {
@@ -77,6 +81,7 @@ fn error_response(kind: ApiErrorKind) -> openapi::Response {
     let description = match kind {
         ApiErrorKind::InvalidRequest => "The request was malformed or invalid.",
         ApiErrorKind::Unauthorized => "The request was not authorized.",
+        ApiErrorKind::Forbidden => "Only the Instance Administrator can do this.",
         ApiErrorKind::Internal => "Something went wrong. Try again later.",
     };
     let message = ObjectBuilder::new()

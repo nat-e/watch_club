@@ -7,6 +7,7 @@
 mod config;
 mod domain {
     mod accounts {
+        mod invitations;
         mod preferences;
         mod user;
     }
@@ -26,6 +27,14 @@ mod routes {
         mod create_administrator;
         mod get;
     }
+    mod invitations {
+        mod check;
+        mod create;
+        mod delete;
+        mod list;
+        mod redeem;
+        mod update;
+    }
     mod contents {
         mod get;
         mod list_media;
@@ -36,6 +45,10 @@ mod routes {
     }
     mod search {
         mod get;
+    }
+    mod users {
+        mod delete;
+        mod list;
     }
 }
 mod support;

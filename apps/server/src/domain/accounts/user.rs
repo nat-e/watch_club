@@ -1,12 +1,13 @@
-//! Users: their usernames and passwords, Setup, and the sessions that keep them signed in.
+//! Users: their usernames and passwords, Setup, the sessions that keep them signed in, and the list
+//! of Users.
 
 use std::fmt;
 
-use anyhow::Context;
+use anyhow::{Context, anyhow};
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
-use jiff::SignedDuration;
+use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, ExposeSecretMut, SecretBox, SecretString};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::{PgExecutor, postgres::PgBindIterExt};
 use sqlx_otel::QueryAnnotateExt;
@@ -16,10 +17,13 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 
 use super::{AudioLanguage, Locale, TrackLanguage, UserPreferences};
-use crate::{db::Pool, domain::InternalError};
+use crate::{
+    db::{Pool, Transaction},
+    domain::InternalError,
+};
 
 /// The unique ID of a User.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, sqlx::Type, ToSchema)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, sqlx::Type, ToSchema)]
 #[sqlx(transparent)]
 pub struct UserId(Uuid);
 
@@ -37,6 +41,17 @@ pub struct CurrentUser {
     pub username: String,
     pub is_instance_administrator: bool,
     pub preferences: UserPreferences,
+}
+
+/// A User as every User sees them.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema)]
+pub struct User {
+    pub id: UserId,
+    pub username: String,
+    pub is_instance_administrator: bool,
+    /// When they created their account
+    #[schema(value_type = String, format = DateTime)]
+    pub member_since: Timestamp,
 }
 
 /// A User as `users` stores them, which queries select into to return the current User.
@@ -98,10 +113,6 @@ impl Username {
         }
         Ok(Self(username.to_owned()))
     }
-
-    fn into_inner(self) -> String {
-        self.0
-    }
 }
 
 /// Potential errors when parsing Usernames
@@ -140,6 +151,12 @@ impl Password {
         }
         Ok(Self(text))
     }
+
+    /// Returns the password's hash, with its algorithm, settings and a random salt, which takes a
+    /// moment on purpose.
+    pub(super) async fn hash(self) -> String {
+        hash_slowly(move || password_auth::generate_hash(self.0.expose_secret())).await
+    }
 }
 
 /// Potential errors when parsing Passwords
@@ -151,6 +168,39 @@ pub enum PasswordError {
     Missing,
     #[error("the password is shorter than {min} characters")]
     TooShort { min: usize },
+}
+
+/// The username and password of a new User, which follow the rules.
+#[derive(Debug)]
+pub struct NewCredentials {
+    pub(super) username: Username,
+    pub(super) password: Password,
+}
+
+impl NewCredentials {
+    /// Checks the username and password, and reports the problems with both at once.
+    pub fn parse(username: &str, password: SecretString) -> Result<Self, NewCredentialsError> {
+        match (Username::parse(username), Password::parse(password)) {
+            (Ok(username), Ok(password)) => Ok(Self { username, password }),
+            (username, password) => Err(NewCredentialsError {
+                username: username.err(),
+                password: password.err(),
+            }),
+        }
+    }
+}
+
+/// The problems with the username and password of a new User: at least one of them.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema, thiserror::Error)]
+#[error("the username or password breaks the rules")]
+#[schema(as = NewCredentialsProblems)]
+pub struct NewCredentialsError {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schema(nullable = false)]
+    pub username: Option<UsernameError>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[schema(nullable = false)]
+    pub password: Option<PasswordError>,
 }
 
 /// Returns `true` once Setup has created the Instance Administrator.
@@ -186,66 +236,35 @@ impl From<InternalError> for CreateInstanceAdministratorError {
 #[tracing::instrument(skip_all)]
 pub async fn create_instance_administrator(
     db: &Pool,
-    username: Username,
-    password: Password,
+    credentials: NewCredentials,
     locale: Locale,
 ) -> Result<(CurrentUser, SessionToken), CreateInstanceAdministratorError> {
-    let password_hash =
-        hash_slowly(move || password_auth::generate_hash(password.0.expose_secret())).await;
+    let NewCredentials { username, password } = credentials;
+    let password_hash = password.hash().await;
 
-    let username = username.into_inner();
-    let preferences = UserPreferences::new(locale);
     let mut transaction = db.begin().await.context("failed to start a transaction")?;
-    let created = sqlx::query_as!(
-        UserRow,
-        r#"
-        INSERT INTO users (
-            username, password_hash, locale, audio_language, subtitle_language,
-            languages_without_subtitles, is_instance_administrator
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, true)
-        RETURNING id, username, locale, audio_language, subtitle_language,
-            languages_without_subtitles, is_instance_administrator
-        "#,
-        &username,
-        password_hash,
-        preferences.locale as Locale,
-        preferences.audio_language as AudioLanguage,
-        preferences.subtitle_language as Option<TrackLanguage>,
-        preferences.languages_without_subtitles.iter().bind_iter() as _,
-    )
-    .with_operation("INSERT", "users")
-    .fetch_one(&mut transaction)
-    .await;
-    let admin: CurrentUser = match created {
-        Ok(row) => row.into(),
-        Err(error) => {
+    let created = create_user(&mut transaction, &username, password_hash, locale, true).await;
+    let (admin, token) = match created {
+        Ok(created) => created,
+        Err(CreateUserError::NotUnique) => {
             // Gives the connection back before the check below takes one from the pool
             transaction
                 .rollback()
                 .await
                 .context("failed to roll back creating the Instance Administrator")?;
-            // Postgres may report the username's constraint rather than the one that allows a
-            // single Instance Administrator, when Setup runs again with their username
-            let is_unique_violation = matches!(
-                &error,
-                sqlx::Error::Database(error) if error.is_unique_violation()
-            );
-            if is_unique_violation && has_instance_administrator(db).await? {
+            if has_instance_administrator(db).await? {
                 tracing::event!(
                     name: "accounts.instance_administrator.refused",
                     Level::WARN,
-                    user.name = username,
+                    user.name = username.0,
                     "refused to create a second Instance Administrator",
                 );
                 return Err(CreateInstanceAdministratorError::AlreadyExists);
             }
-            return Err(anyhow::Error::new(error)
-                .context("failed to create the Instance Administrator")
-                .into());
+            return Err(anyhow!("another User has the first User's username").into());
         }
+        Err(CreateUserError::Internal(error)) => return Err(error.into()),
     };
-    let token = create_session(&mut transaction, admin.id).await?;
     transaction
         .commit()
         .await
@@ -258,6 +277,149 @@ pub async fn create_instance_administrator(
         "created the Instance Administrator",
     );
     Ok((admin, token))
+}
+
+/// The reason `create_user` didn't create the User.
+#[derive(Debug, thiserror::Error)]
+pub(super) enum CreateUserError {
+    /// Another User has the username, or the User would be a second Instance Administrator:
+    /// Postgres may report either constraint when Setup runs again with the same username
+    #[error("another User has the username or is the Instance Administrator")]
+    NotUnique,
+    #[error(transparent)]
+    Internal(#[from] InternalError),
+}
+
+/// Creates a User in the transaction, with a new User's preferences for their Locale, signs them in
+/// on a new device, and returns them as the current User. The caller hashes the password first,
+/// which takes a moment, so the transaction doesn't hold its locks that long.
+pub(super) async fn create_user(
+    transaction: &mut Transaction,
+    username: &Username,
+    password_hash: String,
+    locale: Locale,
+    is_instance_administrator: bool,
+) -> Result<(CurrentUser, SessionToken), CreateUserError> {
+    let preferences = UserPreferences::new(locale);
+    let created = sqlx::query_as!(
+        UserRow,
+        r#"
+        INSERT INTO users (
+            username, password_hash, locale, audio_language, subtitle_language,
+            languages_without_subtitles, is_instance_administrator
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id, username, locale, audio_language, subtitle_language,
+            languages_without_subtitles, is_instance_administrator
+        "#,
+        username.0,
+        password_hash,
+        preferences.locale as Locale,
+        preferences.audio_language as AudioLanguage,
+        preferences.subtitle_language as Option<TrackLanguage>,
+        preferences.languages_without_subtitles.iter().bind_iter() as _,
+        is_instance_administrator,
+    )
+    .with_operation("INSERT", "users")
+    .fetch_one(&mut *transaction)
+    .await;
+    let user = match created {
+        Ok(row) => CurrentUser::from(row),
+        Err(sqlx::Error::Database(error)) if error.is_unique_violation() => {
+            return Err(CreateUserError::NotUnique);
+        }
+        Err(error) => {
+            let error = anyhow::Error::new(error).context("failed to create a User");
+            return Err(InternalError::from(error).into());
+        }
+    };
+
+    let token = create_session(&mut *transaction, user.id).await?;
+    Ok((user, token))
+}
+
+/// Returns every User, the first to join first.
+#[tracing::instrument(skip_all)]
+pub async fn list_users(db: &Pool) -> Result<Vec<User>, InternalError> {
+    let rows = sqlx::query!(
+        r#"
+        SELECT id, username, is_instance_administrator, inserted_at
+        FROM users
+        ORDER BY inserted_at, id
+        "#
+    )
+    .with_operation("SELECT", "users")
+    .fetch_all(db)
+    .await
+    .context("failed to list the Users")?;
+    let users = rows
+        .into_iter()
+        .map(|row| User {
+            id: row.id,
+            username: row.username,
+            is_instance_administrator: row.is_instance_administrator,
+            member_since: row.inserted_at.to_jiff(),
+        })
+        .collect();
+    Ok(users)
+}
+
+/// The reason a User wasn't deleted.
+#[derive(Debug, thiserror::Error)]
+pub enum DeleteUserError {
+    #[error("the Instance Administrator can't be deleted")]
+    InstanceAdministrator,
+    #[error(transparent)]
+    Internal(#[from] anyhow::Error),
+}
+
+impl From<InternalError> for DeleteUserError {
+    fn from(error: InternalError) -> Self {
+        Self::Internal(error.0)
+    }
+}
+
+/// Deletes the User, which signs them out on every device. Succeeds when there's no such User,
+/// such as when they're deleted already.
+#[tracing::instrument(skip_all, fields(user.id = %user))]
+pub async fn delete_user(db: &Pool, user: UserId) -> Result<(), DeleteUserError> {
+    let deleted = sqlx::query_scalar!(
+        r#"
+        DELETE FROM users
+        WHERE id = $1 AND NOT is_instance_administrator
+        RETURNING username
+        "#,
+        user as UserId,
+    )
+    .with_operation("DELETE", "users")
+    .fetch_optional(db)
+    .await
+    .context("failed to delete a User")?;
+    if let Some(username) = deleted {
+        tracing::event!(
+            name: "accounts.user.deleted",
+            Level::INFO,
+            user.name = username,
+            "deleted a User",
+        );
+        return Ok(());
+    }
+
+    // Nothing deleted: the User is the Instance Administrator, or gone
+    let is_instance_administrator = sqlx::query_scalar!(
+        r#"
+        SELECT EXISTS (SELECT FROM users WHERE id = $1 AND is_instance_administrator) AS "exists!"
+        "#,
+        user as UserId,
+    )
+    .with_operation("SELECT", "users")
+    .fetch_one(db)
+    .await
+    .context("failed to check for the Instance Administrator")?;
+    if is_instance_administrator {
+        return Err(DeleteUserError::InstanceAdministrator);
+    }
+    Ok(())
 }
 
 /// The time signing in keeps a User signed in on a device.
