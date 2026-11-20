@@ -52,8 +52,7 @@ async fn update_preferences(
     Ok(Json(current_user.into()))
 }
 
-/// The signed-in User, including what only this User can see: the Instance Administrator status
-/// and the User Preferences.
+/// The signed-in User, including what only this User can see: their User Preferences.
 #[derive(Serialize, ToSchema)]
 #[schema(as = CurrentUser)]
 pub(super) struct CurrentUserResponse {

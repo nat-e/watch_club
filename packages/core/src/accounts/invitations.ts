@@ -4,6 +4,7 @@
  */
 import {mutationOptions, type QueryClient, queryOptions} from '@tanstack/react-query';
 import {
+  checkInvitationOptions,
   createInvitation,
   deleteInvitation,
   type InvitationId,
@@ -13,6 +14,11 @@ import {
 
 /** The query of the Invitations that can still be redeemed, the oldest first. */
 export const invitationsQuery = queryOptions(listInvitationsOptions());
+
+/** Returns the query that tells whether the Invitation with this code can still be redeemed. */
+export function invitationCheckQuery(code: string) {
+  return queryOptions(checkInvitationOptions({query: {code}}));
+}
 
 /** New Max Uses for an Invitation. */
 interface MaxUsesChange {

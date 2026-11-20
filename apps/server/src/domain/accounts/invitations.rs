@@ -32,19 +32,31 @@ impl fmt::Display for InvitationId {
 const INVITATION_LIFETIME: SignedDuration = SignedDuration::from_hours(24 * 7);
 
 /// A link that lets new people create their account, until it expires or reaches its Max Uses.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema)]
+#[derive(Clone, PartialEq, Eq, Serialize, ToSchema)]
 pub struct Invitation {
     pub id: InvitationId,
     /// The code in the link
     pub code: String,
     /// The most Users it can create, or null for no limit
-    #[schema(minimum = 1)]
+    #[schema(minimum = 1, required = true)]
     pub max_uses: Option<i64>,
     /// The Users it created
     pub uses: i64,
     /// When it stops working
     #[schema(value_type = String, format = DateTime)]
     pub expires_at: Timestamp,
+}
+
+/// Leaves the code out, which lets anyone create an account.
+impl fmt::Debug for Invitation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Invitation")
+            .field("id", &self.id)
+            .field("max_uses", &self.max_uses)
+            .field("uses", &self.uses)
+            .field("expires_at", &self.expires_at)
+            .finish_non_exhaustive()
+    }
 }
 
 /// An Invitation as `invitations` stores it.
@@ -284,6 +296,19 @@ fn random_code() -> Result<String, getrandom::Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn debug_hides_the_code() {
+        let invitation = Invitation {
+            id: InvitationId(Uuid::nil()),
+            code: "SECRETCODE234567".to_owned(),
+            max_uses: None,
+            uses: 0,
+            expires_at: Timestamp::UNIX_EPOCH,
+        };
+
+        assert!(!format!("{invitation:?}").contains("SECRETCODE234567"));
+    }
 
     #[test]
     fn random_codes_are_16_unambiguous_characters() {

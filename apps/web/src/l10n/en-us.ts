@@ -8,7 +8,7 @@ export default {
   invitations: {
     actions: 'Invitation actions',
     active: 'Active invitations',
-    copyFailed: "We couldn't copy the link.",
+    copyFailed: "We couldn't copy the link. Select it below to copy it yourself.",
     copyLink: 'Copy invitation link',
     create: 'Create',
     created: 'Invitation created',

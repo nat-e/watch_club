@@ -33,8 +33,7 @@ impl fmt::Display for UserId {
     }
 }
 
-/// The signed-in User, including what only this User can see: the Instance Administrator status
-/// and the User Preferences.
+/// The signed-in User, including what only this User can see: their User Preferences.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CurrentUser {
     pub id: UserId,

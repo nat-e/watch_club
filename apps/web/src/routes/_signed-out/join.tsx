@@ -1,7 +1,8 @@
 import {useQueryClient, useSuspenseQuery} from '@tanstack/react-query';
 import {createFileRoute, redirect, useNavigate} from '@tanstack/react-router';
-import {checkInvitationOptions, redeemInvitation} from '@watchclub/api';
+import {redeemInvitation} from '@watchclub/api';
 import {currentUserQuery, setCurrentUser} from '@watchclub/core/accounts/current-user';
+import {invitationCheckQuery} from '@watchclub/core/accounts/invitations';
 import {useInstanceName} from '@watchclub/core/instance';
 import {negotiateLocale} from '@watchclub/core/l10n';
 import {useTranslation} from 'react-i18next';
@@ -30,16 +31,11 @@ export const Route = createFileRoute('/_signed-out/join')({
   loaderDeps: ({search}) => ({code: search.code}),
   loader: async ({context, deps}) => {
     if (deps.code !== undefined) {
-      await context.queryClient.ensureQueryData(invitationCheck(deps.code));
+      await context.queryClient.ensureQueryData(invitationCheckQuery(deps.code));
     }
   },
   component: Join,
 });
-
-/** Returns the query that tells whether the Invitation with this code can still be redeemed. */
-function invitationCheck(code: string) {
-  return checkInvitationOptions({query: {code}});
-}
 
 function Join() {
   const {code} = Route.useSearch();
@@ -52,7 +48,7 @@ function Invitation({code}: {code: string}) {
   const instanceName = useInstanceName();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const {data: check} = useSuspenseQuery(invitationCheck(code));
+  const {data: check} = useSuspenseQuery(invitationCheckQuery(code));
 
   async function createAccount(account: NewAccount) {
     const locale = negotiateLocale(navigator.languages);
@@ -68,7 +64,7 @@ function Invitation({code}: {code: string}) {
         return error;
       // It expired, or others used it up, since the page opened
       case 'invitation_not_redeemable':
-        queryClient.setQueryData(invitationCheck(code).queryKey, {redeemable: false});
+        queryClient.setQueryData(invitationCheckQuery(code).queryKey, {redeemable: false});
         return null;
       case 'invalid_request':
       case 'internal_error':

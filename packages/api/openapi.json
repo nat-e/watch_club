@@ -2222,7 +2222,7 @@
       },
       "CurrentUser": {
         "type": "object",
-        "description": "The signed-in User, including what only this User can see: the Instance Administrator status\nand the User Preferences.",
+        "description": "The signed-in User, including what only this User can see: their User Preferences.",
         "required": [
           "id",
           "username",
@@ -2702,6 +2702,7 @@
         "required": [
           "id",
           "code",
+          "max_uses",
           "uses",
           "expires_at"
         ],
@@ -2780,7 +2781,7 @@
       },
       "InvitationSettings": {
         "type": "object",
-        "description": "What the Instance Administrator chooses for an Invitation.",
+        "description": "The settings the Instance Administrator chooses for an Invitation.",
         "required": [
           "max_uses"
         ],

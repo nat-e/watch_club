@@ -1,4 +1,5 @@
 import {useMutation, useSuspenseQuery} from '@tanstack/react-query';
+import {useRouter} from '@tanstack/react-router';
 import {hasCode, type Invitation} from '@watchclub/api';
 import {
   changeMaxUsesMutation,
@@ -21,16 +22,8 @@ import {
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
+import {DeleteDialog} from '@/components/delete-dialog';
 import {useAppForm} from '@/components/forms/form';
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import {Button} from '@/components/ui/button';
 import {Card} from '@/components/ui/card';
 import {
@@ -109,6 +102,7 @@ function InvitationCard({invitation}: {invitation: Invitation}) {
   const {t, i18n} = useTranslation('web');
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const deleteInvitation = useMutation(deleteInvitationMutation);
 
   return (
     <Card size="sm" className="w-72 px-(--card-spacing)">
@@ -180,8 +174,13 @@ function InvitationCard({invitation}: {invitation: Invitation}) {
       </div>
 
       <InvitationDialog invitation={invitation} open={isEditing} onOpenChange={setIsEditing} />
-      <DeleteInvitationDialog
-        invitation={invitation}
+      <DeleteDialog
+        title={t($ => $.web.invitations.deleteInvitation)}
+        description={t($ => $.web.invitations.deleteConfirmation, {code: invitation.code})}
+        deletedMessage={t($ => $.web.invitations.deleted)}
+        onDelete={async () => {
+          await deleteInvitation.mutateAsync(invitation.id);
+        }}
         open={isDeleting}
         onOpenChange={setIsDeleting}
       />
@@ -192,15 +191,27 @@ function InvitationCard({invitation}: {invitation: Invitation}) {
 /** The button that copies an Invitation's link, to send to friends. */
 function CopyLinkButton({code}: {code: string}) {
   const {t} = useTranslation('web');
+  const router = useRouter();
   const [isCopied, setIsCopied] = useState(false);
 
   async function copyLink() {
-    const link = new URL('/join', window.location.origin);
-    link.searchParams.set('code', code);
+    // Through the router, which quotes a code it would read back as a number, such as one of only
+    // digits
+    const {href} = router.buildLocation({to: '/join', search: {code}});
+    const link = new URL(href, window.location.origin).href;
     try {
-      await navigator.clipboard.writeText(link.href);
+      await navigator.clipboard.writeText(link);
     } catch {
-      toast.error(t($ => $.web.invitations.copyFailed));
+      // Such as on an address without HTTPS, where browsers don't let pages copy. The User can
+      // still copy the link from the toast
+      toast.error(
+        t($ => $.web.invitations.copyFailed),
+        {
+          description: link,
+          duration: Number.POSITIVE_INFINITY,
+          closeButton: true,
+        },
+      );
       return;
     }
     toast.success(t($ => $.web.invitations.linkCopied));
@@ -327,55 +338,5 @@ function InvitationForm({
         </form.SubmitButton>
       </form.Form>
     </form.AppForm>
-  );
-}
-
-/** The dialog that confirms deleting an Invitation, after which nobody can redeem it. */
-function DeleteInvitationDialog({
-  invitation,
-  open,
-  onOpenChange,
-}: {
-  invitation: Invitation;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  const {t} = useTranslation(['web', 'core']);
-  const deleteInvitation = useMutation(deleteInvitationMutation);
-
-  async function confirmDeletion() {
-    try {
-      await deleteInvitation.mutateAsync(invitation.id);
-    } catch {
-      toast.error(t($ => $.core.errors.somethingWentWrong));
-      return;
-    }
-    toast.success(t($ => $.web.invitations.deleted));
-    onOpenChange(false);
-  }
-
-  return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{t($ => $.web.invitations.deleteInvitation)}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {t($ => $.web.invitations.deleteConfirmation, {code: invitation.code})}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>{t($ => $.core.controls.cancel)}</AlertDialogCancel>
-          <Button
-            variant="destructive"
-            disabled={deleteInvitation.isPending}
-            onClick={() => {
-              void confirmDeletion();
-            }}
-          >
-            {t($ => $.web.invitations.deleteInvitation)}
-          </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
   );
 }

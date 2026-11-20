@@ -91,7 +91,7 @@ async fn update_invitation(
     Ok(Json(invitation))
 }
 
-/// What the Instance Administrator chooses for an Invitation.
+/// The settings the Instance Administrator chooses for an Invitation.
 #[derive(Deserialize, ToSchema)]
 #[schema(as = InvitationSettings)]
 struct InvitationRequest {

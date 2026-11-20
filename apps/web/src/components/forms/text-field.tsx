@@ -10,7 +10,7 @@ export function TextField({
   ...input
 }: {
   label: string;
-  /** What the field takes, under the input */
+  /** A note under the input on the value it takes */
   hint?: string;
   error?: string;
 } & Omit<

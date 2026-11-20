@@ -12,7 +12,7 @@ export interface NewAccount {
 }
 
 /** The problems the API finds with a new account's username and password. */
-export type NewAccountProblem =
+type NewAccountProblem =
   | (NewCredentialsProblems & {code: 'invalid_fields'})
   | {code: 'username_taken'};
 
