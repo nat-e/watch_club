@@ -7,7 +7,7 @@ use watch_club::domain::{
         ExternalContentId,
         metadata::{SportarrId, TmdbId},
     },
-    sources::ServarrApp,
+    sources::servarr::ServarrApp,
 };
 
 /// A Source of one of the catalog's apps, with the Source Configuration of the catalog's snapshot.

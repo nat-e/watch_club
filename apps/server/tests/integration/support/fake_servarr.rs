@@ -1,7 +1,8 @@
 //! A fake Radarr, Sonarr or Sportarr app, which answers the calls that setting up a Source makes.
 
+use secrecy::SecretString;
 use serde_json::{Value, json};
-use watch_club::domain::sources::{QualityProfile, ServarrApp, ServarrConfiguration};
+use watch_club::domain::sources::servarr::{QualityProfile, ServarrApp, ServarrConfiguration};
 use wiremock::{
     Mock, MockServer, Request, ResponseTemplate,
     matchers::{header, method, path},
@@ -89,6 +90,16 @@ impl FakeServarr {
         self.server.uri()
     }
 
+    /// Returns the app it fakes.
+    pub const fn app(&self) -> ServarrApp {
+        self.app
+    }
+
+    /// Returns the only API key it takes.
+    pub fn api_key(&self) -> SecretString {
+        self.api_key.into()
+    }
+
     /// Returns the Source Configuration of a Source of this app, with its API key and its `HD-1080p` profile.
     pub fn configuration(&self) -> Value {
         json!({
@@ -101,13 +112,11 @@ impl FakeServarr {
         })
     }
 
-    /// Returns the same Source Configuration as `configuration`, as `domain::sources` saves it,
-    /// with its API key encrypted with the tests' key.
+    /// Returns the same Source Configuration as `configuration`, as `domain::sources` takes it,
+    /// without its app and API key.
     pub fn source_configuration(&self) -> ServarrConfiguration {
         ServarrConfiguration {
-            app: self.app,
             url: self.url().parse().unwrap(),
-            api_key: super::encryption_key().encrypt(&self.api_key.into()),
             quality_profile: QualityProfile {
                 id: 4,
                 name: "HD-1080p".to_owned(),

@@ -1,5 +1,6 @@
 //! Sources, through `domain::sources`: listing, finding and deleting them, whatever their Source
-//! Type. `filesystem` and `servarr` test creating and updating each type's.
+//! Type. `filesystem` and `servarr` test creating and updating each type's, and `servarr` the
+//! connection to the apps.
 
 mod filesystem;
 mod servarr;
@@ -15,7 +16,7 @@ use watch_club::{
 };
 use watch_club_test_macros::database_test;
 
-use crate::support::FakeServarr;
+use crate::support::{self, FakeServarr};
 
 /// Folders that exist wherever the tests run
 const FOLDER: &str = env!("CARGO_MANIFEST_DIR");
@@ -24,23 +25,29 @@ const OTHER_FOLDER: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/src");
 /// Creates a Filesystem Source of movies in this folder, which must exist.
 async fn create_movies_folder(db: &Pool, path: &str) -> Source {
     let path = AbsoluteFolder::parse(path).await.unwrap();
-    sources::create_filesystem_source(db, MediaType::Movie, path)
+    sources::filesystem::create(db, MediaType::Movie, path)
         .await
         .unwrap()
 }
 
 /// Creates a Source of this fake app, with its API key.
 async fn create_app_source(db: &Pool, app: &FakeServarr) -> Source {
-    sources::create_servarr_source(db, app.source_configuration())
-        .await
-        .unwrap()
+    sources::servarr::create(
+        db,
+        &support::encryption_key(),
+        app.app(),
+        app.source_configuration(),
+        &app.api_key(),
+    )
+    .await
+    .unwrap()
 }
 
 /// Returns the ID that a deleted Source had.
 async fn deleted_source_id(db: &Pool) -> SourceId {
     let source = create_movies_folder(db, FOLDER).await;
-    sources::delete(db, source.id).await.unwrap();
-    source.id
+    sources::delete(db, source.id()).await.unwrap();
+    source.id()
 }
 
 #[database_test]
@@ -62,7 +69,7 @@ async fn gets_a_source_by_its_id(db: PgPool) {
     let source = create_movies_folder(&db, FOLDER).await;
     let deleted = deleted_source_id(&db).await;
 
-    assert_eq!(sources::get(&db, source.id).await.unwrap(), Some(source));
+    assert_eq!(sources::get(&db, source.id()).await.unwrap(), Some(source));
     assert_eq!(sources::get(&db, deleted).await.unwrap(), None);
 }
 
@@ -72,7 +79,7 @@ async fn deletes_the_source(db: PgPool) {
     let kept = create_movies_folder(&db, FOLDER).await;
     let deleted = create_movies_folder(&db, OTHER_FOLDER).await;
 
-    sources::delete(&db, deleted.id).await.unwrap();
+    sources::delete(&db, deleted.id()).await.unwrap();
 
     assert_eq!(sources::list(&db).await.unwrap(), [kept]);
 }

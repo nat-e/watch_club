@@ -21,7 +21,10 @@ use watch_club::{
             users::{Password, Username},
         },
         contents::{self, metadata::MetadataProviders},
-        sources::{self, ServarrConfiguration, SourceType},
+        sources::{
+            self, SourceType,
+            servarr::{self, ServarrConfiguration},
+        },
     },
     utils::filesystem::AbsoluteFolder,
 };
@@ -107,7 +110,7 @@ async fn seed_catalog_sources(
         let name = source.app.name();
         let has_source_of_app = existing_sources
             .iter()
-            .any(|existing| existing.configuration.source_type() == SourceType::from(source.app));
+            .any(|existing| existing.source_type() == SourceType::from(source.app));
         if has_source_of_app {
             println!("The database already has a {name} Source");
             continue;
@@ -115,13 +118,8 @@ async fn seed_catalog_sources(
 
         // Tests the connection first, as the form does, which also skips the apps that don't run
         let api_key = SecretString::from(source.api_key);
-        let choices = match sources::test_servarr_connection(
-            source.app,
-            source.url,
-            &api_key,
-            http_client,
-        )
-        .await
+        let choices = match servarr::test_connection(http_client, source.app, source.url, &api_key)
+            .await
         {
             Ok(choices) => choices,
             Err(error) => {
@@ -155,17 +153,22 @@ async fn seed_catalog_sources(
             }
         };
         let configuration = ServarrConfiguration {
-            app: source.app,
             url: source
                 .url
                 .parse()
                 .with_context(|| format!("the dev catalog's {name} has an invalid URL"))?,
-            api_key: config.encryption_key.encrypt(&api_key),
             quality_profile,
             root_folder_path: source.root_folder_path.to_owned(),
             local_root_folder_path: Some(local_root_folder),
         };
-        sources::create_servarr_source(db, configuration).await?;
+        servarr::create(
+            db,
+            &config.encryption_key,
+            source.app,
+            configuration,
+            &api_key,
+        )
+        .await?;
         println!("Added the dev catalog's {name} as a Source");
     }
     Ok(())

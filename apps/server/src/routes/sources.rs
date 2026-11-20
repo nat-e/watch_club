@@ -20,9 +20,11 @@ use crate::{
     domain::{
         contents::MediaType,
         sources::{
-            self, ConnectionError, DeleteSourceError, QualityProfile, ServarrApp, ServarrChoices,
-            ServarrConfiguration, ServarrConfigurationUpdate, Source, SourceConfiguration,
-            SourceId, UpdateSourceError,
+            self, DeleteSourceError, Source, SourceId, SourceType, UpdateSourceError, filesystem,
+            servarr::{
+                self, QualityProfile, ServarrApp, ServarrChoices, ServarrConfiguration,
+                TestConnectionError, TestSavedConnectionError,
+            },
         },
     },
     error::{self, ApiError, ErrorBody},
@@ -81,25 +83,36 @@ async fn create_source(
             let path = AbsoluteFolder::parse(&path)
                 .await
                 .map_err(ApiFolderError::from)?;
-            sources::create_filesystem_source(&db, media_type, path).await?
+            filesystem::create(&db, media_type, path).await?
         }
         SourceConfigurationBody::Radarr(body) => {
-            let configuration = body.parse_for_new_source(ServarrApp::Radarr, &key).await?;
-            sources::create_servarr_source(&db, configuration).await?
+            create_servarr_source(&db, &key, ServarrApp::Radarr, body).await?
         }
         SourceConfigurationBody::Sonarr(body) => {
-            let configuration = body.parse_for_new_source(ServarrApp::Sonarr, &key).await?;
-            sources::create_servarr_source(&db, configuration).await?
+            create_servarr_source(&db, &key, ServarrApp::Sonarr, body).await?
         }
         SourceConfigurationBody::Sportarr(body) => {
-            let configuration = body
-                .parse_for_new_source(ServarrApp::Sportarr, &key)
-                .await?;
-            sources::create_servarr_source(&db, configuration).await?
+            create_servarr_source(&db, &key, ServarrApp::Sportarr, body).await?
         }
     };
 
     Ok((StatusCode::CREATED, Json(source.into())))
+}
+
+/// Creates a Source of `app` with the configuration the Instance Administrator entered, which needs
+/// an API key.
+async fn create_servarr_source(
+    db: &Pool,
+    key: &EncryptionKey,
+    app: ServarrApp,
+    body: ServarrConfigurationBody,
+) -> Result<Source, CreateSourceRequestError> {
+    let (configuration, api_key) = body.parse().await?;
+    let api_key = api_key.ok_or(ServarrConfigurationError::Connection(
+        ApiConnectionError::InvalidApiKey,
+    ))?;
+
+    Ok(servarr::create(db, key, app, configuration, &api_key).await?)
 }
 
 /// Validates the configuration, then gives it to the Source, which keeps its type and Media Type,
@@ -126,28 +139,25 @@ async fn update_source(
     let source = sources::get(&db, id)
         .await?
         .ok_or(UpdateSourceRequestError::NotFound)?;
+    // The body describes the whole Source, whose type and Media Type never change
+    if body.source_type() != source.source_type() || body.media_type() != source.media_type() {
+        return Err(UpdateSourceRequestError::TypeChanged);
+    }
 
-    let updated = match source.configuration {
-        SourceConfiguration::Filesystem(saved) => {
-            let path = body
-                .into_filesystem(saved.media_type)
-                .ok_or(UpdateSourceRequestError::TypeChanged)?;
-
+    let updated = match body {
+        SourceConfigurationBody::Filesystem { path, .. } => {
             let path = AbsoluteFolder::parse(&path)
                 .await
                 .map_err(ApiFolderError::from)?;
-            sources::update_filesystem_source(&db, id, path).await?
+            filesystem::update(&db, id, path).await?
         }
-        SourceConfiguration::Servarr(saved) => {
-            let body = body
-                .into_servarr(saved.app)
-                .ok_or(UpdateSourceRequestError::TypeChanged)?;
-
-            let configuration = body.parse_for_update(&key).await?;
-            sources::update_servarr_source(&db, id, configuration).await?
+        SourceConfigurationBody::Radarr(body)
+        | SourceConfigurationBody::Sonarr(body)
+        | SourceConfigurationBody::Sportarr(body) => {
+            let (configuration, api_key) = body.parse().await?;
+            servarr::update(&db, &key, id, configuration, api_key.as_ref()).await?
         }
     };
-
     Ok(Json(updated.into()))
 }
 
@@ -189,8 +199,7 @@ async fn test_new_source_servarr_connection(
     Json(request): Json<TestNewSourceServarrConnectionRequest>,
 ) -> Result<Json<ServarrChoices>, ApiConnectionError> {
     let choices =
-        sources::test_servarr_connection(request.app, &request.url, &request.api_key, &http_client)
-            .await?;
+        servarr::test_connection(&http_client, request.app, &request.url, &request.api_key).await?;
     Ok(Json(choices))
 }
 
@@ -217,24 +226,9 @@ async fn test_saved_source_servarr_connection(
     Path(id): Path<SourceId>,
     Json(request): Json<TestSavedSourceServarrConnectionRequest>,
 ) -> Result<Json<ServarrChoices>, TestSavedSourceServarrConnectionRequestError> {
-    let source = sources::get(&db, id)
-        .await?
-        .ok_or(TestSavedSourceServarrConnectionRequestError::NotFound)?;
-    let SourceConfiguration::Servarr(configuration) = source.configuration else {
-        return Err(TestSavedSourceServarrConnectionRequestError::NotFound);
-    };
-
-    // No API key keeps the Source's saved one
-    let api_key = match request.api_key {
-        Some(api_key) => api_key,
-        None => configuration
-            .decrypt_api_key(&key)
-            .map_err(ApiConnectionError::from)?,
-    };
     let choices =
-        sources::test_servarr_connection(configuration.app, &request.url, &api_key, &http_client)
-            .await
-            .map_err(ApiConnectionError::from)?;
+        servarr::test_saved_connection(&db, &key, &http_client, id, &request.url, request.api_key)
+            .await?;
     Ok(Json(choices))
 }
 
@@ -274,18 +268,24 @@ struct ServarrSourceResponse {
 
 impl From<Source> for SourceResponse {
     fn from(source: Source) -> Self {
-        let media_type = source.configuration.media_type();
-        match source.configuration {
-            SourceConfiguration::Filesystem(configuration) => Self::Filesystem {
-                id: source.id,
+        match source {
+            Source::Filesystem {
+                id,
                 media_type,
-                path: configuration.path.as_str().to_owned(),
+                path,
+            } => Self::Filesystem {
+                id,
+                media_type,
+                path: path.as_str().to_owned(),
             },
-            SourceConfiguration::Servarr(configuration) => {
-                let app = configuration.app;
+            Source::Servarr {
+                id,
+                app,
+                configuration,
+            } => {
                 let response = ServarrSourceResponse {
-                    id: source.id,
-                    media_type,
+                    id,
+                    media_type: app.media_type(),
                     url: configuration.url.to_string(),
                     quality_profile: configuration.quality_profile,
                     root_folder_path: configuration.root_folder_path,
@@ -339,40 +339,36 @@ struct ServarrConfigurationBody {
     local_root_folder_path: Option<String>,
 }
 
-impl ServarrConfigurationBody {
-    /// Returns the configuration of a new Source of `app`, which needs an API key, as
-    /// `parse_for_update` checks it.
-    async fn parse_for_new_source(
-        self,
-        app: ServarrApp,
-        encryption_key: &EncryptionKey,
-    ) -> Result<ServarrConfiguration, ServarrConfigurationError> {
-        let ServarrConfigurationUpdate {
-            url,
-            api_key,
-            quality_profile,
-            root_folder_path,
-            local_root_folder_path,
-        } = self.parse_for_update(encryption_key).await?;
-        let api_key = api_key.ok_or(ApiConnectionError::InvalidApiKey)?;
-
-        Ok(ServarrConfiguration {
-            app,
-            url,
-            api_key,
-            quality_profile,
-            root_folder_path,
-            local_root_folder_path,
-        })
+impl SourceConfigurationBody {
+    /// Returns the Source Type the body is for.
+    const fn source_type(&self) -> SourceType {
+        match self {
+            Self::Filesystem { .. } => SourceType::Filesystem,
+            Self::Radarr(_) => SourceType::Radarr,
+            Self::Sonarr(_) => SourceType::Sonarr,
+            Self::Sportarr(_) => SourceType::Sportarr,
+        }
     }
 
-    /// Returns the new configuration of a Source, with its API key encrypted, once WatchClub found
-    /// the local root folder and parsed the URL. Doesn't call the app: the Instance Administrator
-    /// chose the quality profile and root folder among those `test_servarr_connection` listed.
-    async fn parse_for_update(
+    /// Returns the Media Type of the Source the body is for: the one it chose for a folder, or its
+    /// app's.
+    const fn media_type(&self) -> MediaType {
+        match self {
+            Self::Filesystem { media_type, .. } => *media_type,
+            Self::Radarr(_) => ServarrApp::Radarr.media_type(),
+            Self::Sonarr(_) => ServarrApp::Sonarr.media_type(),
+            Self::Sportarr(_) => ServarrApp::Sportarr.media_type(),
+        }
+    }
+}
+
+impl ServarrConfigurationBody {
+    /// Returns the app's configuration and the API key, if any, once WatchClub found the local root
+    /// folder and parsed the URL. Doesn't call the app: the Instance Administrator chose the quality
+    /// profile and root folder among those `servarr::test_connection` listed.
+    async fn parse(
         self,
-        encryption_key: &EncryptionKey,
-    ) -> Result<ServarrConfigurationUpdate, ServarrConfigurationError> {
+    ) -> Result<(ServarrConfiguration, Option<SecretString>), ServarrConfigurationError> {
         // None or blank when WatchClub sees the root folder at the app's path
         let local_root_folder_path = match self.local_root_folder_path.as_deref().map(str::trim) {
             Some(path) if !path.is_empty() => Some(
@@ -387,37 +383,13 @@ impl ServarrConfigurationBody {
             .parse()
             .map_err(|_| ApiConnectionError::InvalidServarrUrl)?;
 
-        Ok(ServarrConfigurationUpdate {
+        let configuration = ServarrConfiguration {
             url,
-            api_key: self.api_key.map(|api_key| encryption_key.encrypt(&api_key)),
             quality_profile: self.quality_profile,
             root_folder_path: self.root_folder_path,
             local_root_folder_path,
-        })
-    }
-}
-
-impl SourceConfigurationBody {
-    /// Returns the folder of a Filesystem Source of `media_type`, or None when the body is for
-    /// another type or Media Type.
-    fn into_filesystem(self, media_type: MediaType) -> Option<String> {
-        match self {
-            Self::Filesystem {
-                media_type: body_media_type,
-                path,
-            } if body_media_type == media_type => Some(path),
-            _ => None,
-        }
-    }
-
-    /// Returns the configuration of a Source of `app`, or None when the body is for another type.
-    fn into_servarr(self, app: ServarrApp) -> Option<ServarrConfigurationBody> {
-        match (app, self) {
-            (ServarrApp::Radarr, Self::Radarr(configuration))
-            | (ServarrApp::Sonarr, Self::Sonarr(configuration))
-            | (ServarrApp::Sportarr, Self::Sportarr(configuration)) => Some(configuration),
-            _ => None,
-        }
+        };
+        Ok((configuration, self.api_key))
     }
 }
 
@@ -460,11 +432,11 @@ enum ApiConnectionError {
     InvalidApiKey,
 }
 
-impl From<ConnectionError> for ApiConnectionError {
-    fn from(error: ConnectionError) -> Self {
+impl From<TestConnectionError> for ApiConnectionError {
+    fn from(error: TestConnectionError) -> Self {
         match error {
-            ConnectionError::InvalidServarrUrl => Self::InvalidServarrUrl,
-            ConnectionError::InvalidApiKey => Self::InvalidApiKey,
+            TestConnectionError::InvalidUrl => Self::InvalidServarrUrl,
+            TestConnectionError::InvalidApiKey => Self::InvalidApiKey,
         }
     }
 }
@@ -512,6 +484,16 @@ enum TestSavedSourceServarrConnectionRequestError {
     #[error(transparent)]
     #[serde(skip)]
     Internal(#[from] anyhow::Error),
+}
+
+impl From<TestSavedConnectionError> for TestSavedSourceServarrConnectionRequestError {
+    fn from(error: TestSavedConnectionError) -> Self {
+        match error {
+            TestSavedConnectionError::NotFound => Self::NotFound,
+            TestSavedConnectionError::Connection(error) => Self::Connection(error.into()),
+            TestSavedConnectionError::Internal(error) => Self::Internal(error),
+        }
+    }
 }
 
 impl IntoResponse for TestSavedSourceServarrConnectionRequestError {

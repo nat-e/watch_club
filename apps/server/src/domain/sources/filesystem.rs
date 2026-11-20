@@ -4,21 +4,12 @@
 use anyhow::Context;
 use sqlx_otel::QueryAnnotateExt;
 
-use super::{Source, SourceConfiguration, SourceId, UpdateSourceError};
+use super::{Source, SourceId, UpdateSourceError};
 use crate::{db::Pool, domain::contents::MediaType, utils::filesystem::AbsoluteFolder};
-
-/// The Source Configuration of a Filesystem Source.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct FilesystemConfiguration {
-    /// The Media Type of every file in the folder, which the Instance Administrator chose
-    pub media_type: MediaType,
-    /// The folder on the server
-    pub path: AbsoluteFolder,
-}
 
 /// Creates a Filesystem Source of the folder, whose files have the Media Type, and returns it.
 #[tracing::instrument(skip_all)]
-pub async fn create_filesystem_source(
+pub async fn create(
     db: &Pool,
     media_type: MediaType,
     path: AbsoluteFolder,
@@ -37,18 +28,16 @@ pub async fn create_filesystem_source(
     .await
     .context("failed to create the Filesystem Source")?;
 
-    Ok(Source {
+    Ok(Source::Filesystem {
         id,
-        configuration: SourceConfiguration::Filesystem(FilesystemConfiguration {
-            media_type,
-            path,
-        }),
+        media_type,
+        path,
     })
 }
 
 /// Gives the Filesystem Source with this ID another folder, and returns it.
 #[tracing::instrument(skip_all, fields(source.id = %id))]
-pub async fn update_filesystem_source(
+pub async fn update(
     db: &Pool,
     id: SourceId,
     path: AbsoluteFolder,
@@ -69,11 +58,9 @@ pub async fn update_filesystem_source(
     .context("failed to update the Filesystem Source")?
     .ok_or(UpdateSourceError::NotFound)?;
 
-    Ok(Source {
+    Ok(Source::Filesystem {
         id,
-        configuration: SourceConfiguration::Filesystem(FilesystemConfiguration {
-            media_type,
-            path,
-        }),
+        media_type,
+        path,
     })
 }
