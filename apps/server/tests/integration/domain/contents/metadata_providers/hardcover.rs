@@ -4,7 +4,7 @@ use jiff::civil::date;
 use secrecy::SecretString;
 use serde_json::{Value, json};
 use watch_club::domain::contents::{
-    CreditKind, ExternalContentId, Hardcover, HardcoverId, Image, ImageSource, LookUpError,
+    CreditKind, ExternalContentId, Hardcover, HardcoverId, Image, ImageSource, LookUpContentError,
     SearchResult,
 };
 use wiremock::{
@@ -319,5 +319,5 @@ async fn look_up_book_fails_with_not_found_when_hardcover_has_no_book_with_the_i
         .await
         .unwrap_err();
 
-    assert!(matches!(error, LookUpError::NotFound), "{error:?}");
+    assert!(matches!(error, LookUpContentError::NotFound), "{error:?}");
 }

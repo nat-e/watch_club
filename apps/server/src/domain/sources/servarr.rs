@@ -14,7 +14,7 @@ use tracing::Level;
 use utoipa::ToSchema;
 
 use self::client::ServarrClient;
-use super::{Source, SourceConfiguration, SourceId, SourceType, UpdateError};
+use super::{Source, SourceConfiguration, SourceId, SourceType, UpdateSourceError};
 use crate::{
     api_client::{ApiCredentialsError, ApiUrl, ApiUrlError, HttpClient},
     db::Pool,
@@ -186,7 +186,7 @@ pub async fn update_servarr_source(
     db: &Pool,
     id: SourceId,
     configuration: ServarrConfigurationUpdate,
-) -> Result<Source, UpdateError> {
+) -> Result<Source, UpdateSourceError> {
     // Without a new API key, `COALESCE` keeps the one in the row as it is when Postgres writes it,
     // rather than the one the caller read before: a key that another request saved meanwhile stays
     let updated = sqlx::query!(
@@ -213,7 +213,7 @@ pub async fn update_servarr_source(
     .fetch_optional(db)
     .await
     .context("failed to update the app's Source")?
-    .ok_or(UpdateError::SourceNotFound)?;
+    .ok_or(UpdateSourceError::NotFound)?;
 
     Ok(Source {
         id,

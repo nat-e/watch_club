@@ -5,7 +5,8 @@ use watch_club::{
     domain::{
         contents::MediaType,
         sources::{
-            self, FilesystemConfiguration, Source, SourceConfiguration, SourceType, UpdateError,
+            self, FilesystemConfiguration, Source, SourceConfiguration, SourceType,
+            UpdateSourceError,
         },
     },
     utils::filesystem::AbsoluteFolder,
@@ -68,7 +69,7 @@ async fn updates_only_a_filesystem_source(db: PgPool) {
         let result = sources::update_filesystem_source(&db, id, path.clone()).await;
 
         assert!(
-            matches!(result, Err(UpdateError::SourceNotFound)),
+            matches!(result, Err(UpdateSourceError::NotFound)),
             "{result:?}"
         );
     }

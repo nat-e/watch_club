@@ -112,19 +112,19 @@ impl SourceConfiguration {
 
 /// The reason a Source wasn't updated.
 #[derive(Debug, thiserror::Error)]
-pub enum UpdateError {
+pub enum UpdateSourceError {
     /// There's no Source of the type with the ID, such as one deleted meanwhile
     #[error("no such Source")]
-    SourceNotFound,
+    NotFound,
     #[error(transparent)]
     Internal(#[from] anyhow::Error),
 }
 
 /// The reason a Source wasn't deleted.
 #[derive(Debug, thiserror::Error)]
-pub enum DeleteError {
+pub enum DeleteSourceError {
     #[error("no such Source")]
-    SourceNotFound,
+    NotFound,
     #[error(transparent)]
     Internal(#[from] anyhow::Error),
 }
@@ -172,7 +172,7 @@ pub async fn get(db: &Pool, id: SourceId) -> anyhow::Result<Option<Source>> {
 
 /// Deletes the Source. Its files stay on disk.
 #[tracing::instrument(skip_all, fields(source.id = %id))]
-pub async fn delete(db: &Pool, id: SourceId) -> Result<(), DeleteError> {
+pub async fn delete(db: &Pool, id: SourceId) -> Result<(), DeleteSourceError> {
     let deleted = sqlx::query!("DELETE FROM sources WHERE id = $1", id as SourceId)
         .with_operation("DELETE", "sources")
         .execute(db)
@@ -180,7 +180,7 @@ pub async fn delete(db: &Pool, id: SourceId) -> Result<(), DeleteError> {
         .context("failed to delete the Source")?;
 
     if deleted.rows_affected() == 0 {
-        return Err(DeleteError::SourceNotFound);
+        return Err(DeleteSourceError::NotFound);
     }
     Ok(())
 }

@@ -15,7 +15,7 @@ use watch_club::{
     domain::{
         accounts::Locale,
         contents::{
-            self, ContentId, ContentType, ExternalContentId, HardcoverId, LookUpError,
+            self, ContentId, ContentType, ExternalContentId, HardcoverId, LookUpContentError,
             MetadataProviders, SearchResults, SearchScope, SportarrId, TmdbId,
         },
     },
@@ -224,7 +224,7 @@ async fn get_by_external_id_fails_when_tmdb_has_no_such_content(db: PgPool) {
             .await
             .unwrap_err();
 
-    assert!(matches!(error, LookUpError::NotFound), "{error:?}");
+    assert!(matches!(error, LookUpContentError::NotFound), "{error:?}");
 }
 
 #[database_test]

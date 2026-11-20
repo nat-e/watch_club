@@ -20,9 +20,9 @@ use crate::{
     domain::{
         contents::MediaType,
         sources::{
-            self, ConnectionError, DeleteError, QualityProfile, ServarrApp, ServarrChoices,
+            self, ConnectionError, DeleteSourceError, QualityProfile, ServarrApp, ServarrChoices,
             ServarrConfiguration, ServarrConfigurationUpdate, Source, SourceConfiguration,
-            SourceId, UpdateError,
+            SourceId, UpdateSourceError,
         },
     },
     error::{self, ApiError, ErrorBody},
@@ -590,11 +590,11 @@ enum UpdateSourceRequestError {
     Internal(#[from] anyhow::Error),
 }
 
-impl From<UpdateError> for UpdateSourceRequestError {
-    fn from(error: UpdateError) -> Self {
+impl From<UpdateSourceError> for UpdateSourceRequestError {
+    fn from(error: UpdateSourceError) -> Self {
         match error {
-            UpdateError::SourceNotFound => Self::NotFound,
-            UpdateError::Internal(error) => Self::Internal(error),
+            UpdateSourceError::NotFound => Self::NotFound,
+            UpdateSourceError::Internal(error) => Self::Internal(error),
         }
     }
 }
@@ -623,11 +623,11 @@ enum DeleteSourceRequestError {
     Internal(#[from] anyhow::Error),
 }
 
-impl From<DeleteError> for DeleteSourceRequestError {
-    fn from(error: DeleteError) -> Self {
+impl From<DeleteSourceError> for DeleteSourceRequestError {
+    fn from(error: DeleteSourceError) -> Self {
         match error {
-            DeleteError::SourceNotFound => Self::NotFound,
-            DeleteError::Internal(error) => Self::Internal(error),
+            DeleteSourceError::NotFound => Self::NotFound,
+            DeleteSourceError::Internal(error) => Self::Internal(error),
         }
     }
 }

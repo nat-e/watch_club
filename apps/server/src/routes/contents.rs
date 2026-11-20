@@ -15,7 +15,7 @@ use crate::{
     domain::{
         accounts::CurrentUser,
         contents::{
-            self, Content, ContentId, ContentType, ExternalContentId, LookUpError, Media,
+            self, Content, ContentId, ContentType, ExternalContentId, LookUpContentError, Media,
             MetadataProviders,
         },
     },
@@ -91,11 +91,11 @@ enum GetContentRequestError {
     Internal(#[from] anyhow::Error),
 }
 
-impl From<LookUpError> for GetContentRequestError {
-    fn from(error: LookUpError) -> Self {
+impl From<LookUpContentError> for GetContentRequestError {
+    fn from(error: LookUpContentError) -> Self {
         match error {
-            LookUpError::NotFound => Self::NotFound,
-            LookUpError::Internal(error) => Self::Internal(error),
+            LookUpContentError::NotFound => Self::NotFound,
+            LookUpContentError::Internal(error) => Self::Internal(error),
         }
     }
 }

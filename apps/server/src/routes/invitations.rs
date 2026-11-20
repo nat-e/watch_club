@@ -108,7 +108,7 @@ struct InvitationRequest {
 #[serde(tag = "code", rename_all = "snake_case")]
 enum UpdateInvitationRequestError {
     #[error("no such Invitation")]
-    InvitationNotFound,
+    NotFound,
     /// The Invitation has created more Users than the Max Uses already
     #[error("the Max Uses is lower than the Invitation's uses")]
     MaxUsesTooLow,
@@ -120,7 +120,7 @@ enum UpdateInvitationRequestError {
 impl From<UpdateInvitationError> for UpdateInvitationRequestError {
     fn from(error: UpdateInvitationError) -> Self {
         match error {
-            UpdateInvitationError::InvitationNotFound => Self::InvitationNotFound,
+            UpdateInvitationError::NotFound => Self::NotFound,
             UpdateInvitationError::MaxUsesTooLow => Self::MaxUsesTooLow,
             UpdateInvitationError::Internal(error) => Self::Internal(error),
         }
@@ -130,7 +130,7 @@ impl From<UpdateInvitationError> for UpdateInvitationRequestError {
 impl IntoResponse for UpdateInvitationRequestError {
     fn into_response(self) -> Response {
         let status = match self {
-            Self::InvitationNotFound => StatusCode::NOT_FOUND,
+            Self::NotFound => StatusCode::NOT_FOUND,
             Self::MaxUsesTooLow => StatusCode::UNPROCESSABLE_ENTITY,
             Self::Internal(error) => return ApiError::from(error).into_response(),
         };
@@ -163,7 +163,7 @@ async fn delete_invitation(
 #[serde(tag = "code", rename_all = "snake_case")]
 enum DeleteInvitationRequestError {
     #[error("no such Invitation")]
-    InvitationNotFound,
+    NotFound,
     #[error(transparent)]
     #[serde(skip)]
     Internal(#[from] anyhow::Error),
@@ -172,7 +172,7 @@ enum DeleteInvitationRequestError {
 impl From<DeleteInvitationError> for DeleteInvitationRequestError {
     fn from(error: DeleteInvitationError) -> Self {
         match error {
-            DeleteInvitationError::InvitationNotFound => Self::InvitationNotFound,
+            DeleteInvitationError::NotFound => Self::NotFound,
             DeleteInvitationError::Internal(error) => Self::Internal(error),
         }
     }
@@ -181,7 +181,7 @@ impl From<DeleteInvitationError> for DeleteInvitationRequestError {
 impl IntoResponse for DeleteInvitationRequestError {
     fn into_response(self) -> Response {
         match self {
-            Self::InvitationNotFound => error::response(StatusCode::NOT_FOUND, &self),
+            Self::NotFound => error::response(StatusCode::NOT_FOUND, &self),
             Self::Internal(error) => ApiError::from(error).into_response(),
         }
     }

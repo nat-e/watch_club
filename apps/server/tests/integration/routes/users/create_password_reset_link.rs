@@ -58,7 +58,7 @@ async fn says_when_there_is_no_such_user(db: PgPool) {
         .await;
 
     assert_eq!(response.status, StatusCode::NOT_FOUND);
-    assert_eq!(response.body["code"], "user_not_found");
+    assert_eq!(response.body["code"], "not_found");
 }
 
 #[database_test]

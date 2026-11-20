@@ -22,7 +22,7 @@ use crate::{
     domain::{
         accounts::Locale,
         contents::{
-            ContentMetadata, ExternalContentId, Language, LookUpError, MediaMetadata,
+            ContentMetadata, ExternalContentId, Language, LookUpContentError, MediaMetadata,
             MediaTranslations, MediaType,
         },
     },
@@ -32,14 +32,14 @@ use crate::{
 impl Tmdb {
     /// Returns the TV Show with this ID, with its TV Show Episodes from season 1, in every language
     /// TMDB has them.
-    pub async fn fetch_tv_show(&self, id: TmdbId) -> Result<ContentMetadata, LookUpError> {
+    pub async fn fetch_tv_show(&self, id: TmdbId) -> Result<ContentMetadata, LookUpContentError> {
         // Asks for the first seasons before knowing which exist, which TMDB leaves out when they
         // don't: most TV Shows then need no other request in the base Locale
         let guessed_seasons: Vec<i32> = (1..).take(MAX_APPENDS - DETAILS_APPENDS.len()).collect();
         let mut tv_show = self
             .details("/tv/{id}", id, &guessed_seasons)
             .await?
-            .ok_or(LookUpError::NotFound)?;
+            .ok_or(LookUpContentError::NotFound)?;
 
         // Season 0 holds the specials, which WatchClub leaves out
         let season_numbers: Vec<i32> = tv_show

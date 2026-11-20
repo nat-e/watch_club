@@ -4,7 +4,7 @@
 use anyhow::Context;
 use sqlx_otel::QueryAnnotateExt;
 
-use super::{Source, SourceConfiguration, SourceId, UpdateError};
+use super::{Source, SourceConfiguration, SourceId, UpdateSourceError};
 use crate::{db::Pool, domain::contents::MediaType, utils::filesystem::AbsoluteFolder};
 
 /// The Source Configuration of a Filesystem Source.
@@ -52,7 +52,7 @@ pub async fn update_filesystem_source(
     db: &Pool,
     id: SourceId,
     path: AbsoluteFolder,
-) -> Result<Source, UpdateError> {
+) -> Result<Source, UpdateSourceError> {
     let media_type = sqlx::query_scalar!(
         r#"
         UPDATE sources
@@ -67,7 +67,7 @@ pub async fn update_filesystem_source(
     .fetch_optional(db)
     .await
     .context("failed to update the Filesystem Source")?
-    .ok_or(UpdateError::SourceNotFound)?;
+    .ok_or(UpdateSourceError::NotFound)?;
 
     Ok(Source {
         id,

@@ -296,7 +296,7 @@ pub async fn list_users(db: &Pool) -> anyhow::Result<Vec<User>> {
 #[derive(Debug, thiserror::Error)]
 pub enum DeleteUserError {
     #[error("no such User")]
-    UserNotFound,
+    NotFound,
     #[error("the Instance Administrator can't be deleted")]
     CannotDeleteAdministrator,
     #[error(transparent)]
@@ -327,7 +327,7 @@ pub async fn delete_user(db: &Pool, user_id: UserId) -> Result<(), DeleteUserErr
     .context("failed to delete a User")?;
 
     let Some(target) = target else {
-        return Err(DeleteUserError::UserNotFound);
+        return Err(DeleteUserError::NotFound);
     };
     if target.is_instance_administrator {
         return Err(DeleteUserError::CannotDeleteAdministrator);

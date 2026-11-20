@@ -16,7 +16,8 @@ use crate::{
     api_client::{ApiClient, ApiCredentials, ApiUrl, HttpClient},
     domain::contents::{
         ContentMetadata, ContentTranslations, CreditKind, CreditMetadata, ExternalContentId,
-        ExternalIds, Image, ImageSource, LookUpError, SearchResult, SearchResults, Translations,
+        ExternalIds, Image, ImageSource, LookUpContentError, SearchResult, SearchResults,
+        Translations,
     },
 };
 
@@ -130,7 +131,7 @@ impl Hardcover {
 
     /// Returns the Book with this ID. Hardcover doesn't say which language its texts are in, so
     /// they're its original ones. A Book has no Media yet.
-    pub async fn fetch_book(&self, id: HardcoverId) -> Result<ContentMetadata, LookUpError> {
+    pub async fn fetch_book(&self, id: HardcoverId) -> Result<ContentMetadata, LookUpContentError> {
         let data: BookData = self
             .query(
                 r"
@@ -161,7 +162,7 @@ impl Hardcover {
                 json!({"id": id}),
             )
             .await?;
-        let book = data.books_by_pk.ok_or(LookUpError::NotFound)?;
+        let book = data.books_by_pk.ok_or(LookUpContentError::NotFound)?;
 
         Ok(ContentMetadata {
             id: ExternalContentId::Book(id),

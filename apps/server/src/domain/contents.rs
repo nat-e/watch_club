@@ -334,7 +334,7 @@ pub struct SearchResults {
 
 /// The failures of finding a Content by its External ID.
 #[derive(Debug, thiserror::Error)]
-pub enum LookUpError {
+pub enum LookUpContentError {
     /// Its Metadata Provider has no such Content
     #[error("no such Content")]
     NotFound,
@@ -379,7 +379,7 @@ pub async fn get_by_external_id(
     metadata_providers: &MetadataProviders,
     external_content_id: ExternalContentId,
     locale: Locale,
-) -> Result<Content, LookUpError> {
+) -> Result<Content, LookUpContentError> {
     if let Some(saved) = store::find_by_external_id(db, &external_content_id, locale).await? {
         if saved.refreshed_at < Timestamp::now() - REFRESH_AFTER {
             let content_id = saved.content.id;
@@ -413,7 +413,7 @@ pub async fn refresh(
         Ok(metadata) => {
             store::save(db, &metadata).await?;
         }
-        Err(LookUpError::NotFound) => {
+        Err(LookUpContentError::NotFound) => {
             tracing::event!(
                 name: "contents.refresh.not_found",
                 Level::WARN,
@@ -422,7 +422,7 @@ pub async fn refresh(
                 "its Metadata Provider no longer knows the Content, which stays as it is",
             );
         }
-        Err(LookUpError::Internal(error)) => return Err(error),
+        Err(LookUpContentError::Internal(error)) => return Err(error),
     }
     Ok(())
 }

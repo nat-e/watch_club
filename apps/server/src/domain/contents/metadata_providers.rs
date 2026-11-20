@@ -15,7 +15,7 @@ pub use self::{
     tmdb::{Tmdb, TmdbId},
 };
 use super::{
-    ContentTranslations, CreditKind, ExternalContentId, Genre, Image, LookUpError,
+    ContentTranslations, CreditKind, ExternalContentId, Genre, Image, LookUpContentError,
     MediaTranslations, MediaType, MetadataProvider,
 };
 
@@ -35,7 +35,7 @@ impl MetadataProviders {
     pub(super) async fn fetch(
         &self,
         external_content_id: &ExternalContentId,
-    ) -> Result<ContentMetadata, LookUpError> {
+    ) -> Result<ContentMetadata, LookUpContentError> {
         match external_content_id {
             ExternalContentId::Movie(id) => self.tmdb.fetch_movie(*id).await,
             ExternalContentId::TvShow(id) => self.tmdb.fetch_tv_show(*id).await,

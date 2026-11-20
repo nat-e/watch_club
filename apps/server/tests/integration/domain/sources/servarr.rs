@@ -100,7 +100,7 @@ mod decrypt_api_key {
 
 mod update {
     use sqlx::PgPool;
-    use watch_club::domain::sources::{ServarrConfigurationUpdate, UpdateError};
+    use watch_club::domain::sources::{ServarrConfigurationUpdate, UpdateSourceError};
     use watch_club_test_macros::database_test;
 
     use super::*;
@@ -182,7 +182,7 @@ mod update {
                 sources::update_servarr_source(&db, id, configuration_update(&radarr)).await;
 
             assert!(
-                matches!(result, Err(UpdateError::SourceNotFound)),
+                matches!(result, Err(UpdateSourceError::NotFound)),
                 "{result:?}"
             );
         }

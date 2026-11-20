@@ -16,8 +16,8 @@ use crate::{
     api_client::{ApiClient, ApiCredentials, ApiUrl, HttpClient},
     domain::contents::{
         ContentMetadata, ContentTranslations, CreditKind, CreditMetadata, ExternalContentId,
-        ExternalIds, Image, ImageSource, LookUpError, MediaMetadata, MediaTranslations, MediaType,
-        SearchResult, SearchResults, Translations,
+        ExternalIds, Image, ImageSource, LookUpContentError, MediaMetadata, MediaTranslations,
+        MediaType, SearchResult, SearchResults, Translations,
     },
 };
 
@@ -101,15 +101,19 @@ impl Sportarr {
     pub async fn fetch_sports_event(
         &self,
         id: &SportarrId,
-    ) -> Result<ContentMetadata, LookUpError> {
+    ) -> Result<ContentMetadata, LookUpContentError> {
         let found: LookUpEventAnswer = self
             .api
             .get("/lookup/event/{id}", &[&id.0], &[])
             .await
             .map_err(anyhow::Error::from)?
-            .ok_or(LookUpError::NotFound)?;
+            .ok_or(LookUpContentError::NotFound)?;
         // sportarr.net answers an ID it doesn't know with no event, rather than with a 404
-        let event = found.data.into_iter().next().ok_or(LookUpError::NotFound)?;
+        let event = found
+            .data
+            .into_iter()
+            .next()
+            .ok_or(LookUpContentError::NotFound)?;
 
         let credits = event.league.map(|league| CreditMetadata {
             kind: CreditKind::League,

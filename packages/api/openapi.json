@@ -3643,7 +3643,7 @@
               "code": {
                 "type": "string",
                 "enum": [
-                  "user_not_found"
+                  "not_found"
                 ]
               }
             }
@@ -3791,7 +3791,7 @@
               "code": {
                 "type": "string",
                 "enum": [
-                  "invitation_not_found"
+                  "not_found"
                 ]
               }
             }
@@ -3829,7 +3829,7 @@
               "code": {
                 "type": "string",
                 "enum": [
-                  "user_not_found"
+                  "not_found"
                 ]
               }
             }
@@ -4041,7 +4041,7 @@
                   "code": {
                     "type": "string",
                     "enum": [
-                      "user_not_found"
+                      "not_found"
                     ]
                   }
                 }
@@ -4135,7 +4135,7 @@
                   "code": {
                     "type": "string",
                     "enum": [
-                      "invitation_not_found"
+                      "not_found"
                     ]
                   }
                 }
@@ -4207,7 +4207,7 @@
                   "code": {
                     "type": "string",
                     "enum": [
-                      "user_not_found"
+                      "not_found"
                     ]
                   }
                 }
@@ -4507,7 +4507,7 @@
                   "code": {
                     "type": "string",
                     "enum": [
-                      "invitation_not_found"
+                      "not_found"
                     ]
                   }
                 }
@@ -5788,7 +5788,7 @@
               "code": {
                 "type": "string",
                 "enum": [
-                  "invitation_not_found"
+                  "not_found"
                 ]
               }
             }

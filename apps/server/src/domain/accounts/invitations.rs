@@ -130,7 +130,7 @@ pub async fn create_invitation(
 #[derive(Debug, thiserror::Error)]
 pub enum UpdateInvitationError {
     #[error("no such Invitation")]
-    InvitationNotFound,
+    NotFound,
     /// Lower than the Users the Invitation created already
     #[error("the Max Uses is lower than the Invitation's uses")]
     MaxUsesTooLow,
@@ -161,7 +161,7 @@ pub async fn update_invitation(
     .await;
     match changed {
         Ok(Some(row)) => Ok(row.into()),
-        Ok(None) => Err(UpdateInvitationError::InvitationNotFound),
+        Ok(None) => Err(UpdateInvitationError::NotFound),
         // The constraint that keeps the uses within the Max Uses, the only one an update can break
         Err(sqlx::Error::Database(error)) if error.is_check_violation() => {
             Err(UpdateInvitationError::MaxUsesTooLow)
@@ -176,7 +176,7 @@ pub async fn update_invitation(
 #[derive(Debug, thiserror::Error)]
 pub enum DeleteInvitationError {
     #[error("no such Invitation")]
-    InvitationNotFound,
+    NotFound,
     #[error(transparent)]
     Internal(#[from] anyhow::Error),
 }
@@ -196,7 +196,7 @@ pub async fn delete_invitation(
     .await
     .context("failed to delete an Invitation")?;
     if deleted.rows_affected() == 0 {
-        return Err(DeleteInvitationError::InvitationNotFound);
+        return Err(DeleteInvitationError::NotFound);
     }
     Ok(())
 }

@@ -98,7 +98,7 @@ pub async fn change_password(
 #[derive(Debug, thiserror::Error)]
 pub enum CreatePasswordResetLinkError {
     #[error("no such User")]
-    UserNotFound,
+    NotFound,
     #[error(transparent)]
     Internal(#[from] anyhow::Error),
 }
@@ -131,7 +131,7 @@ pub async fn create_password_reset_link(
     match created {
         Ok(_) => {}
         Err(sqlx::Error::Database(error)) if error.is_foreign_key_violation() => {
-            return Err(CreatePasswordResetLinkError::UserNotFound);
+            return Err(CreatePasswordResetLinkError::NotFound);
         }
         Err(error) => {
             let error = anyhow::Error::new(error).context("failed to create a Password Reset Link");

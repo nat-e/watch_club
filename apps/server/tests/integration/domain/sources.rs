@@ -9,7 +9,7 @@ use watch_club::{
     db::Pool,
     domain::{
         contents::MediaType,
-        sources::{self, DeleteError, Source, SourceId},
+        sources::{self, DeleteSourceError, Source, SourceId},
     },
     utils::filesystem::AbsoluteFolder,
 };
@@ -85,7 +85,7 @@ async fn fails_to_delete_a_source_that_doesnt_exist(db: PgPool) {
     let result = sources::delete(&db, id).await;
 
     assert!(
-        matches!(result, Err(DeleteError::SourceNotFound)),
+        matches!(result, Err(DeleteSourceError::NotFound)),
         "{result:?}"
     );
 }

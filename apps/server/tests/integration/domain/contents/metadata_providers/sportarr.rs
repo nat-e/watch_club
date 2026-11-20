@@ -3,7 +3,7 @@ use std::num::NonZeroU32;
 use jiff::civil::date;
 use serde_json::{Value, json};
 use watch_club::domain::contents::{
-    CreditKind, ExternalContentId, Image, ImageSource, LookUpError, MediaType, SearchResult,
+    CreditKind, ExternalContentId, Image, ImageSource, LookUpContentError, MediaType, SearchResult,
     SportarrId,
 };
 use wiremock::{
@@ -199,5 +199,5 @@ async fn look_up_fails_with_not_found_when_sportarr_doesnt_know_the_id() {
         .await
         .unwrap_err();
 
-    assert!(matches!(error, LookUpError::NotFound), "{error:?}");
+    assert!(matches!(error, LookUpContentError::NotFound), "{error:?}");
 }

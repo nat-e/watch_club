@@ -5,8 +5,8 @@ use serde_json::{Value, json};
 use watch_club::domain::{
     accounts::Locale,
     contents::{
-        CreditKind, ExternalContentId, Genre, Image, ImageSource, Language, LookUpError, MediaType,
-        SearchResult, TmdbId,
+        CreditKind, ExternalContentId, Genre, Image, ImageSource, Language, LookUpContentError,
+        MediaType, SearchResult, TmdbId,
     },
 };
 use wiremock::{
@@ -611,7 +611,7 @@ async fn fetch_fails_with_not_found_when_tmdb_has_nothing_with_the_id() {
         .await
         .unwrap_err();
 
-    assert!(matches!(error, LookUpError::NotFound), "{error:?}");
+    assert!(matches!(error, LookUpContentError::NotFound), "{error:?}");
 }
 
 /// Returns TMDB's `append_to_response` for these seasons, such as `season/1,season/2`.

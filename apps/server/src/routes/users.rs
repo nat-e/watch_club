@@ -70,7 +70,7 @@ async fn delete_user(
 #[serde(tag = "code", rename_all = "snake_case")]
 enum DeleteUserRequestError {
     #[error("no such User")]
-    UserNotFound,
+    NotFound,
     #[error("the Instance Administrator can't be deleted")]
     CannotDeleteAdministrator,
     #[error(transparent)]
@@ -81,7 +81,7 @@ enum DeleteUserRequestError {
 impl From<DeleteUserError> for DeleteUserRequestError {
     fn from(error: DeleteUserError) -> Self {
         match error {
-            DeleteUserError::UserNotFound => Self::UserNotFound,
+            DeleteUserError::NotFound => Self::NotFound,
             DeleteUserError::CannotDeleteAdministrator => Self::CannotDeleteAdministrator,
             DeleteUserError::Internal(error) => Self::Internal(error),
         }
@@ -91,7 +91,7 @@ impl From<DeleteUserError> for DeleteUserRequestError {
 impl IntoResponse for DeleteUserRequestError {
     fn into_response(self) -> Response {
         let status = match self {
-            Self::UserNotFound => StatusCode::NOT_FOUND,
+            Self::NotFound => StatusCode::NOT_FOUND,
             Self::CannotDeleteAdministrator => StatusCode::CONFLICT,
             Self::Internal(error) => return ApiError::from(error).into_response(),
         };
@@ -135,7 +135,7 @@ struct PasswordResetLink {
 #[serde(tag = "code", rename_all = "snake_case")]
 enum CreatePasswordResetLinkRequestError {
     #[error("no such User")]
-    UserNotFound,
+    NotFound,
     #[error(transparent)]
     #[serde(skip)]
     Internal(#[from] anyhow::Error),
@@ -144,7 +144,7 @@ enum CreatePasswordResetLinkRequestError {
 impl From<CreatePasswordResetLinkError> for CreatePasswordResetLinkRequestError {
     fn from(error: CreatePasswordResetLinkError) -> Self {
         match error {
-            CreatePasswordResetLinkError::UserNotFound => Self::UserNotFound,
+            CreatePasswordResetLinkError::NotFound => Self::NotFound,
             CreatePasswordResetLinkError::Internal(error) => Self::Internal(error),
         }
     }
@@ -153,7 +153,7 @@ impl From<CreatePasswordResetLinkError> for CreatePasswordResetLinkRequestError 
 impl IntoResponse for CreatePasswordResetLinkRequestError {
     fn into_response(self) -> Response {
         match self {
-            Self::UserNotFound => error::response(StatusCode::NOT_FOUND, &self),
+            Self::NotFound => error::response(StatusCode::NOT_FOUND, &self),
             Self::Internal(error) => ApiError::from(error).into_response(),
         }
     }

@@ -22,7 +22,7 @@ use crate::{
         accounts::Locale,
         contents::{
             ContentMetadata, ContentTranslations, ExternalContentId, ExternalIds, Genre, Language,
-            LookUpError, MediaMetadata, MediaTranslations, MediaType, Translations,
+            LookUpContentError, MediaMetadata, MediaTranslations, MediaType, Translations,
         },
     },
     utils::time::minutes_to_seconds,
@@ -49,11 +49,11 @@ const MIN_VOTES: u32 = 25;
 
 impl Tmdb {
     /// Returns the Movie with this ID, in every language TMDB has it.
-    pub async fn fetch_movie(&self, id: TmdbId) -> Result<ContentMetadata, LookUpError> {
+    pub async fn fetch_movie(&self, id: TmdbId) -> Result<ContentMetadata, LookUpContentError> {
         let movie = self
             .details("/movie/{id}", id, &[])
             .await?
-            .ok_or(LookUpError::NotFound)?;
+            .ok_or(LookUpContentError::NotFound)?;
 
         let media = MediaMetadata {
             media_type: MediaType::Movie,
