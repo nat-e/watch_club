@@ -56,9 +56,9 @@ async fn list_users(
 async fn delete_user(
     State(db): State<Pool>,
     _: InstanceAdministrator,
-    Path(user): Path<UserId>,
+    Path(user_id): Path<UserId>,
 ) -> Result<StatusCode, DeleteUserRequestError> {
-    accounts::delete_user(&db, user).await?;
+    accounts::delete_user(&db, user_id).await?;
     Ok(StatusCode::NO_CONTENT)
 }
 

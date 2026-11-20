@@ -84,10 +84,10 @@ async fn create_invitation(
 async fn update_invitation(
     State(db): State<Pool>,
     _: InstanceAdministrator,
-    Path(invitation): Path<InvitationId>,
+    Path(invitation_id): Path<InvitationId>,
     Json(request): Json<InvitationRequest>,
 ) -> Result<Json<Invitation>, UpdateInvitationRequestError> {
-    let invitation = accounts::update_invitation(&db, invitation, request.max_uses).await?;
+    let invitation = accounts::update_invitation(&db, invitation_id, request.max_uses).await?;
     Ok(Json(invitation))
 }
 
@@ -151,9 +151,9 @@ impl IntoResponse for UpdateInvitationRequestError {
 async fn delete_invitation(
     State(db): State<Pool>,
     _: InstanceAdministrator,
-    Path(invitation): Path<InvitationId>,
+    Path(invitation_id): Path<InvitationId>,
 ) -> Result<StatusCode, DeleteInvitationRequestError> {
-    accounts::delete_invitation(&db, invitation).await?;
+    accounts::delete_invitation(&db, invitation_id).await?;
     Ok(StatusCode::NO_CONTENT)
 }
 
