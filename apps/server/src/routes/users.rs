@@ -15,7 +15,7 @@ use crate::{
     db::Pool,
     domain::{
         InternalError,
-        accounts::{self, CurrentUser, DeleteUserError, User, UserId},
+        accounts::{self, DeleteUserError, User, UserId},
     },
     error::{self, ApiError, ErrorBody},
     routes::{Json, Path},
@@ -32,19 +32,23 @@ pub(super) fn routes() -> OpenApiRouter<ApiContext> {
     get,
     path = "/users",
     responses((status = OK, body = Vec<User>)),
-    security(("session_cookie" = []), ("session_token" = [])),
+    security(("session_cookie" = ["instance_administrator"]), ("session_token" = ["instance_administrator"])),
 )]
-async fn list_users(State(db): State<Pool>, _: CurrentUser) -> Result<Json<Vec<User>>, ApiError> {
+async fn list_users(
+    State(db): State<Pool>,
+    _: InstanceAdministrator,
+) -> Result<Json<Vec<User>>, ApiError> {
     Ok(Json(accounts::list_users(&db).await?))
 }
 
-/// Deletes the User, which signs them out on every device. Succeeds when there's no such User.
+/// Deletes the User, which signs them out on every device.
 #[utoipa::path(
     delete,
     path = "/users/{user_id}",
     params(("user_id" = UserId, Path, description = "The User's ID")),
     responses(
-        (status = NO_CONTENT, description = "Deleted, or there was no such User"),
+        (status = NO_CONTENT, description = "Deleted"),
+        (status = NOT_FOUND, body = ErrorBody<DeleteUserRequestError>, description = "There's no such User"),
         (status = CONFLICT, body = ErrorBody<DeleteUserRequestError>, description = "The Instance Administrator can't be deleted"),
     ),
     security(("session_cookie" = ["instance_administrator"]), ("session_token" = ["instance_administrator"])),
@@ -62,8 +66,10 @@ async fn delete_user(
 #[derive(Debug, Serialize, ToSchema, thiserror::Error)]
 #[serde(tag = "code", rename_all = "snake_case")]
 enum DeleteUserRequestError {
+    #[error("no such User")]
+    UserNotFound,
     #[error("the Instance Administrator can't be deleted")]
-    IsInstanceAdministrator,
+    CannotDeleteAdministrator,
     #[error(transparent)]
     #[serde(skip)]
     Internal(#[from] InternalError),
@@ -72,7 +78,8 @@ enum DeleteUserRequestError {
 impl From<DeleteUserError> for DeleteUserRequestError {
     fn from(error: DeleteUserError) -> Self {
         match error {
-            DeleteUserError::InstanceAdministrator => Self::IsInstanceAdministrator,
+            DeleteUserError::UserNotFound => Self::UserNotFound,
+            DeleteUserError::CannotDeleteAdministrator => Self::CannotDeleteAdministrator,
             DeleteUserError::Internal(error) => Self::Internal(error.into()),
         }
     }
@@ -80,9 +87,11 @@ impl From<DeleteUserError> for DeleteUserRequestError {
 
 impl IntoResponse for DeleteUserRequestError {
     fn into_response(self) -> Response {
-        match self {
-            Self::IsInstanceAdministrator => error::response(StatusCode::CONFLICT, &self),
-            Self::Internal(error) => ApiError::from(error).into_response(),
-        }
+        let status = match self {
+            Self::UserNotFound => StatusCode::NOT_FOUND,
+            Self::CannotDeleteAdministrator => StatusCode::CONFLICT,
+            Self::Internal(error) => return ApiError::from(error).into_response(),
+        };
+        error::response(status, &self)
     }
 }

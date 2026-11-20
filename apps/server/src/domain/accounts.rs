@@ -7,9 +7,9 @@ mod user;
 
 pub use self::{
     invitations::{
-        ChangeMaxUsesError, Invitation, InvitationId, RedeemInvitationError, change_max_uses,
-        create_invitation, delete_invitation, is_redeemable, list_redeemable_invitations,
-        redeem_invitation,
+        DeleteInvitationError, Invitation, InvitationId, RedeemInvitationError,
+        UpdateInvitationError, create_invitation, delete_invitation, is_redeemable,
+        list_redeemable_invitations, redeem_invitation, update_invitation,
     },
     preferences::{AudioLanguage, Locale, TrackLanguage, UserPreferences, save_preferences},
     user::{

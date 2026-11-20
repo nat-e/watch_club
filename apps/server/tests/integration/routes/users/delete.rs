@@ -35,12 +35,12 @@ async fn refuses_to_delete_the_instance_administrator(db: PgPool) {
     let response = browser.delete(&format!("/api/users/{}", admin.id)).await;
 
     assert_eq!(response.status, StatusCode::CONFLICT);
-    assert_eq!(response.body["code"], "is_instance_administrator");
+    assert_eq!(response.body["code"], "cannot_delete_administrator");
     assert_eq!(browser.get("/api/me").await.status, StatusCode::OK);
 }
 
 #[database_test]
-async fn succeeds_when_the_user_is_deleted_already(db: PgPool) {
+async fn says_when_there_is_no_such_user(db: PgPool) {
     let db = watch_club::db::instrument(db);
     let admin = support::create_instance_administrator(&db).await;
     let user = support::create_user(&db, "ada").await;
@@ -51,7 +51,8 @@ async fn succeeds_when_the_user_is_deleted_already(db: PgPool) {
 
     let response = browser.delete(&uri).await;
 
-    assert_eq!(response.status, StatusCode::NO_CONTENT);
+    assert_eq!(response.status, StatusCode::NOT_FOUND);
+    assert_eq!(response.body["code"], "user_not_found");
 }
 
 #[database_test]

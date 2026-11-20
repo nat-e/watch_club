@@ -25,10 +25,10 @@ export default {
     inviteFriends: 'Inviter des amis',
     linkCopied: "Lien d'invitation copié. Envoie-le à tes amis.",
     maxUses: 'Utilisations maximum',
-    maxUsesBelowUses: 'Elle a déjà été utilisée plus de fois que ça.',
+    maxUsesAlreadyUsed: 'Elle a déjà été utilisée plus de fois que ça.',
     maxUsesHint:
       'Nombre maximal de comptes que cette invitation peut créer. Laisse vide pour ne pas fixer de limite.',
-    maxUsesTooLow: "Le nombre maximal d'utilisations doit être d'au moins {{min}}",
+    maxUsesMinimum: "Le nombre maximal d'utilisations doit être d'au moins {{min}}",
     newInvitation: 'Nouvelle invitation',
     noneActive: 'Aucune invitation active',
     save: 'Enregistrer',

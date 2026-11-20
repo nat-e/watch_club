@@ -29,7 +29,7 @@ impl fmt::Display for InvitationId {
 }
 
 /// The time an Invitation works for, from its creation.
-const INVITATION_LIFETIME: SignedDuration = SignedDuration::from_hours(24 * 7);
+const INVITATION_VALIDITY_DURATION: SignedDuration = SignedDuration::from_hours(24 * 7);
 
 /// A link that lets new people create their account, until it expires or reaches its Max Uses.
 #[derive(Clone, PartialEq, Eq, Serialize, ToSchema)]
@@ -100,7 +100,7 @@ pub async fn list_redeemable_invitations(db: &Pool) -> Result<Vec<Invitation>, I
     Ok(rows.into_iter().map(Invitation::from).collect())
 }
 
-/// Creates an Invitation with a random code, which works for `INVITATION_LIFETIME`.
+/// Creates an Invitation with a random code, which works for `INVITATION_VALIDITY_DURATION`.
 #[tracing::instrument(skip_all)]
 pub async fn create_invitation(
     db: &Pool,
@@ -117,7 +117,7 @@ pub async fn create_invitation(
         "#,
         code,
         max_uses.map(|max_uses| i64::from(max_uses.get())),
-        INVITATION_LIFETIME.as_secs_f64(),
+        INVITATION_VALIDITY_DURATION.as_secs_f64(),
     )
     .with_operation("INSERT", "invitations")
     .fetch_one(db)
@@ -126,26 +126,25 @@ pub async fn create_invitation(
     Ok(row.into())
 }
 
-/// The reason an Invitation's Max Uses didn't change.
+/// The reason an Invitation didn't change.
 #[derive(Debug, thiserror::Error)]
-pub enum ChangeMaxUsesError {
+pub enum UpdateInvitationError {
     #[error("no such Invitation")]
-    NotFound,
-    /// The Invitation has created more Users already
+    InvitationNotFound,
+    /// Lower than the Users the Invitation created already
     #[error("the Max Uses is lower than the Invitation's uses")]
-    BelowUses,
+    MaxUsesTooLow,
     #[error(transparent)]
     Internal(#[from] anyhow::Error),
 }
 
-/// Changes the most Users the Invitation can create, or removes the limit, and returns the
-/// Invitation.
+/// Changes the Invitation's Max Uses, or removes the limit when None, and returns the Invitation.
 #[tracing::instrument(skip_all, fields(invitation.id = %invitation))]
-pub async fn change_max_uses(
+pub async fn update_invitation(
     db: &Pool,
     invitation: InvitationId,
     max_uses: Option<NonZeroU32>,
-) -> Result<Invitation, ChangeMaxUsesError> {
+) -> Result<Invitation, UpdateInvitationError> {
     let changed = sqlx::query_as!(
         InvitationRow,
         r#"
@@ -162,10 +161,10 @@ pub async fn change_max_uses(
     .await;
     match changed {
         Ok(Some(row)) => Ok(row.into()),
-        Ok(None) => Err(ChangeMaxUsesError::NotFound),
+        Ok(None) => Err(UpdateInvitationError::InvitationNotFound),
         // The constraint that keeps the uses within the Max Uses, the only one an update can break
         Err(sqlx::Error::Database(error)) if error.is_check_violation() => {
-            Err(ChangeMaxUsesError::BelowUses)
+            Err(UpdateInvitationError::MaxUsesTooLow)
         }
         Err(error) => Err(anyhow::Error::new(error)
             .context("failed to change an Invitation's Max Uses")
@@ -173,11 +172,22 @@ pub async fn change_max_uses(
     }
 }
 
+/// The reason an Invitation wasn't deleted.
+#[derive(Debug, thiserror::Error)]
+pub enum DeleteInvitationError {
+    #[error("no such Invitation")]
+    InvitationNotFound,
+    #[error(transparent)]
+    Internal(#[from] anyhow::Error),
+}
+
 /// Deletes the Invitation, so that nobody can redeem it anymore. The Users it created stay.
-/// Succeeds when there's no such Invitation, such as when it's deleted already.
 #[tracing::instrument(skip_all, fields(invitation.id = %invitation))]
-pub async fn delete_invitation(db: &Pool, invitation: InvitationId) -> Result<(), InternalError> {
-    sqlx::query!(
+pub async fn delete_invitation(
+    db: &Pool,
+    invitation: InvitationId,
+) -> Result<(), DeleteInvitationError> {
+    let deleted = sqlx::query!(
         "DELETE FROM invitations WHERE id = $1",
         invitation as InvitationId,
     )
@@ -185,6 +195,9 @@ pub async fn delete_invitation(db: &Pool, invitation: InvitationId) -> Result<()
     .execute(db)
     .await
     .context("failed to delete an Invitation")?;
+    if deleted.rows_affected() == 0 {
+        return Err(DeleteInvitationError::InvitationNotFound);
+    }
     Ok(())
 }
 

@@ -21,8 +21,8 @@ use crate::{
     domain::{
         InternalError,
         accounts::{
-            self, ChangeMaxUsesError, Invitation, InvitationId, Locale, Password, PasswordError,
-            RedeemInvitationError, Username, UsernameError,
+            self, DeleteInvitationError, Invitation, InvitationId, Locale, Password, PasswordError,
+            RedeemInvitationError, UpdateInvitationError, Username, UsernameError,
         },
     },
     error::{self, ApiError, ErrorBody},
@@ -87,7 +87,7 @@ async fn update_invitation(
     Path(invitation): Path<InvitationId>,
     Json(request): Json<InvitationRequest>,
 ) -> Result<Json<Invitation>, UpdateInvitationRequestError> {
-    let invitation = accounts::change_max_uses(&db, invitation, request.max_uses).await?;
+    let invitation = accounts::update_invitation(&db, invitation, request.max_uses).await?;
     Ok(Json(invitation))
 }
 
@@ -107,21 +107,21 @@ struct InvitationRequest {
 #[serde(tag = "code", rename_all = "snake_case")]
 enum UpdateInvitationRequestError {
     #[error("no such Invitation")]
-    NotFound,
+    InvitationNotFound,
     /// The Invitation has created more Users than the Max Uses already
     #[error("the Max Uses is lower than the Invitation's uses")]
-    MaxUsesBelowUses,
+    MaxUsesTooLow,
     #[error(transparent)]
     #[serde(skip)]
     Internal(#[from] InternalError),
 }
 
-impl From<ChangeMaxUsesError> for UpdateInvitationRequestError {
-    fn from(error: ChangeMaxUsesError) -> Self {
+impl From<UpdateInvitationError> for UpdateInvitationRequestError {
+    fn from(error: UpdateInvitationError) -> Self {
         match error {
-            ChangeMaxUsesError::NotFound => Self::NotFound,
-            ChangeMaxUsesError::BelowUses => Self::MaxUsesBelowUses,
-            ChangeMaxUsesError::Internal(error) => Self::Internal(error.into()),
+            UpdateInvitationError::InvitationNotFound => Self::InvitationNotFound,
+            UpdateInvitationError::MaxUsesTooLow => Self::MaxUsesTooLow,
+            UpdateInvitationError::Internal(error) => Self::Internal(error.into()),
         }
     }
 }
@@ -129,8 +129,8 @@ impl From<ChangeMaxUsesError> for UpdateInvitationRequestError {
 impl IntoResponse for UpdateInvitationRequestError {
     fn into_response(self) -> Response {
         let status = match self {
-            Self::NotFound => StatusCode::NOT_FOUND,
-            Self::MaxUsesBelowUses => StatusCode::UNPROCESSABLE_ENTITY,
+            Self::InvitationNotFound => StatusCode::NOT_FOUND,
+            Self::MaxUsesTooLow => StatusCode::UNPROCESSABLE_ENTITY,
             Self::Internal(error) => return ApiError::from(error).into_response(),
         };
         error::response(status, &self)
@@ -138,21 +138,52 @@ impl IntoResponse for UpdateInvitationRequestError {
 }
 
 /// Deletes the Invitation, so that nobody can redeem it anymore. The Users it created stay.
-/// Succeeds when there's no such Invitation.
 #[utoipa::path(
     delete,
     path = "/invitations/{invitation_id}",
     params(("invitation_id" = InvitationId, Path, description = "The Invitation's ID")),
-    responses((status = NO_CONTENT, description = "Deleted, or there was no such Invitation")),
+    responses(
+        (status = NO_CONTENT, description = "Deleted"),
+        (status = NOT_FOUND, body = ErrorBody<DeleteInvitationRequestError>, description = "There's no such Invitation"),
+    ),
     security(("session_cookie" = ["instance_administrator"]), ("session_token" = ["instance_administrator"])),
 )]
 async fn delete_invitation(
     State(db): State<Pool>,
     _: InstanceAdministrator,
     Path(invitation): Path<InvitationId>,
-) -> Result<StatusCode, ApiError> {
+) -> Result<StatusCode, DeleteInvitationRequestError> {
     accounts::delete_invitation(&db, invitation).await?;
     Ok(StatusCode::NO_CONTENT)
+}
+
+/// The failures of a request to delete an Invitation.
+#[derive(Debug, Serialize, ToSchema, thiserror::Error)]
+#[serde(tag = "code", rename_all = "snake_case")]
+enum DeleteInvitationRequestError {
+    #[error("no such Invitation")]
+    InvitationNotFound,
+    #[error(transparent)]
+    #[serde(skip)]
+    Internal(#[from] InternalError),
+}
+
+impl From<DeleteInvitationError> for DeleteInvitationRequestError {
+    fn from(error: DeleteInvitationError) -> Self {
+        match error {
+            DeleteInvitationError::InvitationNotFound => Self::InvitationNotFound,
+            DeleteInvitationError::Internal(error) => Self::Internal(error.into()),
+        }
+    }
+}
+
+impl IntoResponse for DeleteInvitationRequestError {
+    fn into_response(self) -> Response {
+        match self {
+            Self::InvitationNotFound => error::response(StatusCode::NOT_FOUND, &self),
+            Self::Internal(error) => ApiError::from(error).into_response(),
+        }
+    }
 }
 
 /// Returns whether the code is an Invitation's that can still be redeemed, for the page that

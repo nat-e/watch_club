@@ -42,9 +42,9 @@ export const createInvitationMutation = mutationOptions({
 
 /**
  * The mutation that changes the most Users an Invitation can create. It fails with
- * `max_uses_below_uses` when the Invitation created more Users already.
+ * `max_uses_too_low` when the Invitation created more Users already.
  */
-export const changeMaxUsesMutation = mutationOptions({
+export const updateInvitationMutation = mutationOptions({
   mutationFn: async ({invitation, maxUses}: MaxUsesChange) => {
     const {data} = await updateInvitation({
       // biome-ignore lint/style/useNamingConvention: the API's fields are snake_case
@@ -55,7 +55,9 @@ export const changeMaxUsesMutation = mutationOptions({
     });
     return data;
   },
-  onSuccess: (_invitation, _change, _onMutateResult, {client}) => refreshInvitations(client),
+  // Also when it fails, as the Invitation may be gone
+  onSettled: (_invitation, _error, _change, _onMutateResult, {client}) =>
+    refreshInvitations(client),
 });
 
 /** The mutation that deletes an Invitation. The Users it created stay. */
@@ -64,7 +66,9 @@ export const deleteInvitationMutation = mutationOptions({
     // biome-ignore lint/style/useNamingConvention: the API's fields are snake_case
     await deleteInvitation({path: {invitation_id: invitation}, throwOnError: true});
   },
-  onSuccess: (_result, _invitation, _onMutateResult, {client}) => refreshInvitations(client),
+  // Also when it fails, as the Invitation may be gone already
+  onSettled: (_result, _error, _invitation, _onMutateResult, {client}) =>
+    refreshInvitations(client),
 });
 
 /**

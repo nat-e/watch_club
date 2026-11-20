@@ -25,10 +25,10 @@ export default {
     inviteFriends: 'Invite friends',
     linkCopied: 'Invitation link copied. Send it to your friends.',
     maxUses: 'Maximum uses',
-    maxUsesBelowUses: "It's already been used more times than that.",
+    maxUsesAlreadyUsed: "It's already been used more times than that.",
     maxUsesHint:
       'Maximum number of accounts this invitation can create. Leave empty for unlimited.',
-    maxUsesTooLow: 'Maximum uses must be at least {{min}}',
+    maxUsesMinimum: 'Maximum uses must be at least {{min}}',
     newInvitation: 'New invitation',
     noneActive: 'No active invitations',
     save: 'Save',

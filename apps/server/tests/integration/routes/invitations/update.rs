@@ -44,7 +44,7 @@ async fn refuses_fewer_uses_than_the_users_it_created(db: PgPool) {
     let response = browser.patch(&uri, json!({ "max_uses": 1 })).await;
 
     assert_eq!(response.status, StatusCode::UNPROCESSABLE_ENTITY);
-    assert_eq!(response.body["code"], "max_uses_below_uses");
+    assert_eq!(response.body["code"], "max_uses_too_low");
     let exactly = browser.patch(&uri, json!({ "max_uses": 2 })).await;
     assert_eq!(exactly.status, StatusCode::OK, "{exactly:?}");
 }
@@ -68,7 +68,7 @@ async fn says_when_there_is_no_such_invitation(db: PgPool) {
         .await;
 
     assert_eq!(response.status, StatusCode::NOT_FOUND);
-    assert_eq!(response.body["code"], "not_found");
+    assert_eq!(response.body["code"], "invitation_not_found");
 }
 
 #[database_test]

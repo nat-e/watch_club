@@ -8,9 +8,9 @@ use crate::support::{self, Client};
 async fn lists_every_user_the_first_to_join_first(db: PgPool) {
     let db = watch_club::db::instrument(db);
     let admin = support::create_instance_administrator(&db).await;
-    let user = support::create_user(&db, "ada").await;
+    support::create_user(&db, "ada").await;
     let mut browser = Client::new(&db);
-    browser.sign_in(&user).await;
+    browser.sign_in(&admin).await;
 
     let response = browser.get("/api/users").await;
 
@@ -23,6 +23,18 @@ async fn lists_every_user_the_first_to_join_first(db: PgPool) {
     assert_eq!(users[1]["username"], "ada");
     assert_eq!(users[1]["is_instance_administrator"], false);
     assert!(users[1]["member_since"].is_string());
+}
+
+#[database_test]
+async fn refuses_other_users(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    let user = support::create_user(&db, "ada").await;
+    let mut browser = Client::new(&db);
+    browser.sign_in(&user).await;
+
+    let response = browser.get("/api/users").await;
+
+    assert_eq!(response.status, StatusCode::FORBIDDEN);
 }
 
 #[database_test]

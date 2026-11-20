@@ -2,11 +2,11 @@ import {useMutation, useSuspenseQuery} from '@tanstack/react-query';
 import {useRouter} from '@tanstack/react-router';
 import {hasCode, type Invitation} from '@watchclub/api';
 import {
-  changeMaxUsesMutation,
   createInvitationMutation,
   deleteInvitationMutation,
   invitationsQuery,
   parseMaxUses,
+  updateInvitationMutation,
 } from '@watchclub/core/accounts/invitations';
 import {formatRelativeTime} from '@watchclub/core/l10n';
 import {
@@ -280,7 +280,7 @@ function InvitationForm({
 }) {
   const {t} = useTranslation(['web', 'core']);
   const create = useMutation(createInvitationMutation);
-  const changeMaxUses = useMutation(changeMaxUsesMutation);
+  const updateInvitation = useMutation(updateInvitationMutation);
   const form = useAppForm({
     defaultValues: {maxUses: invitation?.max_uses?.toString() ?? ''},
     validators: [
@@ -289,7 +289,7 @@ function InvitationForm({
         run: ({value, createErrorMap}) => {
           const errors = createErrorMap();
           if (parseMaxUses(value.maxUses) === undefined) {
-            errors.fields.maxUses = t($ => $.web.invitations.maxUsesTooLow, {min: 1});
+            errors.fields.maxUses = t($ => $.web.invitations.maxUsesMinimum, {min: 1});
           }
           return errors;
         },
@@ -301,11 +301,11 @@ function InvitationForm({
         if (invitation === null) {
           await create.mutateAsync(maxUses);
         } else {
-          await changeMaxUses.mutateAsync({invitation: invitation.id, maxUses});
+          await updateInvitation.mutateAsync({invitation: invitation.id, maxUses});
         }
       } catch (error) {
-        return hasCode(error, 'max_uses_below_uses')
-          ? createValidationError({fields: {maxUses: t($ => $.web.invitations.maxUsesBelowUses)}})
+        return hasCode(error, 'max_uses_too_low')
+          ? createValidationError({fields: {maxUses: t($ => $.web.invitations.maxUsesAlreadyUsed)}})
           : createValidationError(t($ => $.core.errors.somethingWentWrong));
       }
       toast.success(

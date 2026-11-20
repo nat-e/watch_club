@@ -42,7 +42,7 @@ pub struct CurrentUser {
     pub preferences: UserPreferences,
 }
 
-/// A User as every User sees them.
+/// A User as the list of Users shows them.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema)]
 pub struct User {
     pub id: UserId,
@@ -333,27 +333,29 @@ pub async fn list_users(db: &Pool) -> Result<Vec<User>, InternalError> {
 /// The reason a User wasn't deleted.
 #[derive(Debug, thiserror::Error)]
 pub enum DeleteUserError {
+    #[error("no such User")]
+    UserNotFound,
     #[error("the Instance Administrator can't be deleted")]
-    InstanceAdministrator,
+    CannotDeleteAdministrator,
     #[error(transparent)]
     Internal(#[from] anyhow::Error),
 }
 
-impl From<InternalError> for DeleteUserError {
-    fn from(error: InternalError) -> Self {
-        Self::Internal(error.0)
-    }
-}
-
-/// Deletes the User, which signs them out on every device. Succeeds when there's no such User,
-/// such as when they're deleted already.
+/// Deletes the User, which signs them out on every device.
 #[tracing::instrument(skip_all, fields(user.id = %user))]
 pub async fn delete_user(db: &Pool, user: UserId) -> Result<(), DeleteUserError> {
-    let deleted = sqlx::query_scalar!(
+    // Deletes the User unless they're the Instance Administrator, and returns them as they were
+    let target = sqlx::query!(
         r#"
-        DELETE FROM users
-        WHERE id = $1 AND NOT is_instance_administrator
-        RETURNING username
+        WITH target AS (
+            SELECT id, username, is_instance_administrator FROM users WHERE id = $1
+        ),
+        deleted AS (
+            DELETE FROM users
+            WHERE id IN (SELECT id FROM target WHERE NOT is_instance_administrator)
+        )
+        SELECT username AS "username!", is_instance_administrator AS "is_instance_administrator!"
+        FROM target
         "#,
         user as UserId,
     )
@@ -361,30 +363,19 @@ pub async fn delete_user(db: &Pool, user: UserId) -> Result<(), DeleteUserError>
     .fetch_optional(db)
     .await
     .context("failed to delete a User")?;
-    if let Some(username) = deleted {
-        tracing::event!(
-            name: "accounts.user.deleted",
-            Level::INFO,
-            user.name = username,
-            "deleted a User",
-        );
-        return Ok(());
-    }
 
-    // Nothing deleted: the User is the Instance Administrator, or gone
-    let is_instance_administrator = sqlx::query_scalar!(
-        r#"
-        SELECT EXISTS (SELECT FROM users WHERE id = $1 AND is_instance_administrator) AS "exists!"
-        "#,
-        user as UserId,
-    )
-    .with_operation("SELECT", "users")
-    .fetch_one(db)
-    .await
-    .context("failed to check for the Instance Administrator")?;
-    if is_instance_administrator {
-        return Err(DeleteUserError::InstanceAdministrator);
+    let Some(target) = target else {
+        return Err(DeleteUserError::UserNotFound);
+    };
+    if target.is_instance_administrator {
+        return Err(DeleteUserError::CannotDeleteAdministrator);
     }
+    tracing::event!(
+        name: "accounts.user.deleted",
+        Level::INFO,
+        user.name = target.username,
+        "deleted a User",
+    );
     Ok(())
 }
 

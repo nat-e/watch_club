@@ -32,7 +32,7 @@ async fn deletes_the_invitation_and_keeps_the_users_it_created(db: PgPool) {
 }
 
 #[database_test]
-async fn succeeds_when_it_is_deleted_already(db: PgPool) {
+async fn says_when_there_is_no_such_invitation(db: PgPool) {
     let db = watch_club::db::instrument(db);
     let admin = support::create_instance_administrator(&db).await;
     let mut browser = Client::new(&db);
@@ -43,7 +43,8 @@ async fn succeeds_when_it_is_deleted_already(db: PgPool) {
 
     let response = browser.delete(&uri).await;
 
-    assert_eq!(response.status, StatusCode::NO_CONTENT);
+    assert_eq!(response.status, StatusCode::NOT_FOUND);
+    assert_eq!(response.body["code"], "invitation_not_found");
 }
 
 #[database_test]

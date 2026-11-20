@@ -1091,7 +1091,7 @@
     },
     "/api/invitations/{invitation_id}": {
       "delete": {
-        "summary": "Deletes the Invitation, so that nobody can redeem it anymore. The Users it created stay.\nSucceeds when there's no such Invitation.",
+        "summary": "Deletes the Invitation, so that nobody can redeem it anymore. The Users it created stay.",
         "operationId": "delete_invitation",
         "parameters": [
           {
@@ -1106,7 +1106,7 @@
         ],
         "responses": {
           "204": {
-            "description": "Deleted, or there was no such Invitation"
+            "description": "Deleted"
           },
           "400": {
             "description": "The request was malformed or invalid.",
@@ -1182,6 +1182,16 @@
                       "description": "The failure in English, for developers rather than users"
                     }
                   }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "There's no such Invitation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_DeleteInvitationRequestError"
                 }
               }
             }
@@ -1766,6 +1776,32 @@
               }
             }
           },
+          "403": {
+            "description": "Only the Instance Administrator can do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "forbidden"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "500": {
             "description": "Something went wrong. Try again later.",
             "content": {
@@ -1795,17 +1831,21 @@
         },
         "security": [
           {
-            "session_cookie": []
+            "session_cookie": [
+              "instance_administrator"
+            ]
           },
           {
-            "session_token": []
+            "session_token": [
+              "instance_administrator"
+            ]
           }
         ]
       }
     },
     "/api/users/{user_id}": {
       "delete": {
-        "summary": "Deletes the User, which signs them out on every device. Succeeds when there's no such User.",
+        "summary": "Deletes the User, which signs them out on every device.",
         "operationId": "delete_user",
         "parameters": [
           {
@@ -1820,7 +1860,7 @@
         ],
         "responses": {
           "204": {
-            "description": "Deleted, or there was no such User"
+            "description": "Deleted"
           },
           "400": {
             "description": "The request was malformed or invalid.",
@@ -1896,6 +1936,16 @@
                       "description": "The failure in English, for developers rather than users"
                     }
                   }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "There's no such User",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_DeleteUserRequestError"
                 }
               }
             }
@@ -2243,6 +2293,25 @@
           }
         }
       },
+      "DeleteInvitationRequestError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invitation_not_found"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "The failures of a request to delete an Invitation."
+      },
       "DeleteUserRequestError": {
         "oneOf": [
           {
@@ -2254,7 +2323,21 @@
               "code": {
                 "type": "string",
                 "enum": [
-                  "is_instance_administrator"
+                  "user_not_found"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "cannot_delete_administrator"
                 ]
               }
             }
@@ -2318,6 +2401,42 @@
         ],
         "description": "The body of every error response: the error's `code` and details, and a message."
       },
+      "ErrorBody_DeleteInvitationRequestError": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "invitation_not_found"
+                    ]
+                  }
+                }
+              }
+            ],
+            "description": "The failures of a request to delete an Invitation."
+          },
+          {
+            "type": "object",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The failure in English, for developers rather than users"
+              }
+            }
+          }
+        ],
+        "description": "The body of every error response: the error's `code` and details, and a message."
+      },
       "ErrorBody_DeleteUserRequestError": {
         "allOf": [
           {
@@ -2331,7 +2450,21 @@
                   "code": {
                     "type": "string",
                     "enum": [
-                      "is_instance_administrator"
+                      "user_not_found"
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "cannot_delete_administrator"
                     ]
                   }
                 }
@@ -2510,7 +2643,7 @@
                   "code": {
                     "type": "string",
                     "enum": [
-                      "not_found"
+                      "invitation_not_found"
                     ]
                   }
                 }
@@ -2525,7 +2658,7 @@
                   "code": {
                     "type": "string",
                     "enum": [
-                      "max_uses_below_uses"
+                      "max_uses_too_low"
                     ]
                   }
                 }
@@ -3119,7 +3252,7 @@
               "code": {
                 "type": "string",
                 "enum": [
-                  "not_found"
+                  "invitation_not_found"
                 ]
               }
             }
@@ -3134,7 +3267,7 @@
               "code": {
                 "type": "string",
                 "enum": [
-                  "max_uses_below_uses"
+                  "max_uses_too_low"
                 ]
               }
             }
@@ -3144,7 +3277,7 @@
       },
       "User": {
         "type": "object",
-        "description": "A User as every User sees them.",
+        "description": "A User as the list of Users shows them.",
         "required": [
           "id",
           "username",
