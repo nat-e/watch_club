@@ -37,7 +37,7 @@ async fn lists_each_source_with_its_type_and_without_its_api_key(db: PgPool) {
                 "id": app.body["id"],
                 "type": "radarr",
                 "media_type": "movie",
-                "url": radarr.url(),
+                "url": format!("{}/", radarr.url()),
                 "quality_profile": { "id": 4, "name": "HD-1080p" },
                 "root_folder_path": "/movies",
                 "local_root_folder_path": null,

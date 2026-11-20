@@ -1,22 +1,21 @@
-//! Radarr, Sonarr and Sportarr Sources: their app, their Source Configuration, which WatchClub
-//! validates by calling the app with its API key, the checks that list the app's quality profiles
-//! and root folders for the Instance Administrator to choose from, and `Servarr`, the gateway that
-//! calls the app.
+//! Radarr, Sonarr and Sportarr Sources: their app, their Source Configuration, and the connection
+//! test that checks the app at a URL takes an API key and lists the quality profiles and root
+//! folders the Instance Administrator chooses from. `client` calls the app.
+
+mod client;
 
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use tracing::Level;
 use utoipa::ToSchema;
 
-use super::{SourceConfiguration, SourceId, store};
+use self::client::ServarrClient;
 use crate::{
-    api_client::{ApiClient, ApiCredentials, ApiCredentialsError, HttpClient},
-    db::Pool,
+    api_client::{ApiCredentialsError, ApiUrl, ApiUrlError, HttpClient},
     domain::contents::MediaType,
     utils::{
         encryption::{EncryptedSecret, EncryptionKey},
         filesystem::{AbsoluteFolder, FolderError},
-        url,
     },
 };
 
@@ -71,8 +70,8 @@ pub struct QualityProfile {
 pub struct ServarrConfiguration {
     /// The app, which tells the Source Type and the Media Type
     pub app: ServarrApp,
-    /// The address WatchClub calls the app at, without a trailing `/`
-    pub url: String,
+    /// The address WatchClub calls the app at, with its API under it
+    pub url: ApiUrl,
     /// The key WatchClub calls the app with, which it decrypts only to call it
     pub api_key: EncryptedSecret,
     /// The quality the app downloads requested Content in
@@ -92,9 +91,9 @@ pub struct ServarrConfigurationInput {
     /// The API key the Instance Administrator entered, encrypted as soon as WatchClub received it,
     /// or None to keep the Source's saved one
     pub api_key: Option<EncryptedSecret>,
-    /// The ID of one of the app's quality profiles
-    pub quality_profile_id: i32,
-    /// The path of one of the app's root folders
+    /// One of the app's quality profiles, which `test_servarr_connection` lists
+    pub quality_profile: QualityProfile,
+    /// The path of one of the app's root folders, which `test_servarr_connection` lists
     pub root_folder_path: String,
     /// None or blank when WatchClub sees the root folder at the app's path
     pub local_root_folder_path: Option<String>,
@@ -108,14 +107,6 @@ pub enum ServarrConfigurationError {
     /// The app's URL or API key
     #[error(transparent)]
     Connection(#[from] ConnectionError),
-    /// The app has no quality profile with the ID, such as one deleted in the app since the form
-    /// listed it
-    #[error("the app has no quality profile with this ID")]
-    QualityProfile,
-    /// The app has no root folder at the path, such as one deleted in the app since the form listed
-    /// it
-    #[error("the app has no root folder at this path")]
-    RootFolder,
     #[error("the local root folder: {0}")]
     LocalRootFolder(FolderError),
 }
@@ -137,38 +128,24 @@ pub enum ConnectionError {
 /// The quality profiles and root folders of a Radarr, Sonarr or Sportarr app, which the Instance
 /// Administrator chooses a Source's from.
 #[derive(Debug, PartialEq, Eq, Serialize, ToSchema)]
-pub struct ServarrSourceCheck {
+pub struct ServarrChoices {
     pub quality_profiles: Vec<QualityProfile>,
     /// The paths of its root folders, as it sees them, such as `/movies`
     pub root_folders: Vec<String>,
 }
 
-/// The reason WatchClub didn't check the app of an existing Radarr, Sonarr or Sportarr Source.
-#[derive(Debug, thiserror::Error)]
-pub enum CheckExistingServarrSourceError {
-    /// There's no Source with the ID, or it's a Filesystem Source, which has no app
-    #[error("no such Radarr, Sonarr or Sportarr Source")]
-    SourceNotFound,
-    #[error(transparent)]
-    Connection(#[from] ConnectionError),
-    #[error(transparent)]
-    Internal(#[from] anyhow::Error),
-}
-
 impl ServarrConfiguration {
-    /// Returns the configuration to save, with its URL tidied, once `AbsoluteFolder::parse` found
-    /// the local root folder, `Servarr::connect` checked the app, and the app has the quality
-    /// profile and root folder. Checks the local root folder first, which doesn't call the app.
-    pub(super) async fn parse(
+    /// Returns the configuration to save, with its URL parsed, once `AbsoluteFolder::parse` found
+    /// the local root folder. Doesn't call the app: it saves the quality profile and root folder
+    /// that the Instance Administrator chose among those `test_servarr_connection` listed.
+    pub(super) async fn validate(
         configuration: ServarrConfigurationInput,
-        encryption_key: &EncryptionKey,
-        http_client: &HttpClient,
     ) -> Result<Self, ServarrConfigurationError> {
         let ServarrConfigurationInput {
             app,
             url,
             api_key,
-            quality_profile_id,
+            quality_profile,
             root_folder_path,
             local_root_folder_path,
         } = configuration;
@@ -181,23 +158,8 @@ impl ServarrConfiguration {
             ),
             _ => None,
         };
-
         let api_key = api_key.ok_or(ConnectionError::InvalidApiKey)?;
-        let url = url::tidy_http_url(&url).ok_or(ConnectionError::InvalidServarrUrl)?;
-        let servarr = Servarr::connect(app, &url, &api_key, encryption_key, http_client).await?;
-        let ServarrSourceCheck {
-            quality_profiles,
-            root_folders,
-        } = ServarrSourceCheck::fetch(&servarr).await?;
-
-        // The app has the quality profile and root folder
-        let quality_profile = quality_profiles
-            .into_iter()
-            .find(|profile| profile.id == quality_profile_id)
-            .ok_or(ServarrConfigurationError::QualityProfile)?;
-        if !root_folders.contains(&root_folder_path) {
-            return Err(ServarrConfigurationError::RootFolder);
-        }
+        let url: ApiUrl = url.parse().map_err(ConnectionError::from)?;
 
         Ok(Self {
             app,
@@ -210,156 +172,56 @@ impl ServarrConfiguration {
     }
 }
 
-impl ServarrSourceCheck {
-    /// Returns the app's quality profiles and root folders, which it asks for at once.
-    async fn fetch(servarr: &Servarr) -> Result<Self, ConnectionError> {
-        let (quality_profiles, root_folders) =
-            tokio::try_join!(servarr.list_quality_profiles(), servarr.list_root_folders())?;
-        Ok(Self {
-            quality_profiles,
-            root_folders,
-        })
-    }
-}
-
-/// Returns the quality profiles and root folders of the app at `url`, for a new Source, once
-/// `Servarr::connect` checked that it's `app` and takes the API key.
+/// Checks that `app` answers at `url` and takes the API key, which it
+/// decrypts only to call the app, then returns the app's quality profiles and root folders. Refuses
+/// another app, such as Sonarr at a Radarr Source's URL. Doesn't call the app when it can't decrypt
+/// the API key.
 #[tracing::instrument(skip_all, fields(servarr.app = app.name()))]
-pub async fn check_new_servarr_source(
+pub async fn test_servarr_connection(
     app: ServarrApp,
     url: &str,
     api_key: &EncryptedSecret,
     encryption_key: &EncryptionKey,
     http_client: &HttpClient,
-) -> Result<ServarrSourceCheck, ConnectionError> {
-    let servarr = Servarr::connect(app, url, api_key, encryption_key, http_client).await?;
-    ServarrSourceCheck::fetch(&servarr).await
-}
+) -> Result<ServarrChoices, ConnectionError> {
+    let api_key = encryption_key.decrypt(api_key).map_err(|error| {
+        tracing::event!(
+            name: "sources.api_key.unreadable",
+            Level::WARN,
+            exception.message = %error,
+            "failed to decrypt a Source's API key",
+        );
+        // The Instance Administrator enters it again
+        ConnectionError::InvalidApiKey
+    })?;
+    let url: ApiUrl = url.parse()?;
+    let client = ServarrClient::new(http_client, app, &url, &api_key)?;
 
-/// Returns the quality profiles and root folders of the app of the Radarr, Sonarr or Sportarr
-/// Source with `id`, once `Servarr::connect` checked that the app at `url` takes the API key: the
-/// one entered, or else the Source's saved one.
-#[tracing::instrument(skip_all, fields(source.id = %id))]
-pub async fn check_existing_servarr_source(
-    db: &Pool,
-    id: SourceId,
-    url: &str,
-    api_key: Option<EncryptedSecret>,
-    encryption_key: &EncryptionKey,
-    http_client: &HttpClient,
-) -> Result<ServarrSourceCheck, CheckExistingServarrSourceError> {
-    let source = store::get_by_id(db, id)
-        .await?
-        .ok_or(CheckExistingServarrSourceError::SourceNotFound)?;
-    let SourceConfiguration::Servarr(configuration) = source.configuration else {
-        return Err(CheckExistingServarrSourceError::SourceNotFound);
-    };
-
-    let api_key = api_key.unwrap_or(configuration.api_key);
-    let servarr = Servarr::connect(
-        configuration.app,
-        url,
-        &api_key,
-        encryption_key,
-        http_client,
-    )
-    .await?;
-    Ok(ServarrSourceCheck::fetch(&servarr).await?)
-}
-
-/// The gateway to a Radarr, Sonarr or Sportarr app: the app at a Source's URL, which answered,
-/// took the API key and is the app the Source expects.
-#[derive(Debug)]
-pub struct Servarr {
-    app: ServarrApp,
-    api: ApiClient,
-}
-
-impl Servarr {
-    /// Returns the app at `url`, an http or https URL, once it checked that the app takes the API
-    /// key, which it decrypts only to call the app, and that it's `app`, rather than Sonarr at a
-    /// Radarr Source's URL for example. Doesn't call the app when it can't decrypt the API key.
-    pub async fn connect(
-        app: ServarrApp,
-        url: &str,
-        api_key: &EncryptedSecret,
-        encryption_key: &EncryptionKey,
-        http_client: &HttpClient,
-    ) -> Result<Self, ConnectionError> {
-        let api_key = encryption_key.decrypt(api_key).map_err(|error| {
-            tracing::event!(
-                name: "sources.api_key.unreadable",
-                Level::WARN,
-                exception.message = %error,
-                "failed to decrypt a Source's API key",
-            );
-            // The Instance Administrator enters it again
-            ConnectionError::InvalidApiKey
-        })?;
-
-        let mut api_url = url::parse_http_url(url).ok_or(ConnectionError::InvalidServarrUrl)?;
-        api_url
-            .path_segments_mut()
-            .expect("an http URL can have paths")
-            .pop_if_empty()
-            .extend(app.api_path());
-        let credentials = ApiCredentials::api_key(&api_key)?;
-        let api = ApiClient::new(http_client, api_url, credentials);
-        let servarr = Self { app, api };
-
-        let app_name = servarr.fetch_app_name().await?;
-        if app_name != app.name() {
-            tracing::event!(
-                name: "servarr.app.unexpected",
-                Level::WARN,
-                servarr.app = app.name(),
-                exception.message = %format_args!("{app_name} answered, rather than {}", app.name()),
-                "another app answered at a Source's URL",
-            );
-            return Err(ConnectionError::InvalidServarrUrl);
-        }
-
-        Ok(servarr)
+    let app_name = client.fetch_app_name().await?;
+    if app_name != app.name() {
+        tracing::event!(
+            name: "servarr.app.unexpected",
+            Level::WARN,
+            servarr.app = app.name(),
+            exception.message = %format_args!("{app_name} answered, rather than {}", app.name()),
+            "another app answered at a Source's URL",
+        );
+        return Err(ConnectionError::InvalidServarrUrl);
     }
 
-    /// Returns the app's quality profiles.
-    #[tracing::instrument(skip_all, fields(servarr.app = self.app.name()))]
-    pub async fn list_quality_profiles(&self) -> Result<Vec<QualityProfile>, ConnectionError> {
-        self.api
-            .get("/qualityprofile", &[], &[])
-            .await?
-            .ok_or_else(|| answered_not_found("GET /qualityprofile"))
-    }
+    let (quality_profiles, root_folders) =
+        tokio::try_join!(client.list_quality_profiles(), client.list_root_folders())?;
+    Ok(ServarrChoices {
+        quality_profiles,
+        root_folders,
+    })
+}
 
-    /// Returns the paths of the app's root folders, as it sees them, such as `/movies`.
-    #[tracing::instrument(skip_all, fields(servarr.app = self.app.name()))]
-    pub async fn list_root_folders(&self) -> Result<Vec<String>, ConnectionError> {
-        let root_folders: Vec<RootFolder> = self
-            .api
-            .get("/rootfolder", &[], &[])
-            .await?
-            .ok_or_else(|| answered_not_found("GET /rootfolder"))?;
-        Ok(root_folders.into_iter().map(|folder| folder.path).collect())
-    }
-
-    /// Returns the name the app gives itself, such as `Radarr`.
-    #[tracing::instrument(skip_all, fields(servarr.app = self.app.name()))]
-    async fn fetch_app_name(&self) -> Result<String, ConnectionError> {
-        let status: SystemStatus = self
-            .api
-            .get("/system/status", &[], &[])
-            .await?
-            .ok_or_else(|| answered_not_found("GET /system/status"))?;
-
-        status.app_name.ok_or_else(|| {
-            tracing::event!(
-                name: "servarr.call.failed",
-                Level::WARN,
-                exception.message = "the app's status has no name",
-                "failed to call a Source's app",
-            );
-            ConnectionError::InvalidServarrUrl
-        })
+/// Blames the URL when it isn't one WatchClub can call the app's API under, such as `radarr:7878`
+/// without `http://`.
+impl From<ApiUrlError> for ConnectionError {
+    fn from(_: ApiUrlError) -> Self {
+        Self::InvalidServarrUrl
     }
 }
 
@@ -383,34 +245,9 @@ impl From<reqwest::Error> for ConnectionError {
         if error.status() == Some(StatusCode::UNAUTHORIZED) {
             Self::InvalidApiKey
         } else {
-            // Nothing answered, or not as the app's API does, such as a web page or an error
+            // Nothing answered, or not as the app's API does, such as a web page, an error or a
+            // 404 at the app's API path
             Self::InvalidServarrUrl
         }
     }
-}
-
-/// Returns the error of a call that the app answered with 404, as something other than its API
-/// does, and logs it.
-fn answered_not_found(call: &str) -> ConnectionError {
-    tracing::event!(
-        name: "servarr.call.failed",
-        Level::WARN,
-        exception.message = %format_args!("the app answered {call} with 404 Not Found"),
-        "failed to call a Source's app",
-    );
-    ConnectionError::InvalidServarrUrl
-}
-
-/// An app's description of itself, from `GET /system/status`.
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct SystemStatus {
-    /// Such as `Radarr`. None when what answered isn't one of the apps
-    app_name: Option<String>,
-}
-
-/// A folder an app downloads Content to, from `GET /rootfolder`.
-#[derive(Deserialize)]
-struct RootFolder {
-    path: String,
 }

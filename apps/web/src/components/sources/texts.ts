@@ -79,19 +79,9 @@ export function useErrorMessages() {
       }
     },
 
-    /** Returns the message that the app no longer has the chosen quality profile. */
-    qualityProfileNotFound(app: ServarrApp): string {
-      return t($ => $.web.sources.qualityProfileErrors.notFound, {app: typeTexts[app].name});
-    },
-
     /** Returns the message that the app has no quality profile to choose. */
     noQualityProfiles(app: ServarrApp): string {
       return t($ => $.web.sources.qualityProfileErrors.noneInApp, {app: typeTexts[app].name});
-    },
-
-    /** Returns the message that the app no longer has the chosen root folder. */
-    rootFolderNotFound(app: ServarrApp): string {
-      return t($ => $.web.sources.rootFolderErrors.notFound, {app: typeTexts[app].name});
     },
 
     /** Returns the message that the app has no root folder to choose. */

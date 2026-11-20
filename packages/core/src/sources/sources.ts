@@ -63,15 +63,16 @@ export class InvalidServarrConfigurationError extends Error {
 }
 
 /**
- * Returns the quality profiles and root folders of a Radarr, Sonarr or Sportarr app, for a new
- * Source, once the server checked that the app is at the URL and takes the API key. Throws a
- * `ConnectionRefusedError` when it isn't or doesn't, and the API's error for other failures. Named
- * apart from the API client's `checkNewServarrSource`, which doesn't turn its errors into these.
+ * Tests the connection to a Radarr, Sonarr or Sportarr app, for a new Source: returns its quality
+ * profiles and root folders once the server checked that the app is at the URL and takes the API
+ * key. Throws a `ConnectionRefusedError` when it isn't or doesn't, and the API's error for other
+ * failures. Named apart from the API client's `testServarrConnection`, which doesn't turn its
+ * errors into these.
  */
-export async function checkNewSourceApp(
+export async function testAppConnection(
   connection: api.ServarrConnection,
-): Promise<api.ServarrSourceCheck> {
-  const {data, error} = await api.checkNewServarrSource({body: connection});
+): Promise<api.ServarrChoices> {
+  const {data, error} = await api.testServarrConnection({body: connection});
   if (data) {
     return data;
   }
@@ -79,15 +80,15 @@ export async function checkNewSourceApp(
 }
 
 /**
- * Returns the quality profiles and root folders of the app of the Radarr, Sonarr or Sportarr Source
- * with `id`, once the server checked that the app is at the URL and takes the API key: the
- * connection's, or else the Source's saved one when it has none. Throws like `checkNewSourceApp`.
+ * Tests the connection to the app of the Radarr, Sonarr or Sportarr Source with `id`, with the
+ * connection's API key, or else the Source's saved one when it has none. Returns and throws like
+ * `testAppConnection`.
  */
-export async function checkExistingSourceApp(
+export async function testSourceAppConnection(
   id: api.SourceId,
   connection: api.ServarrSourceConnection,
-): Promise<api.ServarrSourceCheck> {
-  const {data, error} = await api.checkExistingServarrSource({path: {id}, body: connection});
+): Promise<api.ServarrChoices> {
+  const {data, error} = await api.testServarrSourceConnection({path: {id}, body: connection});
   if (data) {
     return data;
   }
@@ -99,7 +100,10 @@ export async function checkExistingSourceApp(
  * other failures.
  */
 function throwConnectionError(
-  error: api.CheckNewServarrSourceError | api.CheckExistingServarrSourceError | api.UnexpectedError,
+  error:
+    | api.TestServarrConnectionError
+    | api.TestServarrSourceConnectionError
+    | api.UnexpectedError,
 ): never {
   if (error instanceof api.UnexpectedError) {
     throw error;

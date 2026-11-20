@@ -103,16 +103,46 @@ async fn seed_catalog_sources(
             continue;
         }
 
+        // Tests the connection first, as the form does, which also skips the apps that don't run
+        let api_key = config.encryption_key.encrypt(&source.api_key.into());
+        let choices = match sources::test_servarr_connection(
+            source.app,
+            source.url,
+            &api_key,
+            &config.encryption_key,
+            http_client,
+        )
+        .await
+        {
+            Ok(choices) => choices,
+            Err(error) => {
+                println!(
+                    "The dev catalog's {name} wasn't added, as {error}. Run `pnpm catalog`, then seed again"
+                );
+                continue;
+            }
+        };
+        let quality_profile = choices
+            .quality_profiles
+            .into_iter()
+            .find(|profile| profile.id == source.quality_profile_id)
+            .with_context(|| {
+                format!(
+                    "the dev catalog's {name} has no quality profile {}",
+                    source.quality_profile_id
+                )
+            })?;
+
         let local_root_folder = primary_worktree.join(source.local_root_folder);
         let configuration = ConfigurationInput::Servarr(ServarrConfigurationInput {
             app: source.app,
             url: source.url.to_owned(),
-            api_key: Some(config.encryption_key.encrypt(&source.api_key.into())),
-            quality_profile_id: source.quality_profile_id,
+            api_key: Some(api_key),
+            quality_profile,
             root_folder_path: source.root_folder_path.to_owned(),
             local_root_folder_path: Some(local_root_folder.display().to_string()),
         });
-        match sources::create(db, configuration, &config.encryption_key, http_client).await {
+        match sources::create(db, configuration).await {
             Ok(_) => println!("Added the dev catalog's {name} as a Source"),
             Err(CreateError::InvalidConfiguration(error)) => println!(
                 "The dev catalog's {name} wasn't added, as {error}. Run `pnpm catalog`, then seed again"

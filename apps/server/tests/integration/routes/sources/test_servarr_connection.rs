@@ -8,26 +8,31 @@ use crate::support::{self, Client, FakeServarr, fake_servarr::API_KEY};
 /// A folder that exists wherever the tests run
 const FOLDER: &str = env!("CARGO_MANIFEST_DIR");
 
-/// The URI that checks the app of no Source
-const MISSING_SOURCE_URI: &str = "/api/sources/01a1f26b-170d-75e6-b05d-1b3ceacf37a0/check";
+/// The URI that tests the connection to a new Source's app
+const URI: &str = "/api/sources/test-servarr-connection";
 
-/// Returns the body that checks a new Source's app.
+/// The URI that tests the connection to the app of no Source
+const MISSING_SOURCE_URI: &str =
+    "/api/sources/01a1f26b-170d-75e6-b05d-1b3ceacf37a0/test-servarr-connection";
+
+/// Returns the body that tests the connection to a new Source's app.
 fn connection(source_type: &str, url: &str, api_key: &str) -> Value {
     json!({ "type": source_type, "url": url, "api_key": api_key })
 }
 
-/// Creates a Source with this configuration, and returns the URI that checks its app.
+/// Creates a Source with this configuration, and returns the URI that tests the connection to its
+/// app.
 async fn create_source(browser: &mut Client, configuration: Value) -> String {
     let response = browser.post("/api/sources", configuration).await;
     assert_eq!(response.status, StatusCode::CREATED, "{response:?}");
     format!(
-        "/api/sources/{}/check",
+        "/api/sources/{}/test-servarr-connection",
         response.body["id"].as_str().unwrap()
     )
 }
 
 /// Returns the quality profiles and root folders of every fake app.
-fn fake_apps_check() -> Value {
+fn fake_apps_choices() -> Value {
     json!({
         "quality_profiles": [{ "id": 1, "name": "Any" }, { "id": 4, "name": "HD-1080p" }],
         "root_folders": ["/movies"],
@@ -41,14 +46,11 @@ async fn returns_the_quality_profiles_and_root_folders_of_a_new_sources_app(db: 
     let mut browser = support::admin_browser(&db).await;
 
     let response = browser
-        .post(
-            "/api/sources/check",
-            connection("radarr", &radarr.url(), API_KEY),
-        )
+        .post(URI, connection("radarr", &radarr.url(), API_KEY))
         .await;
 
     assert_eq!(response.status, StatusCode::OK, "{response:?}");
-    assert_eq!(response.body, fake_apps_check());
+    assert_eq!(response.body, fake_apps_choices());
 }
 
 #[database_test]
@@ -65,7 +67,7 @@ async fn returns_those_of_a_sources_app_with_its_saved_api_key(db: PgPool) {
 
     for response in [without_api_key, with_null_api_key] {
         assert_eq!(response.status, StatusCode::OK, "{response:?}");
-        assert_eq!(response.body, fake_apps_check());
+        assert_eq!(response.body, fake_apps_choices());
     }
 }
 
@@ -85,7 +87,7 @@ async fn returns_those_of_a_sources_app_with_the_api_key_in_the_body(db: PgPool)
         .await;
 
     assert_eq!(response.status, StatusCode::OK, "{response:?}");
-    assert_eq!(response.body, fake_apps_check());
+    assert_eq!(response.body, fake_apps_choices());
 }
 
 #[database_test]
@@ -97,16 +99,10 @@ async fn answers_why_watchclub_cant_call_the_app(db: PgPool) {
     let uri = create_source(&mut browser, radarr.configuration()).await;
 
     let wrong_key = browser
-        .post(
-            "/api/sources/check",
-            connection("radarr", &radarr.url(), "wrong-key"),
-        )
+        .post(URI, connection("radarr", &radarr.url(), "wrong-key"))
         .await;
     let wrong_url = browser
-        .post(
-            "/api/sources/check",
-            connection("radarr", &sonarr.url(), API_KEY),
-        )
+        .post(URI, connection("radarr", &sonarr.url(), API_KEY))
         .await;
     let sources_wrong_url = browser.post(&uri, json!({ "url": sonarr.url() })).await;
 
@@ -160,12 +156,12 @@ async fn refuses_users_other_than_the_instance_administrator(db: PgPool) {
     let request = connection("radarr", &radarr.url(), API_KEY);
     let source_request = json!({ "url": radarr.url() });
 
-    let signed_out = browser.post("/api/sources/check", request.clone()).await;
+    let signed_out = browser.post(URI, request.clone()).await;
     let signed_out_to_source = browser
         .post(MISSING_SOURCE_URI, source_request.clone())
         .await;
     browser.sign_in(&user).await;
-    let signed_in = browser.post("/api/sources/check", request).await;
+    let signed_in = browser.post(URI, request).await;
     let signed_in_to_source = browser.post(MISSING_SOURCE_URI, source_request).await;
 
     assert_eq!(signed_out.status, StatusCode::UNAUTHORIZED);

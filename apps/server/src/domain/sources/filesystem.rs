@@ -25,7 +25,7 @@ pub struct FilesystemConfigurationInput {
 impl FilesystemConfiguration {
     /// Returns the configuration to save, once `AbsoluteFolder::parse` found the folder on the
     /// server.
-    pub(super) async fn parse(
+    pub(super) async fn validate(
         configuration: FilesystemConfigurationInput,
     ) -> Result<Self, FolderError> {
         let path = AbsoluteFolder::parse(&configuration.path).await?;

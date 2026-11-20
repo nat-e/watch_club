@@ -1,7 +1,8 @@
-//! Radarr, Sonarr and Sportarr Sources: the app WatchClub calls before it saves one, and the API key
-//! it keeps. `gateway` tests `Servarr`, which calls the apps.
+//! Radarr, Sonarr and Sportarr Sources: the Source Configuration WatchClub saves without calling
+//! the app, and the API key it keeps. `connection` tests `test_servarr_connection`, which calls the
+//! apps.
 
-mod gateway;
+mod connection;
 
 use secrecy::ExposeSecret;
 use watch_club::{
@@ -57,14 +58,7 @@ mod create {
         db: &Pool,
         configuration: ServarrConfigurationInput,
     ) -> ServarrConfigurationError {
-        let configuration = ConfigurationInput::Servarr(configuration);
-        let result = sources::create(
-            db,
-            configuration,
-            &support::encryption_key(),
-            &support::http_client(),
-        )
-        .await;
+        let result = sources::create(db, ConfigurationInput::Servarr(configuration)).await;
         let Err(CreateError::InvalidConfiguration(ConfigurationError::Servarr(error))) = result
         else {
             panic!("{result:?}");
@@ -73,7 +67,7 @@ mod create {
     }
 
     #[database_test]
-    async fn creates_a_source_of_each_app_with_its_url_and_folder_tidied(db: PgPool) {
+    async fn creates_a_source_of_each_app_with_its_url_parsed_and_folder_tidied(db: PgPool) {
         let db = watch_club::db::instrument(db);
 
         for (fake, app, source_type, media_type) in [
@@ -108,7 +102,7 @@ mod create {
                 panic!("{source:?}");
             };
             assert_eq!(saved.app, app);
-            assert_eq!(saved.url, fake.url());
+            assert_eq!(saved.url.as_str(), format!("{}/", fake.url()));
             assert_eq!(
                 saved.quality_profile,
                 QualityProfile {
@@ -130,6 +124,8 @@ mod create {
             );
             assert_eq!(source.configuration.source_type(), source_type);
             assert_eq!(source.configuration.media_type(), media_type);
+            // The connection test checked the app before
+            assert_eq!(request_count(&fake).await, 0);
         }
         assert_eq!(sources::list(&db).await.unwrap().len(), 3);
     }
@@ -152,7 +148,7 @@ mod create {
     }
 
     #[database_test]
-    async fn refuses_an_app_without_an_api_key_without_calling_it(db: PgPool) {
+    async fn refuses_an_app_without_an_api_key(db: PgPool) {
         let db = watch_club::db::instrument(db);
         let radarr = FakeServarr::radarr().await;
         let configuration = ServarrConfigurationInput {
@@ -166,40 +162,20 @@ mod create {
             error,
             ServarrConfigurationError::Connection(ConnectionError::InvalidApiKey)
         );
-        assert_eq!(request_count(&radarr).await, 0);
         assert_eq!(sources::list(&db).await.unwrap(), Vec::<Source>::new());
     }
 
     #[database_test]
-    async fn refuses_an_api_key_the_app_rejects(db: PgPool) {
+    async fn refuses_a_url_that_cant_have_a_path(db: PgPool) {
         let db = watch_club::db::instrument(db);
         let radarr = FakeServarr::radarr().await;
+        // Without `http://`, `radarr` is the URL's scheme
         let configuration = ServarrConfigurationInput {
-            api_key: Some(support::encryption_key().encrypt(&"wrong-key".into())),
+            url: "radarr:7878".to_owned(),
             ..radarr.configuration_input()
         };
 
         let error = configuration_error(&db, configuration).await;
-
-        assert_eq!(
-            error,
-            ServarrConfigurationError::Connection(ConnectionError::InvalidApiKey)
-        );
-    }
-
-    #[database_test]
-    async fn refuses_a_url_where_another_app_answers(db: PgPool) {
-        let db = watch_club::db::instrument(db);
-        let sonarr = FakeServarr::sonarr().await;
-
-        let error = configuration_error(
-            &db,
-            ServarrConfigurationInput {
-                app: ServarrApp::Radarr,
-                ..sonarr.configuration_input()
-            },
-        )
-        .await;
 
         assert_eq!(
             error,
@@ -208,35 +184,7 @@ mod create {
     }
 
     #[database_test]
-    async fn refuses_a_quality_profile_the_app_doesnt_have(db: PgPool) {
-        let db = watch_club::db::instrument(db);
-        let radarr = FakeServarr::radarr().await;
-        let configuration = ServarrConfigurationInput {
-            quality_profile_id: 2,
-            ..radarr.configuration_input()
-        };
-
-        let error = configuration_error(&db, configuration).await;
-
-        assert_eq!(error, ServarrConfigurationError::QualityProfile);
-    }
-
-    #[database_test]
-    async fn refuses_a_root_folder_the_app_doesnt_have(db: PgPool) {
-        let db = watch_club::db::instrument(db);
-        let radarr = FakeServarr::radarr().await;
-        let configuration = ServarrConfigurationInput {
-            root_folder_path: "/tv".to_owned(),
-            ..radarr.configuration_input()
-        };
-
-        let error = configuration_error(&db, configuration).await;
-
-        assert_eq!(error, ServarrConfigurationError::RootFolder);
-    }
-
-    #[database_test]
-    async fn checks_the_local_root_folder_before_calling_the_app(db: PgPool) {
+    async fn refuses_a_local_root_folder_that_isnt_on_the_server(db: PgPool) {
         let db = watch_club::db::instrument(db);
         let radarr = FakeServarr::radarr().await;
         let configuration = ServarrConfigurationInput {
@@ -250,13 +198,11 @@ mod create {
             error,
             ServarrConfigurationError::LocalRootFolder(FolderError::NotFound)
         );
-        assert_eq!(request_count(&radarr).await, 0);
     }
 }
 
 mod update {
     use sqlx::PgPool;
-    use watch_club::domain::sources::UpdateError;
     use watch_club_test_macros::database_test;
 
     use super::*;
@@ -266,33 +212,25 @@ mod update {
         let db = watch_club::db::instrument(db);
         let radarr = FakeServarr::radarr().await;
         let source = create_radarr_source(&db, &radarr).await;
+        let any = QualityProfile {
+            id: 1,
+            name: "Any".to_owned(),
+        };
         let configuration = ServarrConfigurationInput {
-            quality_profile_id: 1,
+            quality_profile: any.clone(),
             local_root_folder_path: Some(FOLDER.to_owned()),
             ..radarr.configuration_input()
         };
 
-        let updated = sources::update(
-            &db,
-            source.id,
-            ConfigurationInput::Servarr(configuration),
-            &support::encryption_key(),
-            &support::http_client(),
-        )
-        .await
-        .unwrap();
+        let updated = sources::update(&db, source.id, ConfigurationInput::Servarr(configuration))
+            .await
+            .unwrap();
 
         let SourceConfiguration::Servarr(saved) = &updated.configuration else {
             panic!("{updated:?}");
         };
         assert_eq!(updated.id, source.id);
-        assert_eq!(
-            saved.quality_profile,
-            QualityProfile {
-                id: 1,
-                name: "Any".to_owned(),
-            }
-        );
+        assert_eq!(saved.quality_profile, any);
         assert_eq!(
             saved
                 .local_root_folder_path
@@ -313,17 +251,10 @@ mod update {
             ..radarr.configuration_input()
         };
 
-        let updated = sources::update(
-            &db,
-            source.id,
-            ConfigurationInput::Servarr(configuration),
-            &support::encryption_key(),
-            &support::http_client(),
-        )
-        .await
-        .unwrap();
+        let updated = sources::update(&db, source.id, ConfigurationInput::Servarr(configuration))
+            .await
+            .unwrap();
 
-        // The fake app takes only its API key, which the configuration didn't have
         assert_eq!(updated, source);
     }
 
@@ -331,188 +262,19 @@ mod update {
     async fn replaces_the_api_key_with_the_one_in_the_configuration(db: PgPool) {
         let db = watch_club::db::instrument(db);
         let radarr = FakeServarr::radarr().await;
-        let moved_radarr = FakeServarr::radarr_with_api_key("new-api-key").await;
         let source = create_radarr_source(&db, &radarr).await;
-        let with_saved_key = ServarrConfigurationInput {
-            api_key: None,
-            ..moved_radarr.configuration_input()
+        let configuration = ServarrConfigurationInput {
+            api_key: Some(support::encryption_key().encrypt(&"new-api-key".into())),
+            ..radarr.configuration_input()
         };
-        let with_new_key = moved_radarr.configuration_input();
 
-        let refused = sources::update(
-            &db,
-            source.id,
-            ConfigurationInput::Servarr(with_saved_key),
-            &support::encryption_key(),
-            &support::http_client(),
-        )
-        .await;
-        let updated = sources::update(
-            &db,
-            source.id,
-            ConfigurationInput::Servarr(with_new_key),
-            &support::encryption_key(),
-            &support::http_client(),
-        )
-        .await
-        .unwrap();
+        let updated = sources::update(&db, source.id, ConfigurationInput::Servarr(configuration))
+            .await
+            .unwrap();
 
-        let Err(UpdateError::InvalidConfiguration(error)) = refused else {
-            panic!("{refused:?}");
-        };
-        assert_eq!(
-            error,
-            ConfigurationError::Servarr(ServarrConfigurationError::Connection(
-                ConnectionError::InvalidApiKey
-            ))
-        );
         assert_eq!(
             decrypted_api_key(&updated, &support::encryption_key()),
             "new-api-key"
         );
-    }
-
-    #[database_test]
-    async fn asks_for_the_api_key_again_when_another_key_encrypted_it(db: PgPool) {
-        let db = watch_club::db::instrument(db);
-        let radarr = FakeServarr::radarr().await;
-        let source = create_radarr_source(&db, &radarr).await;
-        let another_key = support::another_encryption_key();
-        let with_saved_key = ServarrConfigurationInput {
-            api_key: None,
-            ..radarr.configuration_input()
-        };
-        let with_api_key_again = ServarrConfigurationInput {
-            api_key: Some(another_key.encrypt(&API_KEY.into())),
-            ..radarr.configuration_input()
-        };
-        let requests_before = request_count(&radarr).await;
-
-        let refused = sources::update(
-            &db,
-            source.id,
-            ConfigurationInput::Servarr(with_saved_key),
-            &another_key,
-            &support::http_client(),
-        )
-        .await;
-        let requests_after = request_count(&radarr).await;
-        let updated = sources::update(
-            &db,
-            source.id,
-            ConfigurationInput::Servarr(with_api_key_again),
-            &another_key,
-            &support::http_client(),
-        )
-        .await
-        .unwrap();
-
-        let Err(UpdateError::InvalidConfiguration(error)) = refused else {
-            panic!("{refused:?}");
-        };
-        assert_eq!(
-            error,
-            ConfigurationError::Servarr(ServarrConfigurationError::Connection(
-                ConnectionError::InvalidApiKey
-            ))
-        );
-        assert_eq!(requests_after, requests_before);
-        assert_eq!(decrypted_api_key(&updated, &another_key), API_KEY);
-    }
-}
-
-mod check_existing_servarr_source {
-    use sqlx::PgPool;
-    use watch_club::domain::sources::CheckExistingServarrSourceError;
-    use watch_club_test_macros::database_test;
-
-    use super::*;
-
-    #[database_test]
-    async fn checks_the_app_with_the_sources_saved_api_key(db: PgPool) {
-        let db = watch_club::db::instrument(db);
-        let radarr = FakeServarr::radarr().await;
-        let source = create_radarr_source(&db, &radarr).await;
-
-        let check = sources::check_existing_servarr_source(
-            &db,
-            source.id,
-            &radarr.url(),
-            None,
-            &support::encryption_key(),
-            &support::http_client(),
-        )
-        .await
-        .unwrap();
-
-        assert_eq!(check.root_folders, [ROOT_FOLDER]);
-    }
-
-    #[database_test]
-    async fn checks_the_app_with_another_api_key(db: PgPool) {
-        let db = watch_club::db::instrument(db);
-        let radarr = FakeServarr::radarr().await;
-        let moved_radarr = FakeServarr::radarr_with_api_key("new-api-key").await;
-        let source = create_radarr_source(&db, &radarr).await;
-        let new_api_key = support::encryption_key().encrypt(&"new-api-key".into());
-
-        let with_saved_key = sources::check_existing_servarr_source(
-            &db,
-            source.id,
-            &moved_radarr.url(),
-            None,
-            &support::encryption_key(),
-            &support::http_client(),
-        )
-        .await;
-        let with_new_key = sources::check_existing_servarr_source(
-            &db,
-            source.id,
-            &moved_radarr.url(),
-            Some(new_api_key),
-            &support::encryption_key(),
-            &support::http_client(),
-        )
-        .await;
-
-        assert!(
-            matches!(
-                with_saved_key,
-                Err(CheckExistingServarrSourceError::Connection(
-                    ConnectionError::InvalidApiKey
-                ))
-            ),
-            "{with_saved_key:?}"
-        );
-        assert!(with_new_key.is_ok(), "{with_new_key:?}");
-    }
-
-    #[database_test]
-    async fn asks_for_the_api_key_again_when_another_key_encrypted_it(db: PgPool) {
-        let db = watch_club::db::instrument(db);
-        let radarr = FakeServarr::radarr().await;
-        let source = create_radarr_source(&db, &radarr).await;
-        let requests_before = request_count(&radarr).await;
-
-        let result = sources::check_existing_servarr_source(
-            &db,
-            source.id,
-            &radarr.url(),
-            None,
-            &support::another_encryption_key(),
-            &support::http_client(),
-        )
-        .await;
-
-        assert!(
-            matches!(
-                result,
-                Err(CheckExistingServarrSourceError::Connection(
-                    ConnectionError::InvalidApiKey
-                ))
-            ),
-            "{result:?}"
-        );
-        assert_eq!(request_count(&radarr).await, requests_before);
     }
 }

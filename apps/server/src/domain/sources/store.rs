@@ -86,7 +86,7 @@ pub(super) async fn insert(
                 "#,
                 configuration.source_type(),
                 configuration.media_type(),
-                servarr.url,
+                servarr.url.as_str(),
                 &servarr.api_key as &EncryptedSecret,
                 servarr.quality_profile.id,
                 servarr.quality_profile.name,
@@ -135,7 +135,7 @@ pub(super) async fn update(
                 WHERE id = $1
                 "#,
                 id as SourceId,
-                servarr.url,
+                servarr.url.as_str(),
                 &servarr.api_key as &EncryptedSecret,
                 servarr.quality_profile.id,
                 servarr.quality_profile.name,
@@ -190,7 +190,11 @@ impl SourceRow {
             }),
             Some(app) => SourceConfiguration::Servarr(ServarrConfiguration {
                 app,
-                url: self.url.expect(FILLED),
+                url: self
+                    .url
+                    .expect(FILLED)
+                    .parse()
+                    .expect("the sources table has only the URLs that `validate` parsed"),
                 api_key: self.api_key_encrypted.expect(FILLED),
                 quality_profile: QualityProfile {
                     id: self.quality_profile_id.expect(FILLED),

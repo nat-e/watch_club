@@ -1,12 +1,12 @@
 import {useMutation} from '@tanstack/react-query';
-import type {QualityProfile, ServarrApp, ServarrSourceCheck} from '@watchclub/api';
+import type {QualityProfile, ServarrApp, ServarrChoices} from '@watchclub/api';
 import {
   ConnectionRefusedError,
-  checkExistingSourceApp,
-  checkNewSourceApp,
   InvalidServarrConfigurationError,
   type ServarrSource,
   saveSourceMutation,
+  testAppConnection,
+  testSourceAppConnection,
 } from '@watchclub/core/sources/sources';
 import * as icons from 'lucide-react';
 import {useState} from 'react';
@@ -63,17 +63,17 @@ export function ServarrSourceForm({
     apiKey: '',
   });
   // Null until the app answers the check, with its quality profiles and root folders
-  const [sourceCheck, setSourceCheck] = useState<ServarrSourceCheck | null>(null);
+  const [choices, setChoices] = useState<ServarrChoices | null>(null);
 
-  if (sourceCheck === null) {
+  if (choices === null) {
     return (
       <ConnectionStep
         app={app}
         source={source}
         credentials={credentials}
-        onConnected={(connectedCredentials, newSourceCheck) => {
+        onConnected={(connectedCredentials, newChoices) => {
           setCredentials(connectedCredentials);
-          setSourceCheck(newSourceCheck);
+          setChoices(newChoices);
         }}
       />
     );
@@ -83,10 +83,10 @@ export function ServarrSourceForm({
       app={app}
       source={source}
       credentials={credentials}
-      qualityProfiles={sourceCheck.quality_profiles}
-      rootFolders={sourceCheck.root_folders}
+      qualityProfiles={choices.quality_profiles}
+      rootFolders={choices.root_folders}
       onBack={() => {
-        setSourceCheck(null);
+        setChoices(null);
       }}
       onSaved={onSaved}
     />
@@ -106,7 +106,7 @@ function ConnectionStep({
   app: ServarrApp;
   source?: ServarrSource;
   credentials: Credentials;
-  onConnected: (credentials: Credentials, sourceCheck: ServarrSourceCheck) => void;
+  onConnected: (credentials: Credentials, choices: ServarrChoices) => void;
 }) {
   const {t} = useTranslation(['web', 'core']);
   const name = useSourceTypeTexts()[app].name;
@@ -129,13 +129,13 @@ function ConnectionStep({
       },
     ],
     onSubmit: async ({value, createValidationError}) => {
-      let sourceCheck: ServarrSourceCheck;
+      let choices: ServarrChoices;
       try {
         // biome-ignore-start lint/style/useNamingConvention: the API's fields are snake_case
-        sourceCheck =
+        choices =
           source === undefined
-            ? await checkNewSourceApp({type: app, url: value.url, api_key: value.apiKey})
-            : await checkExistingSourceApp(source.id, {
+            ? await testAppConnection({type: app, url: value.url, api_key: value.apiKey})
+            : await testSourceAppConnection(source.id, {
                 url: value.url,
                 api_key: apiKeyToSend(value),
               });
@@ -150,7 +150,7 @@ function ConnectionStep({
           fields: isAboutTheKey ? {apiKey: message} : {url: message},
         });
       }
-      onConnected(value, sourceCheck);
+      onConnected(value, choices);
       return null;
     },
   });
@@ -270,7 +270,8 @@ function QualityProfileAndRootFolderStep({
       },
     ],
     onSubmit: async ({value, createValidationError}) => {
-      if (value.qualityProfileId === null || value.rootFolderPath === null) {
+      const qualityProfile = qualityProfiles.find(profile => profile.id === value.qualityProfileId);
+      if (qualityProfile === undefined || value.rootFolderPath === null) {
         return null;
       }
       const localRootFolderPath = value.localRootFolderPath.trim();
@@ -281,7 +282,7 @@ function QualityProfileAndRootFolderStep({
             type: app,
             url: credentials.url,
             api_key: apiKeyToSend(credentials),
-            quality_profile_id: value.qualityProfileId,
+            quality_profile: qualityProfile,
             root_folder_path: value.rootFolderPath,
             local_root_folder_path: localRootFolderPath === '' ? null : localRootFolderPath,
           },
@@ -297,14 +298,6 @@ function QualityProfileAndRootFolderStep({
           case 'connection':
             // The URL and API key are in the step before
             return createValidationError(errorMessages.connection(cause, app));
-          case 'quality_profile':
-            return createValidationError({
-              fields: {qualityProfileId: errorMessages.qualityProfileNotFound(app)},
-            });
-          case 'root_folder':
-            return createValidationError({
-              fields: {rootFolderPath: errorMessages.rootFolderNotFound(app)},
-            });
           case 'local_root_folder':
             return createValidationError({
               fields: {localRootFolderPath: errorMessages.folder(cause)},

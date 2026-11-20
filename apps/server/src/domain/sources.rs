@@ -4,8 +4,8 @@
 //!
 //! This module and its `store`, which saves the Sources in the database, are the only ones that
 //! handle every Source Type. It hands each Source Configuration to its type's module, `filesystem`
-//! or `servarr`, which validates it. `servarr` also checks the apps of Radarr, Sonarr and Sportarr
-//! Sources.
+//! or `servarr`, which validates it. `servarr` also tests the connection to Radarr, Sonarr and
+//! Sportarr apps.
 
 mod filesystem;
 mod servarr;
@@ -20,16 +20,14 @@ use uuid::Uuid;
 pub use self::{
     filesystem::{FilesystemConfiguration, FilesystemConfigurationInput},
     servarr::{
-        CheckExistingServarrSourceError, ConnectionError, QualityProfile, Servarr, ServarrApp,
-        ServarrConfiguration, ServarrConfigurationError, ServarrConfigurationInput,
-        ServarrSourceCheck, check_existing_servarr_source, check_new_servarr_source,
+        ConnectionError, QualityProfile, ServarrApp, ServarrChoices, ServarrConfiguration,
+        ServarrConfigurationError, ServarrConfigurationInput, test_servarr_connection,
     },
 };
 use crate::{
-    api_client::HttpClient,
     db::Pool,
     domain::{InternalError, contents::MediaType},
-    utils::{encryption::EncryptionKey, filesystem::FolderError},
+    utils::filesystem::FolderError,
 };
 
 /// The unique ID of a Source.
@@ -110,17 +108,13 @@ impl SourceConfiguration {
     }
 
     /// Returns the configuration to save, once its type's module validated it.
-    async fn parse(
-        configuration: ConfigurationInput,
-        encryption_key: &EncryptionKey,
-        http_client: &HttpClient,
-    ) -> Result<Self, ConfigurationError> {
+    async fn validate(configuration: ConfigurationInput) -> Result<Self, ConfigurationError> {
         match configuration {
             ConfigurationInput::Filesystem(configuration) => Ok(Self::Filesystem(
-                FilesystemConfiguration::parse(configuration).await?,
+                FilesystemConfiguration::validate(configuration).await?,
             )),
             ConfigurationInput::Servarr(configuration) => Ok(Self::Servarr(
-                ServarrConfiguration::parse(configuration, encryption_key, http_client).await?,
+                ServarrConfiguration::validate(configuration).await?,
             )),
         }
     }
@@ -204,15 +198,16 @@ pub async fn list(db: &Pool) -> Result<Vec<Source>, InternalError> {
     Ok(store::list(db).await?)
 }
 
+/// Returns the Source with this ID, or None when there's none.
+#[tracing::instrument(skip_all, fields(source.id = %id))]
+pub async fn get(db: &Pool, id: SourceId) -> Result<Option<Source>, InternalError> {
+    Ok(store::get_by_id(db, id).await?)
+}
+
 /// Validates the configuration, then creates a Source with it.
 #[tracing::instrument(skip_all)]
-pub async fn create(
-    db: &Pool,
-    configuration: ConfigurationInput,
-    encryption_key: &EncryptionKey,
-    http_client: &HttpClient,
-) -> Result<Source, CreateError> {
-    let configuration = SourceConfiguration::parse(configuration, encryption_key, http_client)
+pub async fn create(db: &Pool, configuration: ConfigurationInput) -> Result<Source, CreateError> {
+    let configuration = SourceConfiguration::validate(configuration)
         .await
         .map_err(CreateError::InvalidConfiguration)?;
 
@@ -226,8 +221,6 @@ pub async fn update(
     db: &Pool,
     id: SourceId,
     mut configuration: ConfigurationInput,
-    encryption_key: &EncryptionKey,
-    http_client: &HttpClient,
 ) -> Result<Source, UpdateError> {
     let current = store::get_by_id(db, id)
         .await?
@@ -244,7 +237,7 @@ pub async fn update(
     {
         input.api_key.get_or_insert(saved.api_key);
     }
-    let configuration = SourceConfiguration::parse(configuration, encryption_key, http_client)
+    let configuration = SourceConfiguration::validate(configuration)
         .await
         .map_err(UpdateError::InvalidConfiguration)?;
 

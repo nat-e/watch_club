@@ -8,13 +8,12 @@ use std::{
 
 use anyhow::{Context, bail};
 use jiff::civil::Date;
-use reqwest::Url;
 use secrecy::{ExposeSecret, SecretString};
 use serde::{Deserialize, Deserializer, Serialize, de::DeserializeOwned};
 use serde_json::json;
 
 use crate::{
-    api_client::{ApiClient, ApiCredentials, HttpClient},
+    api_client::{ApiClient, ApiCredentials, ApiUrl, HttpClient},
     domain::{
         InternalError,
         contents::{
@@ -74,7 +73,7 @@ pub struct Hardcover {
 impl Hardcover {
     /// Returns Hardcover, signed in with `token`, the API token of the instance's Hardcover account.
     pub fn new(http_client: &HttpClient, token: &SecretString) -> anyhow::Result<Self> {
-        let base_url = Url::parse(BASE_URL).expect("BASE_URL is a URL");
+        let base_url = BASE_URL.parse().expect("BASE_URL is an API's URL");
         Self::with_base_url(http_client, token, base_url)
     }
 
@@ -82,7 +81,7 @@ impl Hardcover {
     pub fn with_base_url(
         http_client: &HttpClient,
         token: &SecretString,
-        base_url: Url,
+        base_url: ApiUrl,
     ) -> anyhow::Result<Self> {
         // Hardcover shows the token after `Bearer `, so hosts may copy both
         let token = token.expose_secret();

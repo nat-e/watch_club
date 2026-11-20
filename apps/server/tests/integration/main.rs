@@ -4,6 +4,7 @@
 
 #![expect(clippy::unwrap_used, reason = "a failed unwrap fails the test")]
 
+mod api_client;
 mod config;
 mod domain {
     mod accounts {
@@ -48,10 +49,10 @@ mod routes {
         mod get;
     }
     mod sources {
-        mod check;
         mod create;
         mod delete;
         mod list;
+        mod test_servarr_connection;
         mod update;
     }
     mod users {
@@ -62,6 +63,5 @@ mod routes {
 mod support;
 mod utils {
     mod filesystem;
-    mod url;
 }
 mod web;

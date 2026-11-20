@@ -14,7 +14,6 @@ use watch_club::{
 use watch_club_test_macros::database_test;
 
 use super::{FOLDER, OTHER_FOLDER, create, movies_folder};
-use crate::support;
 
 #[database_test]
 async fn creates_a_source_of_a_folder_with_its_path_tidied(db: PgPool) {
@@ -24,14 +23,7 @@ async fn creates_a_source_of_a_folder_with_its_path_tidied(db: PgPool) {
         path: format!(" {FOLDER}/ "),
     });
 
-    let source = sources::create(
-        &db,
-        configuration,
-        &support::encryption_key(),
-        &support::http_client(),
-    )
-    .await
-    .unwrap();
+    let source = sources::create(&db, configuration).await.unwrap();
 
     assert_eq!(
         source.configuration,
@@ -50,13 +42,7 @@ async fn creates_a_source_of_a_folder_with_its_path_tidied(db: PgPool) {
 async fn refuses_a_folder_the_server_cant_find(db: PgPool) {
     let db = watch_club::db::instrument(db);
 
-    let result = sources::create(
-        &db,
-        movies_folder("/no/such/folder"),
-        &support::encryption_key(),
-        &support::http_client(),
-    )
-    .await;
+    let result = sources::create(&db, movies_folder("/no/such/folder")).await;
 
     let Err(CreateError::InvalidConfiguration(error)) = result else {
         panic!("{result:?}");
@@ -70,15 +56,9 @@ async fn changes_the_folder(db: PgPool) {
     let db = watch_club::db::instrument(db);
     let source = create(&db, movies_folder(FOLDER)).await;
 
-    let updated = sources::update(
-        &db,
-        source.id,
-        movies_folder(&format!("{OTHER_FOLDER}/")),
-        &support::encryption_key(),
-        &support::http_client(),
-    )
-    .await
-    .unwrap();
+    let updated = sources::update(&db, source.id, movies_folder(&format!("{OTHER_FOLDER}/")))
+        .await
+        .unwrap();
 
     assert_eq!(
         updated,

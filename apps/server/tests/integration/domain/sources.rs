@@ -11,15 +11,15 @@ use watch_club::{
     domain::{
         contents::MediaType,
         sources::{
-            self, CheckExistingServarrSourceError, ConfigurationError, ConfigurationInput,
-            DeleteError, FilesystemConfigurationInput, Source, SourceId, UpdateError,
+            self, ConfigurationError, ConfigurationInput, DeleteError,
+            FilesystemConfigurationInput, Source, SourceId, UpdateError,
         },
     },
     utils::filesystem::FolderError,
 };
 use watch_club_test_macros::database_test;
 
-use crate::support::{self, FakeServarr};
+use crate::support::FakeServarr;
 
 /// Folders that exist wherever the tests run
 const FOLDER: &str = env!("CARGO_MANIFEST_DIR");
@@ -35,14 +35,7 @@ fn movies_folder(path: &str) -> ConfigurationInput {
 
 /// Creates a Source with this configuration, which must be valid.
 async fn create(db: &Pool, configuration: ConfigurationInput) -> Source {
-    sources::create(
-        db,
-        configuration,
-        &support::encryption_key(),
-        &support::http_client(),
-    )
-    .await
-    .unwrap()
+    sources::create(db, configuration).await.unwrap()
 }
 
 /// Returns the ID that a deleted Source had.
@@ -67,6 +60,16 @@ async fn lists_the_sources_oldest_first(db: PgPool) {
     let listed = sources::list(&db).await.unwrap();
 
     assert_eq!(listed, [first, second, third]);
+}
+
+#[database_test]
+async fn gets_a_source_by_its_id(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    let source = create(&db, movies_folder(FOLDER)).await;
+    let deleted = deleted_source_id(&db).await;
+
+    assert_eq!(sources::get(&db, source.id).await.unwrap(), Some(source));
+    assert_eq!(sources::get(&db, deleted).await.unwrap(), None);
 }
 
 #[database_test]
@@ -98,14 +101,7 @@ async fn fails_to_update_a_source_that_doesnt_exist(db: PgPool) {
     let db = watch_club::db::instrument(db);
     let id = deleted_source_id(&db).await;
 
-    let result = sources::update(
-        &db,
-        id,
-        movies_folder(FOLDER),
-        &support::encryption_key(),
-        &support::http_client(),
-    )
-    .await;
+    let result = sources::update(&db, id, movies_folder(FOLDER)).await;
 
     assert!(
         matches!(result, Err(UpdateError::SourceNotFound)),
@@ -141,14 +137,7 @@ async fn keeps_the_sources_type_and_media_type(db: PgPool) {
         ),
         (&app, movies_folder(FOLDER)),
     ] {
-        let result = sources::update(
-            &db,
-            source.id,
-            configuration,
-            &support::encryption_key(),
-            &support::http_client(),
-        )
-        .await;
+        let result = sources::update(&db, source.id, configuration).await;
 
         assert!(
             matches!(result, Err(UpdateError::TypeChanged)),
@@ -163,42 +152,11 @@ async fn keeps_the_saved_configuration_when_the_new_one_is_invalid(db: PgPool) {
     let db = watch_club::db::instrument(db);
     let source = create(&db, movies_folder(FOLDER)).await;
 
-    let result = sources::update(
-        &db,
-        source.id,
-        movies_folder("/no/such/folder"),
-        &support::encryption_key(),
-        &support::http_client(),
-    )
-    .await;
+    let result = sources::update(&db, source.id, movies_folder("/no/such/folder")).await;
 
     let Err(UpdateError::InvalidConfiguration(error)) = result else {
         panic!("{result:?}");
     };
     assert_eq!(error, ConfigurationError::Filesystem(FolderError::NotFound));
     assert_eq!(sources::list(&db).await.unwrap(), [source]);
-}
-
-#[database_test]
-async fn checks_only_the_apps_of_sources_that_exist(db: PgPool) {
-    let db = watch_club::db::instrument(db);
-    let folder = create(&db, movies_folder(FOLDER)).await;
-    let deleted = deleted_source_id(&db).await;
-
-    for id in [folder.id, deleted] {
-        let result = sources::check_existing_servarr_source(
-            &db,
-            id,
-            "http://radarr:7878",
-            None,
-            &support::encryption_key(),
-            &support::http_client(),
-        )
-        .await;
-
-        assert!(
-            matches!(result, Err(CheckExistingServarrSourceError::SourceNotFound)),
-            "{result:?}"
-        );
-    }
 }

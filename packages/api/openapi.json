@@ -1944,7 +1944,7 @@
             }
           },
           "422": {
-            "description": "WatchClub can't read the folders or call the app with this configuration",
+            "description": "The configuration is invalid, such as a folder WatchClub can't read",
             "content": {
               "application/json": {
                 "schema": {
@@ -1994,10 +1994,10 @@
         ]
       }
     },
-    "/api/sources/check": {
+    "/api/sources/test-servarr-connection": {
       "post": {
-        "summary": "Returns the quality profiles and root folders of a Radarr, Sonarr or Sportarr app, for a new\nSource, once it checked that the app is at the URL and takes the API key.",
-        "operationId": "check_new_servarr_source",
+        "summary": "Tests the connection to a Radarr, Sonarr or Sportarr app, for a new Source: checks that the app\nanswers at the URL and takes the API key, then returns its quality profiles and root folders.",
+        "operationId": "test_servarr_connection",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2013,7 +2013,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ServarrSourceCheck"
+                  "$ref": "#/components/schemas/ServarrChoices"
                 }
               }
             }
@@ -2271,7 +2271,7 @@
             }
           },
           "422": {
-            "description": "WatchClub can't read the folders or call the app with this configuration, or it's for another type or Media Type",
+            "description": "The configuration is invalid, such as a folder WatchClub can't read, or it's for another type or Media Type",
             "content": {
               "application/json": {
                 "schema": {
@@ -2467,10 +2467,10 @@
         ]
       }
     },
-    "/api/sources/{id}/check": {
+    "/api/sources/{id}/test-servarr-connection": {
       "post": {
-        "summary": "Returns the quality profiles and root folders of a Radarr, Sonarr or Sportarr Source's app, once\nit checked that the app is at the URL and takes the API key: the one in the request, or else the\nSource's saved one.",
-        "operationId": "check_existing_servarr_source",
+        "summary": "Tests the connection to the app of a Radarr, Sonarr or Sportarr Source, at the URL and with the\nAPI key in the request, or else the Source's saved one, then returns the app's quality profiles\nand root folders.",
+        "operationId": "test_servarr_source_connection",
         "parameters": [
           {
             "name": "id",
@@ -2497,7 +2497,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ServarrSourceCheck"
+                  "$ref": "#/components/schemas/ServarrChoices"
                 }
               }
             }
@@ -2585,7 +2585,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorBody_CheckExistingServarrSourceRequestError"
+                  "$ref": "#/components/schemas/ErrorBody_TestServarrSourceConnectionRequestError"
                 }
               }
             }
@@ -2937,25 +2937,6 @@
           "en",
           "fr"
         ]
-      },
-      "CheckExistingServarrSourceRequestError": {
-        "oneOf": [
-          {
-            "type": "object",
-            "required": [
-              "code"
-            ],
-            "properties": {
-              "code": {
-                "type": "string",
-                "enum": [
-                  "not_found"
-                ]
-              }
-            }
-          }
-        ],
-        "description": "The failures of a request to check the app of a Radarr, Sonarr or Sportarr Source."
       },
       "ConnectionError": {
         "oneOf": [
@@ -3380,42 +3361,6 @@
           }
         ],
         "description": "The failures of a request to delete a User."
-      },
-      "ErrorBody_CheckExistingServarrSourceRequestError": {
-        "allOf": [
-          {
-            "oneOf": [
-              {
-                "type": "object",
-                "required": [
-                  "code"
-                ],
-                "properties": {
-                  "code": {
-                    "type": "string",
-                    "enum": [
-                      "not_found"
-                    ]
-                  }
-                }
-              }
-            ],
-            "description": "The failures of a request to check the app of a Radarr, Sonarr or Sportarr Source."
-          },
-          {
-            "type": "object",
-            "required": [
-              "message"
-            ],
-            "properties": {
-              "message": {
-                "type": "string",
-                "description": "The failure in English, for developers rather than users"
-              }
-            }
-          }
-        ],
-        "description": "The body of every error response: the error's `code` and details, and a message."
       },
       "ErrorBody_ConnectionError": {
         "allOf": [
@@ -3862,6 +3807,42 @@
               }
             ],
             "description": "The failures of a request to redeem an Invitation."
+          },
+          {
+            "type": "object",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The failure in English, for developers rather than users"
+              }
+            }
+          }
+        ],
+        "description": "The body of every error response: the error's `code` and details, and a message."
+      },
+      "ErrorBody_TestServarrSourceConnectionRequestError": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "not_found"
+                    ]
+                  }
+                }
+              }
+            ],
+            "description": "The failures of a request to test the connection to a Radarr, Sonarr or Sportarr Source's app."
           },
           {
             "type": "object",
@@ -4652,12 +4633,35 @@
           "sportarr"
         ]
       },
+      "ServarrChoices": {
+        "type": "object",
+        "description": "The quality profiles and root folders of a Radarr, Sonarr or Sportarr app, which the Instance\nAdministrator chooses a Source's from.",
+        "required": [
+          "quality_profiles",
+          "root_folders"
+        ],
+        "properties": {
+          "quality_profiles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QualityProfile"
+            }
+          },
+          "root_folders": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The paths of its root folders, as it sees them, such as `/movies`"
+          }
+        }
+      },
       "ServarrConfiguration": {
         "type": "object",
         "description": "The Source Configuration the Instance Administrator enters for a Radarr, Sonarr or Sportarr\nSource.",
         "required": [
           "url",
-          "quality_profile_id",
+          "quality_profile",
           "root_folder_path",
           "local_root_folder_path"
         ],
@@ -4676,14 +4680,13 @@
             ],
             "description": "The root folder, as WatchClub sees it when that's another path, such as in Docker, or null"
           },
-          "quality_profile_id": {
-            "type": "integer",
-            "format": "int32",
-            "description": "One of the app's quality profiles, which `POST /sources/check` lists"
+          "quality_profile": {
+            "$ref": "#/components/schemas/QualityProfile",
+            "description": "One of the app's quality profiles, which `POST /sources/test-servarr-connection` lists"
           },
           "root_folder_path": {
             "type": "string",
-            "description": "One of the app's root folders, which `POST /sources/check` lists"
+            "description": "One of the app's root folders, which `POST /sources/test-servarr-connection` lists"
           },
           "url": {
             "type": "string",
@@ -4717,36 +4720,6 @@
             "description": "The app's URL or API key"
           },
           {
-            "type": "object",
-            "description": "The app has no quality profile with the ID, such as one deleted in the app since the form\nlisted it",
-            "required": [
-              "part"
-            ],
-            "properties": {
-              "part": {
-                "type": "string",
-                "enum": [
-                  "quality_profile"
-                ]
-              }
-            }
-          },
-          {
-            "type": "object",
-            "description": "The app has no root folder at the path, such as one deleted in the app since the form listed\nit",
-            "required": [
-              "part"
-            ],
-            "properties": {
-              "part": {
-                "type": "string",
-                "enum": [
-                  "root_folder"
-                ]
-              }
-            }
-          },
-          {
             "allOf": [
               {
                 "$ref": "#/components/schemas/FolderError"
@@ -4772,7 +4745,7 @@
       },
       "ServarrConnection": {
         "type": "object",
-        "description": "A Radarr, Sonarr or Sportarr app to check, for a new Source.",
+        "description": "A Radarr, Sonarr or Sportarr app to test the connection to, for a new Source.",
         "required": [
           "type",
           "url",
@@ -4831,32 +4804,9 @@
           }
         }
       },
-      "ServarrSourceCheck": {
-        "type": "object",
-        "description": "The quality profiles and root folders of a Radarr, Sonarr or Sportarr app, which the Instance\nAdministrator chooses a Source's from.",
-        "required": [
-          "quality_profiles",
-          "root_folders"
-        ],
-        "properties": {
-          "quality_profiles": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/QualityProfile"
-            }
-          },
-          "root_folders": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "The paths of its root folders, as it sees them, such as `/movies`"
-          }
-        }
-      },
       "ServarrSourceConnection": {
         "type": "object",
-        "description": "The address of a Source's app to check, and the API key, unless it's the Source's saved one.",
+        "description": "The address of a Source's app to test the connection to, and the API key, unless it's the\nSource's saved one.",
         "required": [
           "url"
         ],
@@ -5064,6 +5014,25 @@
         "type": "string",
         "format": "uuid",
         "description": "The unique ID of a Source."
+      },
+      "TestServarrSourceConnectionRequestError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "not_found"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "The failures of a request to test the connection to a Radarr, Sonarr or Sportarr Source's app."
       },
       "TrackLanguage": {
         "type": "string",

@@ -2,7 +2,11 @@
 //! the Sources'. It calls once: callers decide whether to try again, as the jobs do. Its calls
 //! fail with reqwest's errors, whose `status()` and `is_timeout()` tell callers what went wrong.
 
-use std::time::Duration;
+use std::{
+    fmt::{self, Display, Formatter},
+    str::FromStr,
+    time::Duration,
+};
 
 use anyhow::Context;
 use reqwest::{
@@ -38,6 +42,53 @@ impl HttpClient {
     }
 }
 
+/// The address of an API, or of an app with its API under it: a URL that can have a path, which
+/// the client adds each call's route to. Such as `http://radarr:7878`, but not `radarr:7878`, whose
+/// scheme is `radarr`.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ApiUrl(Url);
+
+/// The error of text that isn't a URL that can have a path.
+#[derive(Debug, thiserror::Error)]
+#[error("the text isn't a URL that can have a path")]
+pub struct ApiUrlError;
+
+impl ApiUrl {
+    /// Returns the URL with these segments added to its path, such as `["api", "v3"]` to
+    /// `http://media.local/radarr`.
+    #[must_use]
+    pub fn join<S: AsRef<str>>(&self, segments: impl IntoIterator<Item = S>) -> Self {
+        let mut url = self.0.clone();
+        url.path_segments_mut()
+            .expect("an `ApiUrl` can have a path")
+            .pop_if_empty()
+            .extend(segments);
+        Self(url)
+    }
+
+    pub fn as_str(&self) -> &str {
+        self.0.as_str()
+    }
+}
+
+impl FromStr for ApiUrl {
+    type Err = ApiUrlError;
+
+    fn from_str(text: &str) -> Result<Self, Self::Err> {
+        let url = Url::parse(text).map_err(|_| ApiUrlError)?;
+        if url.cannot_be_a_base() {
+            return Err(ApiUrlError);
+        }
+        Ok(Self(url))
+    }
+}
+
+impl Display for ApiUrl {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        self.0.fmt(formatter)
+    }
+}
+
 /// A client of another service's JSON API. Clones share their connections.
 ///
 /// Each call is a span in the trace, as OpenTelemetry's HTTP conventions describe, named after
@@ -45,7 +96,7 @@ impl HttpClient {
 #[derive(Clone, Debug)]
 pub(crate) struct ApiClient {
     http: ClientWithMiddleware,
-    base_url: Url,
+    base_url: ApiUrl,
     credentials: ApiCredentials,
 }
 
@@ -86,11 +137,11 @@ impl ApiCredentials {
 }
 
 impl ApiClient {
-    /// Returns a client of the API at `base_url`, an http or https URL, which calls it through
-    /// `http_client`'s connections and proves who it is with `credentials`.
+    /// Returns a client of the API at `base_url`, which calls it through `http_client`'s
+    /// connections and proves who it is with `credentials`.
     pub(crate) fn new(
         http_client: &HttpClient,
-        base_url: Url,
+        base_url: ApiUrl,
         credentials: ApiCredentials,
     ) -> Self {
         let http = ClientBuilder::new(http_client.0.clone())
@@ -122,6 +173,23 @@ impl ApiClient {
             return Ok(None);
         }
         response.error_for_status()?.json().await.map(Some)
+    }
+
+    /// GETs the JSON at `route`, like `get`, but fails when the service answers 404, as for what it
+    /// always has, such as a list.
+    ///
+    /// # Panics
+    ///
+    /// When `route` has more or fewer `{…}` than `args`.
+    pub(crate) async fn get_required<T: DeserializeOwned>(
+        &self,
+        route: &'static str,
+        args: &[&str],
+        params: &[(&str, &str)],
+    ) -> Result<T, reqwest::Error> {
+        let request = self.http.get(self.url(route, args)).query(params);
+        let response = self.send(request, format!("GET {route}")).await?;
+        response.error_for_status()?.json().await
     }
 
     /// POSTs `body` as JSON to `route`, such as `/graphql`, and returns the JSON the service answers.
@@ -178,11 +246,6 @@ impl ApiClient {
             "the route has fewer `{{…}}` than arguments"
         );
 
-        let mut url = self.base_url.clone();
-        url.path_segments_mut()
-            .expect("the API's URL is an http or https URL, which can have paths")
-            .pop_if_empty()
-            .extend(segments);
-        url
+        self.base_url.join(segments).0
     }
 }

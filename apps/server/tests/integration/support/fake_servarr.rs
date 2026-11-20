@@ -1,7 +1,7 @@
 //! A fake Radarr, Sonarr or Sportarr app, which answers the calls that setting up a Source makes.
 
 use serde_json::{Value, json};
-use watch_club::domain::sources::{ServarrApp, ServarrConfigurationInput};
+use watch_club::domain::sources::{QualityProfile, ServarrApp, ServarrConfigurationInput};
 use wiremock::{
     Mock, MockServer, Request, ResponseTemplate,
     matchers::{header, method, path},
@@ -95,7 +95,7 @@ impl FakeServarr {
             "type": self.app,
             "url": self.url(),
             "api_key": self.api_key,
-            "quality_profile_id": 4,
+            "quality_profile": { "id": 4, "name": "HD-1080p" },
             "root_folder_path": ROOT_FOLDER,
             "local_root_folder_path": null,
         })
@@ -108,7 +108,10 @@ impl FakeServarr {
             app: self.app,
             url: self.url(),
             api_key: Some(super::encryption_key().encrypt(&self.api_key.into())),
-            quality_profile_id: 4,
+            quality_profile: QualityProfile {
+                id: 4,
+                name: "HD-1080p".to_owned(),
+            },
             root_folder_path: ROOT_FOLDER.to_owned(),
             local_root_folder_path: None,
         }

@@ -134,11 +134,9 @@ export default {
     none: 'No {{type}} sources yet',
     qualityProfileErrors: {
       noneInApp: '{{app}} has no quality profiles. Add one in {{app}}, then connect again.',
-      notFound: '{{app}} no longer offers this quality profile. Choose another one.',
     },
     rootFolderErrors: {
       noneInApp: '{{app}} has no root folders. Add one in {{app}}, then connect again.',
-      notFound: '{{app}} no longer has this root folder. Choose another one.',
     },
     servarrForm: {
       add: 'Add source',

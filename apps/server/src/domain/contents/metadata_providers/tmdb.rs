@@ -17,12 +17,11 @@ use std::{
 
 use anyhow::Context;
 use jiff::civil::Date;
-use reqwest::Url;
 use secrecy::SecretString;
 use serde::{Deserialize, Deserializer};
 
 use crate::{
-    api_client::{ApiClient, ApiCredentials, HttpClient},
+    api_client::{ApiClient, ApiCredentials, ApiUrl, HttpClient},
     domain::contents::{Image, ImageSource},
 };
 
@@ -78,7 +77,7 @@ pub struct Tmdb {
 impl Tmdb {
     /// Returns TMDB, signed in with `token`, the instance's API Read Access Token.
     pub fn new(http_client: &HttpClient, token: &SecretString) -> anyhow::Result<Self> {
-        let base_url = Url::parse(BASE_URL).expect("BASE_URL is a URL");
+        let base_url = BASE_URL.parse().expect("BASE_URL is an API's URL");
         Self::with_base_url(http_client, token, base_url)
     }
 
@@ -86,7 +85,7 @@ impl Tmdb {
     pub fn with_base_url(
         http_client: &HttpClient,
         token: &SecretString,
-        base_url: Url,
+        base_url: ApiUrl,
     ) -> anyhow::Result<Self> {
         let credentials = ApiCredentials::bearer_token(token)
             .context("TMDB's API Read Access Token is invalid")?;

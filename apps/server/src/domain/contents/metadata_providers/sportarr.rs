@@ -11,11 +11,10 @@ use std::{
 
 use anyhow::Context;
 use jiff::civil::Date;
-use reqwest::Url;
 use serde::{Deserialize, Deserializer};
 
 use crate::{
-    api_client::{ApiClient, ApiCredentials, HttpClient},
+    api_client::{ApiClient, ApiCredentials, ApiUrl, HttpClient},
     domain::{
         InternalError,
         contents::{
@@ -68,12 +67,12 @@ pub struct Sportarr {
 impl Sportarr {
     /// Returns sportarr.net.
     pub fn new(http_client: &HttpClient) -> Self {
-        let base_url = Url::parse(BASE_URL).expect("BASE_URL is a URL");
+        let base_url = BASE_URL.parse().expect("BASE_URL is an API's URL");
         Self::with_base_url(http_client, base_url)
     }
 
     /// Returns a sportarr.net at another address, such as a fake one in tests.
-    pub fn with_base_url(http_client: &HttpClient, base_url: Url) -> Self {
+    pub fn with_base_url(http_client: &HttpClient, base_url: ApiUrl) -> Self {
         Self {
             api: ApiClient::new(http_client, base_url, ApiCredentials::anonymous()),
         }

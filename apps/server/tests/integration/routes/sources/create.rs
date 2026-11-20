@@ -41,7 +41,7 @@ async fn answers_with_the_created_source(db: PgPool) {
             "id": app.body["id"],
             "type": "radarr",
             "media_type": "movie",
-            "url": radarr.url(),
+            "url": format!("{}/", radarr.url()),
             "quality_profile": { "id": 4, "name": "HD-1080p" },
             "root_folder_path": "/movies",
             "local_root_folder_path": null,
@@ -69,7 +69,7 @@ async fn answers_why_the_configuration_is_invalid(db: PgPool) {
     let radarr = FakeServarr::radarr().await;
     let mut browser = support::admin_browser(&db).await;
     let mut configuration = radarr.configuration();
-    configuration["root_folder_path"] = json!("/tv");
+    configuration["local_root_folder_path"] = json!("/no/such/folder");
 
     let response = browser.post("/api/sources", configuration).await;
 
@@ -78,8 +78,8 @@ async fn answers_why_the_configuration_is_invalid(db: PgPool) {
         response.body,
         json!({
             "code": "invalid_servarr_configuration",
-            "error": { "part": "root_folder" },
-            "message": "WatchClub can't use the app with this configuration",
+            "error": { "part": "local_root_folder", "code": "not_found" },
+            "message": "the app's configuration is invalid",
         })
     );
     assert_eq!(browser.get("/api/sources").await.body, json!([]));

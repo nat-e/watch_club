@@ -137,12 +137,10 @@ export default {
     qualityProfileErrors: {
       noneInApp:
         '{{app}} ne propose aucun profil de qualité. Ajoute-en un dans {{app}}, puis relance la connexion.',
-      notFound: '{{app}} ne propose plus ce profil de qualité. Choisis-en un autre.',
     },
     rootFolderErrors: {
       noneInApp:
         '{{app}} ne propose aucun dossier racine. Ajoute-en un dans {{app}}, puis relance la connexion.',
-      notFound: "{{app}} n'a plus ce dossier racine. Choisis-en un autre.",
     },
     servarrForm: {
       add: 'Ajouter la source',
