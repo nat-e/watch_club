@@ -19,7 +19,10 @@ use axum_extra::{
 
 use crate::{
     db::Pool,
-    domain::accounts::{self, CurrentUser, SESSION_LIFETIME, SessionToken},
+    domain::accounts::{
+        sessions::{self, SESSION_LIFETIME, SessionToken},
+        users::CurrentUser,
+    },
     error::ApiError,
 };
 
@@ -67,7 +70,7 @@ where
         let Some(token) = request_session_token(parts) else {
             return Err(ApiError::Unauthorized.into_response());
         };
-        let user = accounts::session_user(&Pool::from_ref(state), &token)
+        let user = sessions::get_current_user(&Pool::from_ref(state), &token)
             .await
             .map_err(|error| ApiError::from(error).into_response())?;
         let user = user.ok_or_else(|| ApiError::Unauthorized.into_response())?;

@@ -18,7 +18,11 @@ use crate::{
     ApiContext,
     auth::SessionCookie,
     db::Pool,
-    domain::accounts::{self, CreateInstanceAdministratorError, Locale, Password, Username},
+    domain::accounts::{
+        instance_administrator::{self, CreateInstanceAdministratorError},
+        preferences::Locale,
+        users::{Password, Username},
+    },
     error::{self, ApiError, ErrorBody},
     routes::{
         Json,
@@ -39,7 +43,7 @@ pub(super) fn routes() -> OpenApiRouter<ApiContext> {
 async fn get_instance(
     State(context): State<ApiContext>,
 ) -> Result<Json<GetInstanceResponse>, ApiError> {
-    let needs_setup = !accounts::has_instance_administrator(&context.db).await?;
+    let needs_setup = !instance_administrator::exists(&context.db).await?;
     Ok(Json(GetInstanceResponse {
         name: context.instance_name,
         version: env!("CARGO_PKG_VERSION"),
@@ -99,8 +103,7 @@ async fn create_instance_administrator(
     } = request;
     let username = Username::parse(&username).map_err(ApiUsernameError::from)?;
     let password = Password::parse(password).map_err(ApiPasswordError::from)?;
-    let (user, token) =
-        accounts::create_instance_administrator(&db, username, password, locale).await?;
+    let (user, token) = instance_administrator::create(&db, username, password, locale).await?;
     Ok((StatusCode::CREATED, cookie.set(&token), Json(user.into())))
 }
 

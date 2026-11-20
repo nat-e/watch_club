@@ -19,8 +19,12 @@ use crate::{
     auth::{InstanceAdministrator, SessionCookie},
     db::Pool,
     domain::accounts::{
-        self, DeleteInvitationError, Invitation, InvitationId, Locale, Password,
-        RedeemInvitationError, UpdateInvitationError, Username,
+        invitations::{
+            self, DeleteInvitationError, Invitation, InvitationId, RedeemInvitationError,
+            UpdateInvitationError,
+        },
+        preferences::Locale,
+        users::{Password, Username},
     },
     error::{self, ApiError, ErrorBody},
     routes::{
@@ -49,7 +53,7 @@ async fn list_invitations(
     State(db): State<Pool>,
     _: InstanceAdministrator,
 ) -> Result<Json<Vec<Invitation>>, ApiError> {
-    Ok(Json(accounts::list_redeemable_invitations(&db).await?))
+    Ok(Json(invitations::list_redeemable(&db).await?))
 }
 
 /// Creates an Invitation with a random code, which works for 7 days.
@@ -65,7 +69,7 @@ async fn create_invitation(
     _: InstanceAdministrator,
     Json(request): Json<InvitationRequest>,
 ) -> Result<(StatusCode, Json<Invitation>), ApiError> {
-    let invitation = accounts::create_invitation(&db, request.max_uses).await?;
+    let invitation = invitations::create(&db, request.max_uses).await?;
     Ok((StatusCode::CREATED, Json(invitation)))
 }
 
@@ -88,7 +92,7 @@ async fn update_invitation(
     Path(invitation_id): Path<InvitationId>,
     Json(request): Json<InvitationRequest>,
 ) -> Result<Json<Invitation>, UpdateInvitationRequestError> {
-    let invitation = accounts::update_invitation(&db, invitation_id, request.max_uses).await?;
+    let invitation = invitations::update(&db, invitation_id, request.max_uses).await?;
     Ok(Json(invitation))
 }
 
@@ -154,7 +158,7 @@ async fn delete_invitation(
     _: InstanceAdministrator,
     Path(invitation_id): Path<InvitationId>,
 ) -> Result<StatusCode, DeleteInvitationRequestError> {
-    accounts::delete_invitation(&db, invitation_id).await?;
+    invitations::delete(&db, invitation_id).await?;
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -199,7 +203,7 @@ async fn check_invitation(
     State(db): State<Pool>,
     Query(params): Query<InvitationCodeParams>,
 ) -> Result<Json<InvitationCheck>, ApiError> {
-    let redeemable = accounts::is_redeemable(&db, &params.code).await?;
+    let redeemable = invitations::is_redeemable(&db, &params.code).await?;
     Ok(Json(InvitationCheck { redeemable }))
 }
 
@@ -242,7 +246,7 @@ async fn redeem_invitation(
     } = request;
     let username = Username::parse(&username).map_err(ApiUsernameError::from)?;
     let password = Password::parse(password).map_err(ApiPasswordError::from)?;
-    let (user, token) = accounts::redeem_invitation(&db, &code, username, password, locale).await?;
+    let (user, token) = invitations::redeem(&db, &code, username, password, locale).await?;
     Ok((StatusCode::CREATED, cookie.set(&token), Json(user.into())))
 }
 

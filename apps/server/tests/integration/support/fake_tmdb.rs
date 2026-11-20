@@ -6,7 +6,7 @@ use std::{fs, path::Path};
 use secrecy::SecretString;
 use serde_json::Value;
 use watch_club::domain::{
-    accounts::Locale,
+    accounts::preferences::Locale,
     contents::{MetadataProviders, Tmdb},
 };
 use wiremock::{

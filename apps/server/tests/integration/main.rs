@@ -8,10 +8,11 @@ mod api_client;
 mod config;
 mod domain {
     mod accounts {
+        mod instance_administrator;
         mod invitations;
-        mod passwords;
         mod preferences;
-        mod user;
+        mod sessions;
+        mod users;
     }
     mod contents;
     mod sources;

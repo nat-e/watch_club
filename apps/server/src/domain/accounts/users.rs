@@ -1,5 +1,9 @@
-//! Users: their usernames and passwords, Setup, the sessions that keep them signed in, and the list
-//! of Users.
+//! Users: their usernames and passwords, the list of Users, and the Password Reset Links that let a
+//! User who forgot their password choose a new one.
+//!
+//! Rare races are accepted rather than prevented with row locks: a device that signs in with the
+//! old password while it changes, in the moment the server checks it, keeps its session, and a
+//! change and a reset of the same password at the same instant can fail.
 
 use std::fmt;
 
@@ -7,15 +11,22 @@ use anyhow::Context;
 use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, SecretString};
 use serde::{Deserialize, Serialize};
-use sqlx::{PgExecutor, postgres::PgBindIterExt};
+use sqlx::postgres::PgBindIterExt;
 use sqlx_otel::QueryAnnotateExt;
 use tokio::sync::Semaphore;
 use tracing::{Instrument, Level};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-use super::{AudioLanguage, Locale, TrackLanguage, UserPreferences, token::SecretToken};
+use super::{
+    preferences::{AudioLanguage, Locale, TrackLanguage, UserPreferences},
+    sessions::SessionToken,
+    token::SecretToken,
+};
 use crate::db::{Pool, Transaction};
+
+/// The time a Password Reset Link works for, from its creation.
+const PASSWORD_RESET_LINK_LIFETIME: SignedDuration = SignedDuration::from_hours(24 * 3);
 
 /// The unique ID of a User.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, sqlx::Type, ToSchema)]
@@ -85,33 +96,38 @@ impl Username {
     pub const MAX_LENGTH: usize = 30;
 
     /// Trims the text and checks it follows the rules.
-    pub fn parse(text: &str) -> Result<Self, UsernameError> {
+    pub fn parse(text: &str) -> Result<Self, ParseUsernameError> {
         let username = text.trim();
         let length = username.chars().count();
         if length == 0 {
-            return Err(UsernameError::Missing);
+            return Err(ParseUsernameError::Missing);
         }
         if length < Self::MIN_LENGTH {
-            return Err(UsernameError::TooShort {
+            return Err(ParseUsernameError::TooShort {
                 min: Self::MIN_LENGTH,
             });
         }
         if length > Self::MAX_LENGTH {
-            return Err(UsernameError::TooLong {
+            return Err(ParseUsernameError::TooLong {
                 max: Self::MAX_LENGTH,
             });
         }
         let is_allowed = |c: char| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_';
         if !username.chars().all(is_allowed) {
-            return Err(UsernameError::InvalidCharacters);
+            return Err(ParseUsernameError::InvalidCharacters);
         }
         Ok(Self(username.to_owned()))
     }
+
+    /// Returns the username, such as `ada`.
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
 }
 
-/// Potential errors when parsing Usernames
+/// The reason a text isn't a username that follows the rules.
 #[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
-pub enum UsernameError {
+pub enum ParseUsernameError {
     #[error("the username is missing")]
     Missing,
     #[error("the username is shorter than {min} characters")]
@@ -131,13 +147,13 @@ impl Password {
     pub const MIN_LENGTH: usize = 8;
 
     /// Checks the text follows the rules.
-    pub fn parse(text: SecretString) -> Result<Self, PasswordError> {
+    pub fn parse(text: SecretString) -> Result<Self, ParsePasswordError> {
         let length = text.expose_secret().chars().count();
         if length == 0 {
-            return Err(PasswordError::Missing);
+            return Err(ParsePasswordError::Missing);
         }
         if length < Self::MIN_LENGTH {
-            return Err(PasswordError::TooShort {
+            return Err(ParsePasswordError::TooShort {
                 min: Self::MIN_LENGTH,
             });
         }
@@ -151,89 +167,20 @@ impl Password {
     }
 }
 
-/// Potential errors when parsing Passwords
+/// The reason a text isn't a password that follows the rules.
 #[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
-pub enum PasswordError {
+pub enum ParsePasswordError {
     #[error("the password is missing")]
     Missing,
     #[error("the password is shorter than {min} characters")]
     TooShort { min: usize },
 }
 
-/// Returns `true` once Setup has created the Instance Administrator.
-#[tracing::instrument(skip_all)]
-pub async fn has_instance_administrator(db: &Pool) -> anyhow::Result<bool> {
-    let exists = sqlx::query_scalar!(
-        r#"SELECT EXISTS (SELECT FROM users WHERE is_instance_administrator) AS "exists!""#
-    )
-    .with_operation("SELECT", "users")
-    .fetch_one(db)
-    .await
-    .context("failed to check for the Instance Administrator")?;
-    Ok(exists)
-}
-
-/// The reason the Instance Administrator wasn't created.
-#[derive(Debug, thiserror::Error)]
-pub enum CreateInstanceAdministratorError {
-    #[error("WatchClub already has its Instance Administrator")]
-    AlreadyExists,
-    #[error(transparent)]
-    Internal(#[from] anyhow::Error),
-}
-
-/// Creates the Instance Administrator, with a new User's preferences for their Locale, signs them in
-/// on a new device and returns them as the current User.
-#[tracing::instrument(skip_all)]
-pub async fn create_instance_administrator(
-    db: &Pool,
-    username: Username,
-    password: Password,
-    locale: Locale,
-) -> Result<(CurrentUser, SessionToken), CreateInstanceAdministratorError> {
-    let password_hash = password.hash().await;
-
-    let mut transaction = db.begin().await.context("failed to start a transaction")?;
-    let inserted = insert_user(&mut transaction, &username, password_hash, locale, true).await;
-    let admin = match inserted {
-        Ok(admin) => admin,
-        // Users only exist once Setup created the Instance Administrator, so another one, or a
-        // User with the same username, means Setup already ran
-        Err(sqlx::Error::Database(error)) if error.is_unique_violation() => {
-            tracing::event!(
-                name: "accounts.instance_administrator.refused",
-                Level::WARN,
-                user.name = username.0,
-                "refused to create a second Instance Administrator",
-            );
-            return Err(CreateInstanceAdministratorError::AlreadyExists);
-        }
-        Err(error) => {
-            let error =
-                anyhow::Error::new(error).context("failed to create the Instance Administrator");
-            return Err(error.into());
-        }
-    };
-    let token = create_session(&mut transaction, admin.id).await?;
-    transaction
-        .commit()
-        .await
-        .context("failed to create the Instance Administrator")?;
-    tracing::event!(
-        name: "accounts.instance_administrator.created",
-        Level::INFO,
-        user.id = %admin.id,
-        user.name = admin.username,
-        "created the Instance Administrator",
-    );
-    Ok((admin, token))
-}
-
 /// Inserts a User in the transaction, with a new User's preferences for their Locale, and returns
 /// them as the current User. Fails with a unique violation when another User has the username, or
 /// when the User would be a second Instance Administrator. The caller hashes the password first,
 /// which takes a moment, so the transaction doesn't hold its locks that long.
-pub(super) async fn insert_user(
+pub(super) async fn insert(
     transaction: &mut Transaction,
     username: &Username,
     password_hash: String,
@@ -268,7 +215,7 @@ pub(super) async fn insert_user(
 
 /// Returns every User, the first to join first.
 #[tracing::instrument(skip_all)]
-pub async fn list_users(db: &Pool) -> anyhow::Result<Vec<User>> {
+pub async fn list(db: &Pool) -> anyhow::Result<Vec<User>> {
     let rows = sqlx::query!(
         r#"
         SELECT id, username, is_instance_administrator, inserted_at
@@ -298,14 +245,14 @@ pub enum DeleteUserError {
     #[error("no such User")]
     NotFound,
     #[error("the Instance Administrator can't be deleted")]
-    CannotDeleteAdministrator,
+    IsInstanceAdministrator,
     #[error(transparent)]
     Internal(#[from] anyhow::Error),
 }
 
 /// Deletes the User, which signs them out on every device.
 #[tracing::instrument(skip_all, fields(user.id = %user_id))]
-pub async fn delete_user(db: &Pool, user_id: UserId) -> Result<(), DeleteUserError> {
+pub async fn delete(db: &Pool, user_id: UserId) -> Result<(), DeleteUserError> {
     // Deletes the User unless they're the Instance Administrator, and returns them as they were
     let target = sqlx::query!(
         r#"
@@ -330,7 +277,7 @@ pub async fn delete_user(db: &Pool, user_id: UserId) -> Result<(), DeleteUserErr
         return Err(DeleteUserError::NotFound);
     };
     if target.is_instance_administrator {
-        return Err(DeleteUserError::CannotDeleteAdministrator);
+        return Err(DeleteUserError::IsInstanceAdministrator);
     }
     tracing::event!(
         name: "accounts.user.deleted",
@@ -341,63 +288,9 @@ pub async fn delete_user(db: &Pool, user_id: UserId) -> Result<(), DeleteUserErr
     Ok(())
 }
 
-/// The time signing in keeps a User signed in on a device.
-pub const SESSION_LIFETIME: SignedDuration = SignedDuration::from_hours(24 * 30);
-
-/// The secret that keeps a User signed in on one device. The database only stores its hash, so
-/// a leaked database signs nobody in.
-#[derive(Debug)]
-pub struct SessionToken(SecretToken);
-
-impl SessionToken {
-    /// Reads a token in the form [`encode`](Self::encode) gives, or returns None.
-    pub fn decode(text: &str) -> Option<Self> {
-        SecretToken::decode(text).map(Self)
-    }
-
-    /// Returns the token as text that fits in a cookie or a header.
-    pub fn encode(&self) -> String {
-        self.0.encode()
-    }
-
-    pub(super) fn hash(&self) -> [u8; 32] {
-        self.0.hash()
-    }
-}
-
-/// Signs the User in on a new device, and returns them with their session token.
-///
-/// Returns None if the username or password is wrong.
-#[tracing::instrument(skip_all)]
-pub async fn sign_in(
-    db: &Pool,
-    username: &str,
-    password: SecretString,
-) -> anyhow::Result<Option<(CurrentUser, SessionToken)>> {
-    let username = username.trim();
-    let Some(user) = check_credentials(db, username, password).await? else {
-        tracing::event!(
-            name: "accounts.sign_in.failed",
-            Level::WARN,
-            user.name = username,
-            "wrong username or password",
-        );
-        return Ok(None);
-    };
-    let token = create_session(db, user.id).await?;
-    tracing::event!(
-        name: "accounts.sign_in.succeeded",
-        Level::INFO,
-        user.id = %user.id,
-        user.name = user.username,
-        "signed in",
-    );
-    Ok(Some((user, token)))
-}
-
 /// Returns the User whose username and password these are, or None. Takes about as long either
 /// way.
-async fn check_credentials(
+pub(super) async fn check_credentials(
     db: &Pool,
     username: &str,
     password: SecretString,
@@ -437,81 +330,228 @@ async fn check_credentials(
     })))
 }
 
+/// The reason a User's password didn't change.
+#[derive(Debug, thiserror::Error)]
+pub enum ChangePasswordError {
+    /// The current password isn't the User's
+    #[error("wrong current password")]
+    WrongPassword,
+    #[error(transparent)]
+    Internal(#[from] anyhow::Error),
+}
+
+/// Changes the User's password when `current_password` is theirs, and signs them out on every
+/// device but the current session's. Their Password Reset Link stops working.
+#[tracing::instrument(skip_all, fields(user.id = %user_id))]
+pub async fn change_password(
+    db: &Pool,
+    user_id: UserId,
+    current_session: &SessionToken,
+    current_password: SecretString,
+    new_password: Password,
+) -> Result<(), ChangePasswordError> {
+    let password_hash = sqlx::query_scalar!(
+        "SELECT password_hash FROM users WHERE id = $1",
+        user_id as UserId,
+    )
+    .with_operation("SELECT", "users")
+    .fetch_one(db)
+    .await
+    .context("failed to find a User's password")?;
+    if !password_matches(current_password, password_hash.clone()).await {
+        tracing::event!(
+            name: "accounts.password.change_refused",
+            Level::WARN,
+            "wrong current password",
+        );
+        return Err(ChangePasswordError::WrongPassword);
+    }
+    let new_password_hash = new_password.hash().await;
+
+    // Only while the password is still the one checked, rather than one a Password Reset Link set
+    // meanwhile
+    let changed = sqlx::query_scalar!(
+        r#"
+        WITH changed AS (
+            UPDATE users SET password_hash = $2
+            WHERE id = $1 AND password_hash = $3
+            RETURNING id
+        ),
+        signed_out AS (
+            DELETE FROM sessions
+            WHERE user_id IN (SELECT id FROM changed) AND token_hash <> $4
+        ),
+        cancelled AS (
+            DELETE FROM password_reset_links WHERE user_id IN (SELECT id FROM changed)
+        )
+        SELECT EXISTS (SELECT FROM changed) AS "changed!"
+        "#,
+        user_id as UserId,
+        new_password_hash,
+        password_hash,
+        &current_session.hash(),
+    )
+    .with_operation("UPDATE", "users")
+    .fetch_one(db)
+    .await
+    .context("failed to change a User's password")?;
+    if !changed {
+        return Err(ChangePasswordError::WrongPassword);
+    }
+
+    tracing::event!(
+        name: "accounts.password.changed",
+        Level::INFO,
+        "changed a User's password",
+    );
+    Ok(())
+}
+
+/// The reason a Password Reset Link wasn't created.
+#[derive(Debug, thiserror::Error)]
+pub enum CreatePasswordResetLinkError {
+    #[error("no such User")]
+    NotFound,
+    #[error(transparent)]
+    Internal(#[from] anyhow::Error),
+}
+
+/// Creates a Password Reset Link for the User, which works once, for
+/// `PASSWORD_RESET_LINK_LIFETIME`, and returns its token. It replaces the User's last link, which
+/// stops working.
+#[tracing::instrument(skip_all, fields(user.id = %user_id))]
+pub async fn create_password_reset_link(
+    db: &Pool,
+    user_id: UserId,
+) -> Result<SecretString, CreatePasswordResetLinkError> {
+    let token =
+        SecretToken::random().context("failed to generate a Password Reset Link's token")?;
+    // The database's clock, which resetting checks the expiry against
+    let created = sqlx::query!(
+        r#"
+        INSERT INTO password_reset_links (user_id, token_hash, expires_at)
+        VALUES ($1, $2, now() + make_interval(secs => $3))
+        ON CONFLICT (user_id) DO UPDATE
+        SET token_hash = excluded.token_hash, expires_at = excluded.expires_at
+        "#,
+        user_id as UserId,
+        &token.hash(),
+        PASSWORD_RESET_LINK_LIFETIME.as_secs_f64(),
+    )
+    .with_operation("INSERT", "password_reset_links")
+    .execute(db)
+    .await;
+    match created {
+        Ok(_) => {}
+        Err(sqlx::Error::Database(error)) if error.is_foreign_key_violation() => {
+            return Err(CreatePasswordResetLinkError::NotFound);
+        }
+        Err(error) => {
+            let error = anyhow::Error::new(error).context("failed to create a Password Reset Link");
+            return Err(error.into());
+        }
+    }
+
+    tracing::event!(
+        name: "accounts.password_reset_link.created",
+        Level::INFO,
+        "created a Password Reset Link",
+    );
+    Ok(token.encode().into())
+}
+
+/// Returns the username of the User whose password the Password Reset Link with this token resets,
+/// or None when the link no longer works: it expired, was used or replaced, or never existed.
+#[tracing::instrument(skip_all)]
+pub async fn password_reset_username(db: &Pool, token: &str) -> anyhow::Result<Option<String>> {
+    let Some(token) = SecretToken::decode(token) else {
+        return Ok(None);
+    };
+    let username = sqlx::query_scalar!(
+        r#"
+        SELECT u.username
+        FROM password_reset_links l
+        JOIN users u ON u.id = l.user_id
+        WHERE l.token_hash = $1 AND l.expires_at > now()
+        "#,
+        &token.hash(),
+    )
+    .with_operation("SELECT", "password_reset_links")
+    .fetch_optional(db)
+    .await
+    .context("failed to check a Password Reset Link")?;
+    Ok(username)
+}
+
+/// The reason a password wasn't reset.
+#[derive(Debug, thiserror::Error)]
+pub enum ResetPasswordError {
+    /// The Password Reset Link expired, was used or replaced, or never existed
+    #[error("the Password Reset Link no longer works")]
+    LinkNoLongerWorks,
+    #[error(transparent)]
+    Internal(#[from] anyhow::Error),
+}
+
+/// Sets the password of the User whose Password Reset Link has this token, and signs them out on
+/// every device: they then sign in with the new password. The link stops working.
+#[tracing::instrument(skip_all)]
+pub async fn reset_password(
+    db: &Pool,
+    token: &str,
+    password: Password,
+) -> Result<(), ResetPasswordError> {
+    let Some(token) = SecretToken::decode(token) else {
+        return Err(ResetPasswordError::LinkNoLongerWorks);
+    };
+    let password_hash = password.hash().await;
+
+    // Deletes the link as it uses it, so that it works once, even for two requests at once
+    let user = sqlx::query!(
+        r#"
+        WITH link AS (
+            DELETE FROM password_reset_links
+            WHERE token_hash = $1 AND expires_at > now()
+            RETURNING user_id
+        ),
+        changed AS (
+            UPDATE users SET password_hash = $2
+            WHERE id IN (SELECT user_id FROM link)
+            RETURNING id, username
+        ),
+        signed_out AS (
+            DELETE FROM sessions WHERE user_id IN (SELECT id FROM changed)
+        )
+        SELECT id, username FROM changed
+        "#,
+        &token.hash(),
+        password_hash,
+    )
+    .with_operation("UPDATE", "users")
+    .fetch_optional(db)
+    .await
+    .context("failed to reset a password")?;
+    let Some(user) = user else {
+        return Err(ResetPasswordError::LinkNoLongerWorks);
+    };
+
+    tracing::event!(
+        name: "accounts.password.reset",
+        Level::INFO,
+        user.id = %user.id,
+        user.name = user.username,
+        "reset a User's password with a Password Reset Link",
+    );
+    Ok(())
+}
+
 /// Returns whether the password is the one `password_hash` was made from, which takes a moment on
 /// purpose.
-pub(super) async fn password_matches(password: SecretString, password_hash: String) -> bool {
+async fn password_matches(password: SecretString, password_hash: String) -> bool {
     hash_slowly(move || {
         password_auth::verify_password(password.expose_secret(), &password_hash).is_ok()
     })
     .await
-}
-
-/// Returns the User the token keeps signed in, or None once their session ended or expired.
-#[tracing::instrument(skip_all)]
-pub async fn session_user(db: &Pool, token: &SessionToken) -> anyhow::Result<Option<CurrentUser>> {
-    let row = sqlx::query_as!(
-        UserRow,
-        r#"
-        SELECT u.id, u.username, u.locale, u.audio_language, u.subtitle_language,
-            u.languages_without_subtitles, u.is_instance_administrator
-        FROM sessions s
-        JOIN users u ON u.id = s.user_id
-        WHERE s.token_hash = $1 AND s.expires_at > now()
-        "#,
-        &token.hash(),
-    )
-    .with_operation("SELECT", "sessions")
-    .fetch_optional(db)
-    .await
-    .context("failed to find the session's User")?;
-    Ok(row.map(CurrentUser::from))
-}
-
-/// Signs out the device that the token keeps signed in.
-#[tracing::instrument(skip_all)]
-pub async fn sign_out(db: &Pool, token: &SessionToken) -> anyhow::Result<()> {
-    sqlx::query!("DELETE FROM sessions WHERE token_hash = $1", &token.hash())
-        .with_operation("DELETE", "sessions")
-        .execute(db)
-        .await
-        .context("failed to end a session")?;
-    Ok(())
-}
-
-/// Deletes the sessions whose lifetime has run out, and returns how many it deleted.
-#[tracing::instrument(skip_all)]
-pub async fn delete_expired_sessions(db: &Pool) -> anyhow::Result<u64> {
-    let deleted = sqlx::query!("DELETE FROM sessions WHERE expires_at < now()")
-        .with_operation("DELETE", "sessions")
-        .execute(db)
-        .await
-        .context("failed to delete the expired sessions")?;
-    Ok(deleted.rows_affected())
-}
-
-/// Creates a session that keeps the User signed in on a new device for `SESSION_LIFETIME`, and
-/// returns its token.
-pub(super) async fn create_session(
-    db: impl PgExecutor<'_>,
-    user_id: UserId,
-) -> anyhow::Result<SessionToken> {
-    let token = SecretToken::random()
-        .map(SessionToken)
-        .context("failed to generate a session token")?;
-    // The database's clock, which `session_user` checks the expiry against
-    sqlx::query!(
-        r#"
-        INSERT INTO sessions (token_hash, user_id, expires_at)
-        VALUES ($1, $2, now() + make_interval(secs => $3))
-        "#,
-        &token.hash(),
-        user_id as UserId,
-        SESSION_LIFETIME.as_secs_f64(),
-    )
-    .execute(db)
-    .await
-    .context("failed to start a session")?;
-    Ok(token)
 }
 
 /// The slots for hashing passwords. Hashing one takes a CPU core and about 19 MiB for a moment,

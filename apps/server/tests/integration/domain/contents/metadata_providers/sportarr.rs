@@ -140,7 +140,9 @@ async fn search_fails_with_the_status_sportarr_answers() {
 
     let error = format!("{error:#}");
     assert!(
-        error.starts_with("HTTP status client error (400 Bad Request) for url"),
+        error.starts_with(
+            "failed to search sportarr.net: HTTP status client error (400 Bad Request) for url"
+        ),
         "{error}"
     );
 }

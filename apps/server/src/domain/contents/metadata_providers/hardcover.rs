@@ -194,7 +194,11 @@ impl Hardcover {
         variables: serde_json::Value,
     ) -> anyhow::Result<T> {
         let request = GraphQlRequest { query, variables };
-        let response: GraphQlResponse<T> = self.api.post(GRAPHQL_ROUTE, &request).await?;
+        let response: GraphQlResponse<T> = self
+            .api
+            .post(GRAPHQL_ROUTE, &request)
+            .await
+            .context("failed to query Hardcover")?;
 
         if !response.errors.is_empty() {
             let messages: Vec<_> = response

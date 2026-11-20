@@ -13,7 +13,7 @@ use crate::{
     ApiContext,
     db::Pool,
     domain::{
-        accounts::CurrentUser,
+        accounts::users::CurrentUser,
         contents::{
             self, Content, ContentId, ContentType, ExternalContentId, LookUpContentError, Media,
             MetadataProviders,

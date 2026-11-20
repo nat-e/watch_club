@@ -9,6 +9,7 @@ use std::{
     num::NonZeroU32,
 };
 
+use anyhow::Context;
 use jiff::civil::Date;
 use serde::{Deserialize, Deserializer};
 
@@ -87,7 +88,8 @@ impl Sportarr {
         let found: SearchEventsAnswer = self
             .api
             .get_required("/search/event/{pattern}", &[&title_pattern(query)], &[])
-            .await?;
+            .await
+            .context("failed to search sportarr.net")?;
 
         let results = found.data.search.into_iter().map(search_result).collect();
         Ok(SearchResults {
@@ -106,7 +108,7 @@ impl Sportarr {
             .api
             .get("/lookup/event/{id}", &[&id.0], &[])
             .await
-            .map_err(anyhow::Error::from)?
+            .context("failed to fetch a Sports Event from sportarr.net")?
             .ok_or(LookUpContentError::NotFound)?;
         // sportarr.net answers an ID it doesn't know with no event, rather than with a 404
         let event = found

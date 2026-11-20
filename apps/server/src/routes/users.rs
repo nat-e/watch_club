@@ -15,9 +15,9 @@ use crate::{
     ApiContext,
     auth::InstanceAdministrator,
     db::Pool,
-    domain::accounts::{
-        self, CreatePasswordResetLinkError, DeleteUserError, PasswordError, User, UserId,
-        UsernameError,
+    domain::accounts::users::{
+        self, CreatePasswordResetLinkError, DeleteUserError, ParsePasswordError,
+        ParseUsernameError, User, UserId,
     },
     error::{self, ApiError, ErrorBody},
     routes::{Json, Path},
@@ -41,7 +41,7 @@ async fn list_users(
     State(db): State<Pool>,
     _: InstanceAdministrator,
 ) -> Result<Json<Vec<User>>, ApiError> {
-    Ok(Json(accounts::list_users(&db).await?))
+    Ok(Json(users::list(&db).await?))
 }
 
 /// Deletes the User, which signs them out on every device.
@@ -61,7 +61,7 @@ async fn delete_user(
     _: InstanceAdministrator,
     Path(user_id): Path<UserId>,
 ) -> Result<StatusCode, DeleteUserRequestError> {
-    accounts::delete_user(&db, user_id).await?;
+    users::delete(&db, user_id).await?;
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -82,7 +82,7 @@ impl From<DeleteUserError> for DeleteUserRequestError {
     fn from(error: DeleteUserError) -> Self {
         match error {
             DeleteUserError::NotFound => Self::NotFound,
-            DeleteUserError::CannotDeleteAdministrator => Self::CannotDeleteAdministrator,
+            DeleteUserError::IsInstanceAdministrator => Self::CannotDeleteAdministrator,
             DeleteUserError::Internal(error) => Self::Internal(error),
         }
     }
@@ -116,7 +116,7 @@ async fn create_password_reset_link(
     _: InstanceAdministrator,
     Path(user_id): Path<UserId>,
 ) -> Result<(StatusCode, Json<PasswordResetLink>), CreatePasswordResetLinkRequestError> {
-    let token = accounts::create_password_reset_link(&db, user_id).await?;
+    let token = users::create_password_reset_link(&db, user_id).await?;
     let link = PasswordResetLink {
         token: token.expose_secret().to_owned(),
     };
@@ -175,13 +175,13 @@ pub(super) enum ApiUsernameError {
     InvalidCharacters,
 }
 
-impl From<UsernameError> for ApiUsernameError {
-    fn from(error: UsernameError) -> Self {
+impl From<ParseUsernameError> for ApiUsernameError {
+    fn from(error: ParseUsernameError) -> Self {
         match error {
-            UsernameError::Missing => Self::Missing,
-            UsernameError::TooShort { min } => Self::TooShort { min },
-            UsernameError::TooLong { max } => Self::TooLong { max },
-            UsernameError::InvalidCharacters => Self::InvalidCharacters,
+            ParseUsernameError::Missing => Self::Missing,
+            ParseUsernameError::TooShort { min } => Self::TooShort { min },
+            ParseUsernameError::TooLong { max } => Self::TooLong { max },
+            ParseUsernameError::InvalidCharacters => Self::InvalidCharacters,
         }
     }
 }
@@ -197,11 +197,11 @@ pub(super) enum ApiPasswordError {
     TooShort { min: usize },
 }
 
-impl From<PasswordError> for ApiPasswordError {
-    fn from(error: PasswordError) -> Self {
+impl From<ParsePasswordError> for ApiPasswordError {
+    fn from(error: ParsePasswordError) -> Self {
         match error {
-            PasswordError::Missing => Self::Missing,
-            PasswordError::TooShort { min } => Self::TooShort { min },
+            ParsePasswordError::Missing => Self::Missing,
+            ParsePasswordError::TooShort { min } => Self::TooShort { min },
         }
     }
 }

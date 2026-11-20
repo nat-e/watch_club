@@ -12,8 +12,9 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 
 use super::{
-    CurrentUser, Locale, Password, SessionToken, Username,
-    user::{create_session, insert_user},
+    preferences::Locale,
+    sessions::{self, SessionToken},
+    users::{self, CurrentUser, Password, Username},
 };
 use crate::db::Pool;
 
@@ -82,7 +83,7 @@ impl From<InvitationRow> for Invitation {
 
 /// Returns the Invitations that can still be redeemed, the oldest first.
 #[tracing::instrument(skip_all)]
-pub async fn list_redeemable_invitations(db: &Pool) -> anyhow::Result<Vec<Invitation>> {
+pub async fn list_redeemable(db: &Pool) -> anyhow::Result<Vec<Invitation>> {
     // Every Invitation works for as long, so the first to expire is the oldest
     let rows = sqlx::query_as!(
         InvitationRow,
@@ -102,10 +103,7 @@ pub async fn list_redeemable_invitations(db: &Pool) -> anyhow::Result<Vec<Invita
 
 /// Creates an Invitation with a random code, which works for `INVITATION_VALIDITY_DURATION`.
 #[tracing::instrument(skip_all)]
-pub async fn create_invitation(
-    db: &Pool,
-    max_uses: Option<NonZeroU32>,
-) -> anyhow::Result<Invitation> {
+pub async fn create(db: &Pool, max_uses: Option<NonZeroU32>) -> anyhow::Result<Invitation> {
     let code = random_code().context("failed to generate an Invitation's code")?;
     // The database's clock, which redeeming checks the expiry against
     let row = sqlx::query_as!(
@@ -140,7 +138,7 @@ pub enum UpdateInvitationError {
 
 /// Changes the Invitation's Max Uses, or removes the limit when None, and returns the Invitation.
 #[tracing::instrument(skip_all, fields(invitation.id = %invitation_id))]
-pub async fn update_invitation(
+pub async fn update(
     db: &Pool,
     invitation_id: InvitationId,
     max_uses: Option<NonZeroU32>,
@@ -183,10 +181,7 @@ pub enum DeleteInvitationError {
 
 /// Deletes the Invitation, so that nobody can redeem it anymore. The Users it created stay.
 #[tracing::instrument(skip_all, fields(invitation.id = %invitation_id))]
-pub async fn delete_invitation(
-    db: &Pool,
-    invitation_id: InvitationId,
-) -> Result<(), DeleteInvitationError> {
+pub async fn delete(db: &Pool, invitation_id: InvitationId) -> Result<(), DeleteInvitationError> {
     let deleted = sqlx::query!(
         "DELETE FROM invitations WHERE id = $1",
         invitation_id as InvitationId,
@@ -235,7 +230,7 @@ pub enum RedeemInvitationError {
 /// Creates a User with the Invitation's code, with a new User's preferences for their Locale, signs
 /// them in on a new device and returns them as the current User. The Invitation counts one more use.
 #[tracing::instrument(skip_all)]
-pub async fn redeem_invitation(
+pub async fn redeem(
     db: &Pool,
     code: &str,
     username: Username,
@@ -265,7 +260,7 @@ pub async fn redeem_invitation(
         return Err(RedeemInvitationError::NotRedeemable);
     };
 
-    let inserted = insert_user(&mut transaction, &username, password_hash, locale, false).await;
+    let inserted = users::insert(&mut transaction, &username, password_hash, locale, false).await;
     let user = match inserted {
         Ok(user) => user,
         Err(sqlx::Error::Database(error)) if error.is_unique_violation() => {
@@ -276,7 +271,7 @@ pub async fn redeem_invitation(
             return Err(error.into());
         }
     };
-    let token = create_session(&mut transaction, user.id).await?;
+    let token = sessions::create(&mut transaction, user.id).await?;
     transaction
         .commit()
         .await

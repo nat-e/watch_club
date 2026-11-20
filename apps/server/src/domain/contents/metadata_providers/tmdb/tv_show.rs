@@ -20,7 +20,7 @@ use super::{
 };
 use crate::{
     domain::{
-        accounts::Locale,
+        accounts::preferences::Locale,
         contents::{
             ContentMetadata, ExternalContentId, Language, LookUpContentError, MediaMetadata,
             MediaTranslations, MediaType,
@@ -93,7 +93,8 @@ impl Tmdb {
                     ("append_to_response", &appends),
                 ],
             )
-            .await?
+            .await
+            .context("failed to fetch a TV Show's seasons from TMDB")?
             .context("TMDB no longer knows the TV Show")?;
         Ok(seasons.0)
     }

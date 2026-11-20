@@ -8,6 +8,7 @@
 //! and trailers for nearly every show, and only some lack English titles for their TV Show
 //! Episodes, which then show their number only.
 
+use anyhow::Context;
 use jiff::civil::Date;
 use serde::Deserialize;
 
@@ -19,7 +20,7 @@ use super::{
 };
 use crate::{
     domain::{
-        accounts::Locale,
+        accounts::preferences::Locale,
         contents::{
             ContentMetadata, ContentTranslations, ExternalContentId, ExternalIds, Genre, Language,
             LookUpContentError, MediaMetadata, MediaTranslations, MediaType, Translations,
@@ -98,7 +99,7 @@ impl Tmdb {
                 ],
             )
             .await
-            .map_err(anyhow::Error::from)
+            .context("failed to fetch a Movie or a TV Show from TMDB")
     }
 }
 

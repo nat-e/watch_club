@@ -8,7 +8,7 @@
 'TIMESTAMPTZ' = "jiff_sqlx::Timestamp"
 'DATE' = "jiff_sqlx::Date"
 'job_state' = "::watch_club::jobs::JobState"
-'locale' = "::watch_club::domain::accounts::Locale"
+'locale' = "::watch_club::domain::accounts::preferences::Locale"
 'content_type' = "::watch_club::domain::contents::ContentType"
 'metadata_provider' = "::watch_club::domain::contents::MetadataProvider"
 'media_type' = "::watch_club::domain::contents::MediaType"
@@ -17,19 +17,19 @@
 'source_type' = "::watch_club::domain::sources::SourceType"
 
 [macros.table-overrides.'users']
-'id' = "::watch_club::domain::accounts::UserId"
-'audio_language' = "::watch_club::domain::accounts::AudioLanguage"
-'subtitle_language' = "::watch_club::domain::accounts::TrackLanguage"
-'languages_without_subtitles' = "Vec<::watch_club::domain::accounts::TrackLanguage>"
+'id' = "::watch_club::domain::accounts::users::UserId"
+'audio_language' = "::watch_club::domain::accounts::preferences::AudioLanguage"
+'subtitle_language' = "::watch_club::domain::accounts::preferences::TrackLanguage"
+'languages_without_subtitles' = "Vec<::watch_club::domain::accounts::preferences::TrackLanguage>"
 
 [macros.table-overrides.'sessions']
-'user_id' = "::watch_club::domain::accounts::UserId"
+'user_id' = "::watch_club::domain::accounts::users::UserId"
 
 [macros.table-overrides.'password_reset_links']
-'user_id' = "::watch_club::domain::accounts::UserId"
+'user_id' = "::watch_club::domain::accounts::users::UserId"
 
 [macros.table-overrides.'invitations']
-'id' = "::watch_club::domain::accounts::InvitationId"
+'id' = "::watch_club::domain::accounts::invitations::InvitationId"
 
 [macros.table-overrides.'jobs']
 'id' = "::watch_club::jobs::JobId"

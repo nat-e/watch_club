@@ -15,7 +15,11 @@ use watch_club::{
     config::Config,
     db::{self, Pool},
     domain::{
-        accounts::{self, CreateInstanceAdministratorError, Locale, Password, Username},
+        accounts::{
+            instance_administrator::{self, CreateInstanceAdministratorError},
+            preferences::Locale,
+            users::{Password, Username},
+        },
         contents::{self, Hardcover, MetadataProviders, Sportarr, Tmdb},
         sources::{self, ServarrConfiguration, SourceType},
     },
@@ -46,7 +50,7 @@ async fn seed_instance_administrator(db: &Pool) -> anyhow::Result<()> {
     let password = Password::parse(PASSWORD.into()).expect("the seed's password follows the rules");
 
     // Signs them in too, on a device nobody uses
-    match accounts::create_instance_administrator(db, username, password, Locale::EnUs).await {
+    match instance_administrator::create(db, username, password, Locale::EnUs).await {
         Ok(_) => println!("Sign in as {USERNAME} with the password \"{PASSWORD}\""),
         Err(CreateInstanceAdministratorError::AlreadyExists) => {
             println!("The database already has its Instance Administrator");

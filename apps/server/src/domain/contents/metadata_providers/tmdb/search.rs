@@ -2,12 +2,13 @@
 
 use std::num::NonZeroU32;
 
+use anyhow::Context;
 use jiff::civil::Date;
 use serde::Deserialize;
 
 use super::{Tmdb, TmdbId, optional_date, optional_text, poster};
 use crate::domain::{
-    accounts::Locale,
+    accounts::preferences::Locale,
     contents::{ExternalContentId, SearchResult, SearchResults},
 };
 
@@ -41,8 +42,11 @@ impl Tmdb {
                 ("include_adult", "false"),
                 ("language", locale.language_tag()),
             ];
-            let found: MultiSearchPage =
-                self.api.get_required("/search/multi", &[], &params).await?;
+            let found: MultiSearchPage = self
+                .api
+                .get_required("/search/multi", &[], &params)
+                .await
+                .context("failed to search TMDB")?;
 
             let next_page = found.next_page();
             let results: Vec<_> = found

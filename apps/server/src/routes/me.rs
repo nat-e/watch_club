@@ -18,8 +18,8 @@ use crate::{
     auth::CurrentSession,
     db::Pool,
     domain::accounts::{
-        self, AudioLanguage, ChangePasswordError, CurrentUser, Locale, Password, TrackLanguage,
-        UserId, UserPreferences,
+        preferences::{self, AudioLanguage, Locale, TrackLanguage, UserPreferences},
+        users::{self, ChangePasswordError, CurrentUser, Password, UserId},
     },
     error::{self, ApiError, ErrorBody},
     routes::{Json, users::ApiPasswordError},
@@ -54,10 +54,9 @@ async fn get_current_user(current_user: CurrentUser) -> Json<CurrentUserResponse
 async fn update_preferences(
     State(db): State<Pool>,
     current_user: CurrentUser,
-    Json(preferences): Json<UserPreferencesBody>,
+    Json(body): Json<UserPreferencesBody>,
 ) -> Result<Json<CurrentUserResponse>, ApiError> {
-    let current_user =
-        accounts::save_preferences(&db, current_user.id, &preferences.into()).await?;
+    let current_user = preferences::save(&db, current_user.id, &body.into()).await?;
     Ok(Json(current_user.into()))
 }
 
@@ -78,7 +77,7 @@ async fn change_password(
     Json(request): Json<ChangePasswordRequest>,
 ) -> Result<StatusCode, ChangePasswordRequestError> {
     let new_password = Password::parse(request.new_password).map_err(ApiPasswordError::from)?;
-    accounts::change_password(
+    users::change_password(
         &db,
         session.user.id,
         &session.token,

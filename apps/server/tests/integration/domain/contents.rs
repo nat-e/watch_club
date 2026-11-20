@@ -13,7 +13,7 @@ use sqlx::PgPool;
 use watch_club::{
     db::Pool,
     domain::{
-        accounts::Locale,
+        accounts::preferences::Locale,
         contents::{
             self, ContentId, ContentType, ExternalContentId, HardcoverId, LookUpContentError,
             MetadataProviders, SearchResults, SearchScope, SportarrId, TmdbId,

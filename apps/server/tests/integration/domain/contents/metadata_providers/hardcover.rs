@@ -218,7 +218,9 @@ async fn search_fails_with_the_status_hardcover_answers() {
 
     let error = format!("{error:#}");
     assert!(
-        error.starts_with("HTTP status client error (401 Unauthorized) for url"),
+        error.starts_with(
+            "failed to query Hardcover: HTTP status client error (401 Unauthorized) for url"
+        ),
         "{error}"
     );
 }

@@ -3,7 +3,7 @@ use std::num::NonZeroU32;
 use jiff::civil::date;
 use serde_json::{Value, json};
 use watch_club::domain::{
-    accounts::Locale,
+    accounts::preferences::Locale,
     contents::{
         CreditKind, ExternalContentId, Genre, Image, ImageSource, Language, LookUpContentError,
         MediaType, SearchResult, TmdbId,
@@ -297,7 +297,9 @@ async fn search_fails_with_the_status_tmdb_answers() {
 
     let error = format!("{error:#}");
     assert!(
-        error.starts_with("HTTP status client error (401 Unauthorized) for url"),
+        error.starts_with(
+            "failed to search TMDB: HTTP status client error (401 Unauthorized) for url"
+        ),
         "{error}"
     );
 }
@@ -315,7 +317,8 @@ async fn search_fails_when_tmdb_has_no_search() {
 
     let error = format!("{error:#}");
     assert!(
-        error.starts_with("HTTP status client error (404 Not Found) for url"),
+        error
+            .starts_with("failed to search TMDB: HTTP status client error (404 Not Found) for url"),
         "{error}"
     );
 }
@@ -336,10 +339,8 @@ async fn search_fails_without_trying_again_when_tmdb_is_unavailable() {
         .await
         .unwrap_err();
 
-    assert!(
-        error.to_string().contains("503 Service Unavailable"),
-        "{error:#}"
-    );
+    let error = format!("{error:#}");
+    assert!(error.contains("503 Service Unavailable"), "{error}");
 }
 
 #[tokio::test]

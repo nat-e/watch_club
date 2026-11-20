@@ -1,12 +1,15 @@
 use std::collections::BTreeSet;
 
 use sqlx::PgPool;
-use watch_club::domain::accounts::{self, AudioLanguage, Locale, TrackLanguage, UserPreferences};
+use watch_club::domain::accounts::{
+    preferences::{self, AudioLanguage, Locale, TrackLanguage, UserPreferences},
+    sessions,
+};
 use watch_club_test_macros::database_test;
 
 use crate::support::{self, PASSWORD};
 
-mod save_preferences {
+mod save {
     use super::*;
 
     #[database_test]
@@ -20,12 +23,10 @@ mod save_preferences {
             languages_without_subtitles: BTreeSet::from([TrackLanguage::En, TrackLanguage::Fr]),
         };
 
-        let saved = accounts::save_preferences(&db, user.id, &preferences)
-            .await
-            .unwrap();
+        let saved = preferences::save(&db, user.id, &preferences).await.unwrap();
 
         assert_eq!(saved.preferences, preferences);
-        let (signed_in, _) = accounts::sign_in(&db, "ada", PASSWORD.into())
+        let (signed_in, _) = sessions::sign_in(&db, "ada", PASSWORD.into())
             .await
             .unwrap()
             .unwrap();

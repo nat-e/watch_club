@@ -17,8 +17,9 @@ use watch_club::{
     db::Pool,
     domain::{
         accounts::{
-            self, AudioLanguage, CurrentUser, InvitationId, Locale, TrackLanguage, UserId,
-            UserPreferences,
+            invitations::InvitationId,
+            preferences::{AudioLanguage, Locale, TrackLanguage, UserPreferences},
+            users::{self, CurrentUser, UserId},
         },
         contents::MetadataProviders,
     },
@@ -186,7 +187,7 @@ pub async fn expire_invitation(db: &Pool, invitation_id: InvitationId) {
 /// Creates a Password Reset Link for the User, as the Instance Administrator does, and returns its
 /// token.
 pub async fn create_password_reset_link(db: &Pool, user_id: UserId) -> String {
-    let token = accounts::create_password_reset_link(db, user_id)
+    let token = users::create_password_reset_link(db, user_id)
         .await
         .unwrap();
     token.expose_secret().to_owned()

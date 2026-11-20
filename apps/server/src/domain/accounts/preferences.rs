@@ -8,7 +8,7 @@ use sqlx::postgres::PgBindIterExt;
 use sqlx_otel::QueryAnnotateExt;
 use utoipa::ToSchema;
 
-use super::{CurrentUser, UserId, user::UserRow};
+use super::users::{CurrentUser, UserId, UserRow};
 use crate::db::Pool;
 
 /// A User's personal choices that shape their WatchClub experience.
@@ -105,7 +105,7 @@ pub enum AudioLanguage {
 
 /// Saves the User's preferences, and returns the current User with the new preferences.
 #[tracing::instrument(skip_all, fields(user.id = %user_id))]
-pub async fn save_preferences(
+pub async fn save(
     db: &Pool,
     user_id: UserId,
     preferences: &UserPreferences,

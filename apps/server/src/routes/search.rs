@@ -10,7 +10,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::{
     ApiContext,
     domain::{
-        accounts::CurrentUser,
+        accounts::users::CurrentUser,
         contents::{self, MetadataProviders, SearchResults, SearchScope},
     },
     error::ApiError,

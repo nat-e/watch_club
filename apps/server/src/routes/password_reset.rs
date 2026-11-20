@@ -13,7 +13,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::{
     ApiContext,
     db::Pool,
-    domain::accounts::{self, Password, ResetPasswordError},
+    domain::accounts::users::{self, Password, ResetPasswordError},
     error::{self, ApiError, ErrorBody},
     routes::{Json, Query, users::ApiPasswordError},
 };
@@ -33,7 +33,7 @@ async fn check_password_reset_link(
     State(db): State<Pool>,
     Query(params): Query<PasswordResetTokenParams>,
 ) -> Result<Json<PasswordResetLinkCheck>, ApiError> {
-    let username = accounts::password_reset_username(&db, &params.token).await?;
+    let username = users::password_reset_username(&db, &params.token).await?;
     Ok(Json(PasswordResetLinkCheck { username }))
 }
 
@@ -70,7 +70,7 @@ async fn reset_password(
     Json(request): Json<ResetPasswordRequest>,
 ) -> Result<StatusCode, ResetPasswordRequestError> {
     let password = Password::parse(request.password).map_err(ApiPasswordError::from)?;
-    accounts::reset_password(&db, &request.token, password).await?;
+    users::reset_password(&db, &request.token, password).await?;
     Ok(StatusCode::NO_CONTENT)
 }
 

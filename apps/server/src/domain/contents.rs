@@ -33,7 +33,7 @@ pub use self::{
     },
     store::list_media,
 };
-use super::accounts::Locale;
+use super::accounts::preferences::Locale;
 use crate::{
     db::Pool,
     jobs::{self, RefreshContent},

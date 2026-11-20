@@ -16,7 +16,7 @@ use crate::{
     ApiContext,
     auth::SessionCookie,
     db::Pool,
-    domain::accounts::{self, SessionToken},
+    domain::accounts::sessions::{self, SessionToken},
     error::{self, ApiError, ErrorBody},
     routes::{Json, me::CurrentUserResponse},
 };
@@ -43,7 +43,7 @@ async fn login(
     cookie: SessionCookie,
     Json(credentials): Json<LoginRequest>,
 ) -> Result<(CookieJar, Json<CurrentUserResponse>), LoginRequestError> {
-    let (user, token) = accounts::sign_in(&db, &credentials.username, credentials.password)
+    let (user, token) = sessions::sign_in(&db, &credentials.username, credentials.password)
         .await?
         .ok_or(LoginRequestError::WrongCredentials)?;
     Ok((cookie.set(&token), Json(user.into())))
@@ -93,7 +93,7 @@ async fn login_token(
     State(db): State<Pool>,
     Json(credentials): Json<LoginRequest>,
 ) -> Result<(StatusCode, Json<LoginTokenResponse>), LoginRequestError> {
-    let (user, token) = accounts::sign_in(&db, &credentials.username, credentials.password)
+    let (user, token) = sessions::sign_in(&db, &credentials.username, credentials.password)
         .await?
         .ok_or(LoginRequestError::WrongCredentials)?;
     let session = LoginTokenResponse {
@@ -125,7 +125,7 @@ async fn logout(
     cookie: SessionCookie,
 ) -> Result<(StatusCode, CookieJar), ApiError> {
     if let Some(token) = token {
-        accounts::sign_out(&db, &token).await?;
+        sessions::sign_out(&db, &token).await?;
     }
     Ok((StatusCode::NO_CONTENT, cookie.remove()))
 }

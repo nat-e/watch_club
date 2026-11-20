@@ -15,7 +15,7 @@ use super::{
 };
 use crate::{
     db::{Pool, Transaction},
-    domain::accounts::Locale,
+    domain::accounts::preferences::Locale,
 };
 
 /// A saved Content, with its texts in one Locale.

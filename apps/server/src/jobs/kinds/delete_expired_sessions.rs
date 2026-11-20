@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use tracing::Level;
 
 use crate::{
-    domain::accounts,
+    domain::accounts::sessions,
     jobs::{Job, JobContext, JobError},
 };
 
@@ -18,7 +18,7 @@ impl Job for DeleteExpiredSessions {
     const SCHEDULE: Option<&'static str> = Some("0 3 * * SUN");
 
     async fn run(self, context: &JobContext) -> Result<(), JobError> {
-        let deleted = accounts::delete_expired_sessions(&context.db).await?;
+        let deleted = sessions::delete_expired(&context.db).await?;
         tracing::event!(
             name: "accounts.sessions.deleted",
             Level::INFO,
