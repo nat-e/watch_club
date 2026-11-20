@@ -1,7 +1,9 @@
-//! The errors any API request can fail with, and the body that every error response shares.
+//! The errors any API request can fail with, the body that every error response shares, and the
+//! failure a caught panic stands for, which the API and the jobs report.
 
 use std::{any::Any, fmt::Display, sync::Arc};
 
+use anyhow::anyhow;
 use axum::{
     Json,
     extract::{
@@ -17,8 +19,6 @@ use serde_json::json;
 use tracing::Level;
 use utoipa::ToSchema;
 
-use crate::domain::InternalError;
-
 /// The failures any endpoint can send, named after their HTTP status.
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum ApiError {
@@ -29,8 +29,9 @@ pub(crate) enum ApiError {
     Unauthorized,
     #[error("only the Instance Administrator can do this")]
     Forbidden,
+    /// A failure the request can only report, such as the database being down
     #[error(transparent)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 /// The kind of an `ApiError`, which sets its status and code. The OpenAPI document reads them
@@ -139,7 +140,7 @@ pub(crate) fn response(status: StatusCode, error: &(impl Serialize + Display)) -
 /// shows the request's method and path.
 pub(crate) async fn log_internal_errors(request: Request, next: Next) -> Response {
     let response = next.run(request).await;
-    if let Some(error) = response.extensions().get::<Arc<InternalError>>() {
+    if let Some(error) = response.extensions().get::<Arc<anyhow::Error>>() {
         tracing::event!(
             name: "api.request.failed",
             Level::ERROR,
@@ -157,7 +158,18 @@ pub(crate) async fn log_internal_errors(request: Request, next: Next) -> Respons
     reason = "`CatchPanicLayer` hands the panic over by value"
 )]
 pub(crate) fn panic_response(panic: Box<dyn Any + Send>) -> Response {
-    ApiError::Internal(InternalError::from_panic(&*panic)).into_response()
+    ApiError::Internal(from_panic(&*panic)).into_response()
+}
+
+/// Returns the failure a caught panic stands for, with the panic's message when it has one, which
+/// is a `&str` or a `String`.
+pub(crate) fn from_panic(panic: &(dyn Any + Send)) -> anyhow::Error {
+    let message = panic
+        .downcast_ref::<&str>()
+        .copied()
+        .or_else(|| panic.downcast_ref::<String>().map(String::as_str))
+        .unwrap_or("no message");
+    anyhow!("panicked: {message}")
 }
 
 #[cfg(test)]
@@ -185,7 +197,7 @@ mod tests {
             .unwrap();
 
         assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
-        let error = response.extensions().get::<Arc<InternalError>>().unwrap();
+        let error = response.extensions().get::<Arc<anyhow::Error>>().unwrap();
         assert_eq!(error.to_string(), "panicked: the handler broke");
         let body = response.into_body().collect().await.unwrap().to_bytes();
         let body: Value = serde_json::from_slice(&body).unwrap();

@@ -33,7 +33,7 @@ pub use self::{
     },
     store::list_media,
 };
-use super::{InternalError, accounts::Locale};
+use super::accounts::Locale;
 use crate::{
     db::Pool,
     jobs::{self, RefreshContent},
@@ -342,12 +342,6 @@ pub enum LookUpError {
     Internal(#[from] anyhow::Error),
 }
 
-impl From<InternalError> for LookUpError {
-    fn from(error: InternalError) -> Self {
-        Self::Internal(error.0)
-    }
-}
-
 /// Returns a page of the Content of the scope that matches the query, in their Metadata Provider's
 /// order, with their texts in the Locale's language when it has them. A blank query matches nothing.
 #[tracing::instrument(skip_all, fields(search.scope = ?scope, search.page = page))]
@@ -357,7 +351,7 @@ pub async fn search(
     scope: SearchScope,
     page: NonZeroU32,
     locale: Locale,
-) -> Result<SearchResults, InternalError> {
+) -> anyhow::Result<SearchResults> {
     let query = query.trim();
     if query.is_empty() {
         return Ok(SearchResults::default());
@@ -410,7 +404,7 @@ pub async fn refresh(
     db: &Pool,
     metadata_providers: &MetadataProviders,
     content_id: ContentId,
-) -> Result<(), InternalError> {
+) -> anyhow::Result<()> {
     let Some(external_content_id) = store::external_content_id(db, content_id).await? else {
         return Ok(());
     };
@@ -428,7 +422,7 @@ pub async fn refresh(
                 "its Metadata Provider no longer knows the Content, which stays as it is",
             );
         }
-        Err(LookUpError::Internal(error)) => return Err(error.into()),
+        Err(LookUpError::Internal(error)) => return Err(error),
     }
     Ok(())
 }

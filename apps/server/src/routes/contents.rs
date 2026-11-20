@@ -13,7 +13,6 @@ use crate::{
     ApiContext,
     db::Pool,
     domain::{
-        InternalError,
         accounts::CurrentUser,
         contents::{
             self, Content, ContentId, ContentType, ExternalContentId, LookUpError, Media,
@@ -89,14 +88,14 @@ enum GetContentRequestError {
     NotFound,
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl From<LookUpError> for GetContentRequestError {
     fn from(error: LookUpError) -> Self {
         match error {
             LookUpError::NotFound => Self::NotFound,
-            LookUpError::Internal(error) => Self::Internal(error.into()),
+            LookUpError::Internal(error) => Self::Internal(error),
         }
     }
 }

@@ -12,7 +12,7 @@ use sqlx_otel::QueryAnnotateExt;
 use tracing::Instrument;
 
 use super::{ClaimedJob, Queue, runner::AttemptEnd};
-use crate::{db::Pool, domain::InternalError, observability};
+use crate::{db::Pool, observability};
 
 /// Runs `run`, the job's attempt, in a span with the job's kind, ID and attempt, which its logs
 /// show. Its Sentry reports carry them as tags, with an issue for each kind of job. The metrics
@@ -51,7 +51,7 @@ pub(super) async fn instrument(job: &ClaimedJob, run: impl Future<Output = Attem
 
 /// Records how many due jobs each queue holds that no attempt has claimed yet, and how long the
 /// oldest of them has waited.
-pub(super) async fn record_waiting(db: &Pool) -> Result<(), InternalError> {
+pub(super) async fn record_waiting(db: &Pool) -> anyhow::Result<()> {
     let waiting = sqlx::query!(
         r#"
         SELECT

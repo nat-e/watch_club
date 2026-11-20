@@ -12,7 +12,7 @@ use sqlx_otel::QueryAnnotateExt;
 use tracing::Level;
 
 use super::{Password, SessionToken, UserId, token::SecretToken, user::password_matches};
-use crate::{db::Pool, domain::InternalError};
+use crate::db::Pool;
 
 /// The time a Password Reset Link works for, from its creation.
 const PASSWORD_RESET_LINK_LIFETIME: SignedDuration = SignedDuration::from_hours(24 * 3);
@@ -150,10 +150,7 @@ pub async fn create_password_reset_link(
 /// Returns the username of the User whose password the Password Reset Link with this token resets,
 /// or None when the link no longer works: it expired, was used or replaced, or never existed.
 #[tracing::instrument(skip_all)]
-pub async fn password_reset_username(
-    db: &Pool,
-    token: &str,
-) -> Result<Option<String>, InternalError> {
+pub async fn password_reset_username(db: &Pool, token: &str) -> anyhow::Result<Option<String>> {
     let Some(token) = SecretToken::decode(token) else {
         return Ok(None);
     };

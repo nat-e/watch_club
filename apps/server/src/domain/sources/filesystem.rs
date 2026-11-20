@@ -5,11 +5,7 @@ use anyhow::Context;
 use sqlx_otel::QueryAnnotateExt;
 
 use super::{Source, SourceConfiguration, SourceId, UpdateError};
-use crate::{
-    db::Pool,
-    domain::{InternalError, contents::MediaType},
-    utils::filesystem::AbsoluteFolder,
-};
+use crate::{db::Pool, domain::contents::MediaType, utils::filesystem::AbsoluteFolder};
 
 /// The Source Configuration of a Filesystem Source.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -26,7 +22,7 @@ pub async fn create_filesystem_source(
     db: &Pool,
     media_type: MediaType,
     path: AbsoluteFolder,
-) -> Result<Source, InternalError> {
+) -> anyhow::Result<Source> {
     let id = sqlx::query_scalar!(
         r#"
         INSERT INTO sources (source_type, media_type, path)

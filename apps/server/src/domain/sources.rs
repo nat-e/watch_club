@@ -28,7 +28,7 @@ pub use self::{
 };
 use crate::{
     db::Pool,
-    domain::{InternalError, contents::MediaType},
+    domain::contents::MediaType,
     utils::{encryption::EncryptedSecret, filesystem::AbsoluteFolder},
 };
 
@@ -131,7 +131,7 @@ pub enum DeleteError {
 
 /// Returns every Source, oldest first.
 #[tracing::instrument(skip_all)]
-pub async fn list(db: &Pool) -> Result<Vec<Source>, InternalError> {
+pub async fn list(db: &Pool) -> anyhow::Result<Vec<Source>> {
     let rows = sqlx::query_as!(
         SourceRow,
         r#"
@@ -151,7 +151,7 @@ pub async fn list(db: &Pool) -> Result<Vec<Source>, InternalError> {
 
 /// Returns the Source with this ID, or None when there's none.
 #[tracing::instrument(skip_all, fields(source.id = %id))]
-pub async fn get(db: &Pool, id: SourceId) -> Result<Option<Source>, InternalError> {
+pub async fn get(db: &Pool, id: SourceId) -> anyhow::Result<Option<Source>> {
     let row = sqlx::query_as!(
         SourceRow,
         r#"

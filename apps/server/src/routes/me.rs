@@ -17,12 +17,9 @@ use crate::{
     ApiContext,
     auth::CurrentSession,
     db::Pool,
-    domain::{
-        InternalError,
-        accounts::{
-            self, AudioLanguage, ChangePasswordError, CurrentUser, Locale, Password, PasswordError,
-            TrackLanguage, UserId, UserPreferences,
-        },
+    domain::accounts::{
+        self, AudioLanguage, ChangePasswordError, CurrentUser, Locale, Password, PasswordError,
+        TrackLanguage, UserId, UserPreferences,
     },
     error::{self, ApiError, ErrorBody},
     routes::Json,
@@ -116,14 +113,14 @@ enum ChangePasswordRequestError {
     },
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl From<ChangePasswordError> for ChangePasswordRequestError {
     fn from(error: ChangePasswordError) -> Self {
         match error {
             ChangePasswordError::WrongPassword => Self::WrongPassword,
-            ChangePasswordError::Internal(error) => Self::Internal(error.into()),
+            ChangePasswordError::Internal(error) => Self::Internal(error),
         }
     }
 }

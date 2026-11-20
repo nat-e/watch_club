@@ -15,10 +15,7 @@ use crate::{
     ApiContext,
     auth::InstanceAdministrator,
     db::Pool,
-    domain::{
-        InternalError,
-        accounts::{self, CreatePasswordResetLinkError, DeleteUserError, User, UserId},
-    },
+    domain::accounts::{self, CreatePasswordResetLinkError, DeleteUserError, User, UserId},
     error::{self, ApiError, ErrorBody},
     routes::{Json, Path},
 };
@@ -75,7 +72,7 @@ enum DeleteUserRequestError {
     CannotDeleteAdministrator,
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl From<DeleteUserError> for DeleteUserRequestError {
@@ -83,7 +80,7 @@ impl From<DeleteUserError> for DeleteUserRequestError {
         match error {
             DeleteUserError::UserNotFound => Self::UserNotFound,
             DeleteUserError::CannotDeleteAdministrator => Self::CannotDeleteAdministrator,
-            DeleteUserError::Internal(error) => Self::Internal(error.into()),
+            DeleteUserError::Internal(error) => Self::Internal(error),
         }
     }
 }
@@ -138,14 +135,14 @@ enum CreatePasswordResetLinkRequestError {
     UserNotFound,
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl From<CreatePasswordResetLinkError> for CreatePasswordResetLinkRequestError {
     fn from(error: CreatePasswordResetLinkError) -> Self {
         match error {
             CreatePasswordResetLinkError::UserNotFound => Self::UserNotFound,
-            CreatePasswordResetLinkError::Internal(error) => Self::Internal(error.into()),
+            CreatePasswordResetLinkError::Internal(error) => Self::Internal(error),
         }
     }
 }

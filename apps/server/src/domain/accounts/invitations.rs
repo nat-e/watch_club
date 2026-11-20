@@ -15,7 +15,7 @@ use super::{
     CurrentUser, Locale, Password, SessionToken, Username,
     user::{create_session, insert_user},
 };
-use crate::{db::Pool, domain::InternalError};
+use crate::db::Pool;
 
 /// The unique ID of an Invitation.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, sqlx::Type, ToSchema)]
@@ -82,7 +82,7 @@ impl From<InvitationRow> for Invitation {
 
 /// Returns the Invitations that can still be redeemed, the oldest first.
 #[tracing::instrument(skip_all)]
-pub async fn list_redeemable_invitations(db: &Pool) -> Result<Vec<Invitation>, InternalError> {
+pub async fn list_redeemable_invitations(db: &Pool) -> anyhow::Result<Vec<Invitation>> {
     // Every Invitation works for as long, so the first to expire is the oldest
     let rows = sqlx::query_as!(
         InvitationRow,
@@ -105,7 +105,7 @@ pub async fn list_redeemable_invitations(db: &Pool) -> Result<Vec<Invitation>, I
 pub async fn create_invitation(
     db: &Pool,
     max_uses: Option<NonZeroU32>,
-) -> Result<Invitation, InternalError> {
+) -> anyhow::Result<Invitation> {
     let code = random_code().context("failed to generate an Invitation's code")?;
     // The database's clock, which redeeming checks the expiry against
     let row = sqlx::query_as!(
@@ -203,7 +203,7 @@ pub async fn delete_invitation(
 
 /// Returns whether the code is an Invitation's that can still be redeemed.
 #[tracing::instrument(skip_all)]
-pub async fn is_redeemable(db: &Pool, code: &str) -> Result<bool, InternalError> {
+pub async fn is_redeemable(db: &Pool, code: &str) -> anyhow::Result<bool> {
     let is_redeemable = sqlx::query_scalar!(
         r#"
         SELECT EXISTS (
@@ -230,12 +230,6 @@ pub enum RedeemInvitationError {
     UsernameTaken,
     #[error(transparent)]
     Internal(#[from] anyhow::Error),
-}
-
-impl From<InternalError> for RedeemInvitationError {
-    fn from(error: InternalError) -> Self {
-        Self::Internal(error.0)
-    }
 }
 
 /// Creates a User with the Invitation's code, with a new User's preferences for their Locale, signs

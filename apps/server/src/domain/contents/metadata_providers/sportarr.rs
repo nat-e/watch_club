@@ -14,13 +14,10 @@ use serde::{Deserialize, Deserializer};
 
 use crate::{
     api_client::{ApiClient, ApiCredentials, ApiUrl, HttpClient},
-    domain::{
-        InternalError,
-        contents::{
-            ContentMetadata, ContentTranslations, CreditKind, CreditMetadata, ExternalContentId,
-            ExternalIds, Image, ImageSource, LookUpError, MediaMetadata, MediaTranslations,
-            MediaType, SearchResult, SearchResults, Translations,
-        },
+    domain::contents::{
+        ContentMetadata, ContentTranslations, CreditKind, CreditMetadata, ExternalContentId,
+        ExternalIds, Image, ImageSource, LookUpError, MediaMetadata, MediaTranslations, MediaType,
+        SearchResult, SearchResults, Translations,
     },
 };
 
@@ -82,11 +79,7 @@ impl Sportarr {
     ///
     /// sportarr.net sends every match at once, 25 at most, on the first page: the next ones have
     /// none.
-    pub async fn search(
-        &self,
-        query: &str,
-        page: NonZeroU32,
-    ) -> Result<SearchResults, InternalError> {
+    pub async fn search(&self, query: &str, page: NonZeroU32) -> anyhow::Result<SearchResults> {
         if page > NonZeroU32::MIN {
             return Ok(SearchResults::default());
         }
@@ -94,8 +87,7 @@ impl Sportarr {
         let found: SearchEventsAnswer = self
             .api
             .get_required("/search/event/{pattern}", &[&title_pattern(query)], &[])
-            .await
-            .map_err(anyhow::Error::from)?;
+            .await?;
 
         let results = found.data.search.into_iter().map(search_result).collect();
         Ok(SearchResults {

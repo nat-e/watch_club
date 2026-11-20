@@ -13,10 +13,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::{
     ApiContext,
     db::Pool,
-    domain::{
-        InternalError,
-        accounts::{self, Password, PasswordError, ResetPasswordError},
-    },
+    domain::accounts::{self, Password, PasswordError, ResetPasswordError},
     error::{self, ApiError, ErrorBody},
     routes::{Json, Query},
 };
@@ -101,14 +98,14 @@ enum ResetPasswordRequestError {
     LinkNoLongerWorks,
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl From<ResetPasswordError> for ResetPasswordRequestError {
     fn from(error: ResetPasswordError) -> Self {
         match error {
             ResetPasswordError::LinkNoLongerWorks => Self::LinkNoLongerWorks,
-            ResetPasswordError::Internal(error) => Self::Internal(error.into()),
+            ResetPasswordError::Internal(error) => Self::Internal(error),
         }
     }
 }

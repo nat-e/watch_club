@@ -9,7 +9,7 @@ use sqlx_otel::QueryAnnotateExt;
 use utoipa::ToSchema;
 
 use super::{CurrentUser, UserId, user::UserRow};
-use crate::{db::Pool, domain::InternalError};
+use crate::db::Pool;
 
 /// A User's personal choices that shape their WatchClub experience.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -109,7 +109,7 @@ pub async fn save_preferences(
     db: &Pool,
     user_id: UserId,
     preferences: &UserPreferences,
-) -> Result<CurrentUser, InternalError> {
+) -> anyhow::Result<CurrentUser> {
     let row = sqlx::query_as!(
         UserRow,
         r#"

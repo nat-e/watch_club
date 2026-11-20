@@ -16,10 +16,7 @@ use crate::{
     ApiContext,
     auth::SessionCookie,
     db::Pool,
-    domain::{
-        InternalError,
-        accounts::{self, SessionToken},
-    },
+    domain::accounts::{self, SessionToken},
     error::{self, ApiError, ErrorBody},
     routes::{Json, me::CurrentUserResponse},
 };
@@ -69,7 +66,7 @@ enum LoginRequestError {
     WrongCredentials,
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl IntoResponse for LoginRequestError {

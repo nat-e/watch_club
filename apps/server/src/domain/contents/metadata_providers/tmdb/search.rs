@@ -7,7 +7,6 @@ use serde::Deserialize;
 
 use super::{Tmdb, TmdbId, optional_date, optional_text, poster};
 use crate::domain::{
-    InternalError,
     accounts::Locale,
     contents::{ExternalContentId, SearchResult, SearchResults},
 };
@@ -32,7 +31,7 @@ impl Tmdb {
         query: &str,
         mut page: NonZeroU32,
         locale: Locale,
-    ) -> Result<SearchResults, InternalError> {
+    ) -> anyhow::Result<SearchResults> {
         let mut pages_read = 1;
         loop {
             let page_number = page.to_string();
@@ -42,11 +41,8 @@ impl Tmdb {
                 ("include_adult", "false"),
                 ("language", locale.language_tag()),
             ];
-            let found: MultiSearchPage = self
-                .api
-                .get_required("/search/multi", &[], &params)
-                .await
-                .map_err(anyhow::Error::from)?;
+            let found: MultiSearchPage =
+                self.api.get_required("/search/multi", &[], &params).await?;
 
             let next_page = found.next_page();
             let results: Vec<_> = found

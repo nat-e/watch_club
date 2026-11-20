@@ -18,7 +18,6 @@ use crate::{
     auth::InstanceAdministrator,
     db::Pool,
     domain::{
-        InternalError,
         contents::MediaType,
         sources::{
             self, ConnectionError, DeleteError, QualityProfile, ServarrApp, ServarrChoices,
@@ -455,7 +454,7 @@ enum TestSavedSourceServarrConnectionRequestError {
     Connection(#[from] ConnectionError),
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl IntoResponse for TestSavedSourceServarrConnectionRequestError {
@@ -496,7 +495,7 @@ enum CreateSourceRequestError {
     },
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl IntoResponse for CreateSourceRequestError {
@@ -531,14 +530,14 @@ enum UpdateSourceRequestError {
     NotFound,
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl From<UpdateError> for UpdateSourceRequestError {
     fn from(error: UpdateError) -> Self {
         match error {
             UpdateError::SourceNotFound => Self::NotFound,
-            UpdateError::Internal(error) => Self::Internal(error.into()),
+            UpdateError::Internal(error) => Self::Internal(error),
         }
     }
 }
@@ -564,14 +563,14 @@ enum DeleteSourceRequestError {
     NotFound,
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl From<DeleteError> for DeleteSourceRequestError {
     fn from(error: DeleteError) -> Self {
         match error {
             DeleteError::SourceNotFound => Self::NotFound,
-            DeleteError::Internal(error) => Self::Internal(error.into()),
+            DeleteError::Internal(error) => Self::Internal(error),
         }
     }
 }

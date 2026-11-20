@@ -18,12 +18,9 @@ use crate::{
     ApiContext,
     auth::{InstanceAdministrator, SessionCookie},
     db::Pool,
-    domain::{
-        InternalError,
-        accounts::{
-            self, DeleteInvitationError, Invitation, InvitationId, Locale, Password, PasswordError,
-            RedeemInvitationError, UpdateInvitationError, Username, UsernameError,
-        },
+    domain::accounts::{
+        self, DeleteInvitationError, Invitation, InvitationId, Locale, Password, PasswordError,
+        RedeemInvitationError, UpdateInvitationError, Username, UsernameError,
     },
     error::{self, ApiError, ErrorBody},
     routes::{Json, Path, Query, me::CurrentUserResponse},
@@ -113,7 +110,7 @@ enum UpdateInvitationRequestError {
     MaxUsesTooLow,
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl From<UpdateInvitationError> for UpdateInvitationRequestError {
@@ -121,7 +118,7 @@ impl From<UpdateInvitationError> for UpdateInvitationRequestError {
         match error {
             UpdateInvitationError::InvitationNotFound => Self::InvitationNotFound,
             UpdateInvitationError::MaxUsesTooLow => Self::MaxUsesTooLow,
-            UpdateInvitationError::Internal(error) => Self::Internal(error.into()),
+            UpdateInvitationError::Internal(error) => Self::Internal(error),
         }
     }
 }
@@ -165,14 +162,14 @@ enum DeleteInvitationRequestError {
     InvitationNotFound,
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl From<DeleteInvitationError> for DeleteInvitationRequestError {
     fn from(error: DeleteInvitationError) -> Self {
         match error {
             DeleteInvitationError::InvitationNotFound => Self::InvitationNotFound,
-            DeleteInvitationError::Internal(error) => Self::Internal(error.into()),
+            DeleteInvitationError::Internal(error) => Self::Internal(error),
         }
     }
 }
@@ -279,7 +276,7 @@ enum RedeemInvitationRequestError {
     InvitationNotRedeemable,
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl From<RedeemInvitationError> for RedeemInvitationRequestError {
@@ -287,7 +284,7 @@ impl From<RedeemInvitationError> for RedeemInvitationRequestError {
         match error {
             RedeemInvitationError::NotRedeemable => Self::InvitationNotRedeemable,
             RedeemInvitationError::UsernameTaken => Self::UsernameTaken,
-            RedeemInvitationError::Internal(error) => Self::Internal(error.into()),
+            RedeemInvitationError::Internal(error) => Self::Internal(error),
         }
     }
 }

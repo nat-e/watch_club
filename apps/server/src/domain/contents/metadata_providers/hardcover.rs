@@ -14,13 +14,9 @@ use serde_json::json;
 
 use crate::{
     api_client::{ApiClient, ApiCredentials, ApiUrl, HttpClient},
-    domain::{
-        InternalError,
-        contents::{
-            ContentMetadata, ContentTranslations, CreditKind, CreditMetadata, ExternalContentId,
-            ExternalIds, Image, ImageSource, LookUpError, SearchResult, SearchResults,
-            Translations,
-        },
+    domain::contents::{
+        ContentMetadata, ContentTranslations, CreditKind, CreditMetadata, ExternalContentId,
+        ExternalIds, Image, ImageSource, LookUpError, SearchResult, SearchResults, Translations,
     },
 };
 
@@ -96,11 +92,7 @@ impl Hardcover {
 
     /// Returns a page of the Books whose title, series, authors or ISBN match the query, the best
     /// matches first, and the most read on Hardcover among similar matches.
-    pub async fn search(
-        &self,
-        query: &str,
-        page: NonZeroU32,
-    ) -> Result<SearchResults, InternalError> {
+    pub async fn search(&self, query: &str, page: NonZeroU32) -> anyhow::Result<SearchResults> {
         // The closest matches first, and the most read first among equally close ones. Authors weigh
         // as much as titles, so that searching an author finds their books before the summaries
         // named after them. Other titles, such as translations, weigh least, so that popular Books

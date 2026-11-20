@@ -18,12 +18,9 @@ use crate::{
     ApiContext,
     auth::SessionCookie,
     db::Pool,
-    domain::{
-        InternalError,
-        accounts::{
-            self, CreateInstanceAdministratorError, Locale, Password, PasswordError, Username,
-            UsernameError,
-        },
+    domain::accounts::{
+        self, CreateInstanceAdministratorError, Locale, Password, PasswordError, Username,
+        UsernameError,
     },
     error::{self, ApiError, ErrorBody},
     routes::{Json, me::CurrentUserResponse},
@@ -135,7 +132,7 @@ enum CreateInstanceAdministratorRequestError {
     InstanceAdministratorAlreadyExists,
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl From<CreateInstanceAdministratorError> for CreateInstanceAdministratorRequestError {
@@ -144,7 +141,7 @@ impl From<CreateInstanceAdministratorError> for CreateInstanceAdministratorReque
             CreateInstanceAdministratorError::AlreadyExists => {
                 Self::InstanceAdministratorAlreadyExists
             }
-            CreateInstanceAdministratorError::Internal(error) => Self::Internal(error.into()),
+            CreateInstanceAdministratorError::Internal(error) => Self::Internal(error),
         }
     }
 }

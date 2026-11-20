@@ -15,10 +15,7 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 
 use super::{AudioLanguage, Locale, TrackLanguage, UserPreferences, token::SecretToken};
-use crate::{
-    db::{Pool, Transaction},
-    domain::InternalError,
-};
+use crate::db::{Pool, Transaction};
 
 /// The unique ID of a User.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, sqlx::Type, ToSchema)]
@@ -169,7 +166,7 @@ pub enum PasswordError {
 
 /// Returns `true` once Setup has created the Instance Administrator.
 #[tracing::instrument(skip_all)]
-pub async fn has_instance_administrator(db: &Pool) -> Result<bool, InternalError> {
+pub async fn has_instance_administrator(db: &Pool) -> anyhow::Result<bool> {
     let exists = sqlx::query_scalar!(
         r#"SELECT EXISTS (SELECT FROM users WHERE is_instance_administrator) AS "exists!""#
     )
@@ -187,12 +184,6 @@ pub enum CreateInstanceAdministratorError {
     AlreadyExists,
     #[error(transparent)]
     Internal(#[from] anyhow::Error),
-}
-
-impl From<InternalError> for CreateInstanceAdministratorError {
-    fn from(error: InternalError) -> Self {
-        Self::Internal(error.0)
-    }
 }
 
 /// Creates the Instance Administrator, with a new User's preferences for their Locale, signs them in
@@ -281,7 +272,7 @@ pub(super) async fn insert_user(
 
 /// Returns every User, the first to join first.
 #[tracing::instrument(skip_all)]
-pub async fn list_users(db: &Pool) -> Result<Vec<User>, InternalError> {
+pub async fn list_users(db: &Pool) -> anyhow::Result<Vec<User>> {
     let rows = sqlx::query!(
         r#"
         SELECT id, username, is_instance_administrator, inserted_at
@@ -386,7 +377,7 @@ pub async fn sign_in(
     db: &Pool,
     username: &str,
     password: SecretString,
-) -> Result<Option<(CurrentUser, SessionToken)>, InternalError> {
+) -> anyhow::Result<Option<(CurrentUser, SessionToken)>> {
     let username = username.trim();
     let Some(user) = check_credentials(db, username, password).await? else {
         tracing::event!(
@@ -414,7 +405,7 @@ async fn check_credentials(
     db: &Pool,
     username: &str,
     password: SecretString,
-) -> Result<Option<CurrentUser>, InternalError> {
+) -> anyhow::Result<Option<CurrentUser>> {
     let Some(row) = sqlx::query!(
         r#"
         SELECT id, username, locale, audio_language, subtitle_language,
@@ -461,10 +452,7 @@ pub(super) async fn password_matches(password: SecretString, password_hash: Stri
 
 /// Returns the User the token keeps signed in, or None once their session ended or expired.
 #[tracing::instrument(skip_all)]
-pub async fn session_user(
-    db: &Pool,
-    token: &SessionToken,
-) -> Result<Option<CurrentUser>, InternalError> {
+pub async fn session_user(db: &Pool, token: &SessionToken) -> anyhow::Result<Option<CurrentUser>> {
     let row = sqlx::query_as!(
         UserRow,
         r#"
@@ -485,7 +473,7 @@ pub async fn session_user(
 
 /// Signs out the device that the token keeps signed in.
 #[tracing::instrument(skip_all)]
-pub async fn sign_out(db: &Pool, token: &SessionToken) -> Result<(), InternalError> {
+pub async fn sign_out(db: &Pool, token: &SessionToken) -> anyhow::Result<()> {
     sqlx::query!("DELETE FROM sessions WHERE token_hash = $1", &token.hash())
         .with_operation("DELETE", "sessions")
         .execute(db)
@@ -496,7 +484,7 @@ pub async fn sign_out(db: &Pool, token: &SessionToken) -> Result<(), InternalErr
 
 /// Deletes the sessions whose lifetime has run out, and returns how many it deleted.
 #[tracing::instrument(skip_all)]
-pub async fn delete_expired_sessions(db: &Pool) -> Result<u64, InternalError> {
+pub async fn delete_expired_sessions(db: &Pool) -> anyhow::Result<u64> {
     let deleted = sqlx::query!("DELETE FROM sessions WHERE expires_at < now()")
         .with_operation("DELETE", "sessions")
         .execute(db)
@@ -510,7 +498,7 @@ pub async fn delete_expired_sessions(db: &Pool) -> Result<u64, InternalError> {
 pub(super) async fn create_session(
     db: impl PgExecutor<'_>,
     user_id: UserId,
-) -> Result<SessionToken, InternalError> {
+) -> anyhow::Result<SessionToken> {
     let token = SecretToken::random()
         .map(SessionToken)
         .context("failed to generate a session token")?;

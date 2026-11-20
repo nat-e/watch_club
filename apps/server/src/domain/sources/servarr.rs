@@ -18,7 +18,7 @@ use super::{Source, SourceConfiguration, SourceId, SourceType, UpdateError};
 use crate::{
     api_client::{ApiCredentialsError, ApiUrl, ApiUrlError, HttpClient},
     db::Pool,
-    domain::{InternalError, contents::MediaType},
+    domain::contents::MediaType,
     utils::{
         encryption::{EncryptedSecret, EncryptionKey},
         filesystem::AbsoluteFolder,
@@ -150,7 +150,7 @@ pub struct ServarrChoices {
 pub async fn create_servarr_source(
     db: &Pool,
     configuration: ServarrConfiguration,
-) -> Result<Source, InternalError> {
+) -> anyhow::Result<Source> {
     let id = sqlx::query_scalar!(
         r#"
         INSERT INTO sources (
