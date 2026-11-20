@@ -59,9 +59,8 @@ password-auth = "2.0.0"
 # Calls TMDB and Hardcover. `query` builds query strings, `json` sends Hardcover's GraphQL queries,
 # `gzip` shrinks their large answers
 reqwest = { version = "0.13.5", default-features = false, features = ["rustls", "http2", "query", "json", "gzip"] }
-# Retry the calls to other services, and trace each attempt
+# Trace the calls to other services
 reqwest-middleware = { version = "0.5.2", features = ["query", "json"] }
-reqwest-retry = "0.9.1"
 reqwest-tracing = "0.7.1"
 rust-embed = { version = "8.14.0", features = ["mime-guess"] }
 secrecy = { version = "0.10.3", features = ["serde"] }

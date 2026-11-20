@@ -66,12 +66,12 @@ export class InvalidServarrConfigurationError extends Error {
  * Returns the quality profiles and root folders of a Radarr, Sonarr or Sportarr app, for a new
  * Source, once the server checked that the app is at the URL and takes the API key. Throws a
  * `ConnectionRefusedError` when it isn't or doesn't, and the API's error for other failures. Named
- * apart from the API client's `checkNewSource`, which doesn't turn its errors into these.
+ * apart from the API client's `checkNewServarrSource`, which doesn't turn its errors into these.
  */
 export async function checkNewSourceApp(
   connection: api.ServarrConnection,
-): Promise<api.SourceCheck> {
-  const {data, error} = await api.checkNewSource({body: connection});
+): Promise<api.ServarrSourceCheck> {
+  const {data, error} = await api.checkNewServarrSource({body: connection});
   if (data) {
     return data;
   }
@@ -79,15 +79,15 @@ export async function checkNewSourceApp(
 }
 
 /**
- * Returns the quality profiles and root folders of the app of the Source with `id`, once the server
- * checked that the app is at the URL and takes the API key: the connection's, or else the Source's
- * saved one when it has none. Throws like `checkNewSourceApp`.
+ * Returns the quality profiles and root folders of the app of the Radarr, Sonarr or Sportarr Source
+ * with `id`, once the server checked that the app is at the URL and takes the API key: the
+ * connection's, or else the Source's saved one when it has none. Throws like `checkNewSourceApp`.
  */
 export async function checkExistingSourceApp(
   id: api.SourceId,
-  connection: api.SourceConnection,
-): Promise<api.SourceCheck> {
-  const {data, error} = await api.checkExistingSource({path: {id}, body: connection});
+  connection: api.ServarrSourceConnection,
+): Promise<api.ServarrSourceCheck> {
+  const {data, error} = await api.checkExistingServarrSource({path: {id}, body: connection});
   if (data) {
     return data;
   }
@@ -99,7 +99,7 @@ export async function checkExistingSourceApp(
  * other failures.
  */
 function throwConnectionError(
-  error: api.CheckNewSourceError | api.CheckExistingSourceError | api.UnexpectedError,
+  error: api.CheckNewServarrSourceError | api.CheckExistingServarrSourceError | api.UnexpectedError,
 ): never {
   if (error instanceof api.UnexpectedError) {
     throw error;

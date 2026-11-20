@@ -3,8 +3,9 @@
 //! requests. Only the Instance Administrator manages them.
 //!
 //! This module and its `store`, which saves the Sources in the database, are the only ones that
-//! match on the Source Type. It hands each Source Configuration to its type's module, `filesystem`
-//! or `servarr`, which validates it.
+//! handle every Source Type. It hands each Source Configuration to its type's module, `filesystem`
+//! or `servarr`, which validates it. `servarr` also checks the apps of Radarr, Sonarr and Sportarr
+//! Sources.
 
 mod filesystem;
 mod servarr;
@@ -19,18 +20,16 @@ use uuid::Uuid;
 pub use self::{
     filesystem::{FilesystemConfiguration, FilesystemConfigurationInput},
     servarr::{
-        ConnectionError, QualityProfile, Servarr, ServarrApp, ServarrConfiguration,
-        ServarrConfigurationError, ServarrConfigurationInput,
+        CheckExistingServarrSourceError, ConnectionError, QualityProfile, Servarr, ServarrApp,
+        ServarrConfiguration, ServarrConfigurationError, ServarrConfigurationInput,
+        ServarrSourceCheck, check_existing_servarr_source, check_new_servarr_source,
     },
 };
 use crate::{
     api_client::HttpClient,
     db::Pool,
     domain::{InternalError, contents::MediaType},
-    utils::{
-        encryption::{EncryptedSecret, EncryptionKey},
-        filesystem::FolderError,
-    },
+    utils::{encryption::EncryptionKey, filesystem::FolderError},
 };
 
 /// The unique ID of a Source.
@@ -199,18 +198,6 @@ pub enum DeleteError {
     Internal(#[from] anyhow::Error),
 }
 
-/// The reason WatchClub didn't check a Source's app.
-#[derive(Debug, thiserror::Error)]
-pub enum CheckExistingSourceError {
-    /// There's no Source with the ID, or it's a Filesystem Source, which has no app
-    #[error("no such Radarr, Sonarr or Sportarr Source")]
-    SourceNotFound,
-    #[error(transparent)]
-    Connection(#[from] ConnectionError),
-    #[error(transparent)]
-    Internal(#[from] anyhow::Error),
-}
-
 /// Returns every Source, oldest first.
 #[tracing::instrument(skip_all)]
 pub async fn list(db: &Pool) -> Result<Vec<Source>, InternalError> {
@@ -276,33 +263,4 @@ pub async fn delete(db: &Pool, id: SourceId) -> Result<(), DeleteError> {
         return Err(DeleteError::SourceNotFound);
     }
     Ok(())
-}
-
-/// Returns the Source's app at `url`, once `Servarr::connect` checked that the app takes the API
-/// key: the one entered, or else the Source's saved one.
-#[tracing::instrument(skip_all, fields(source.id = %id))]
-pub async fn check_existing_source(
-    db: &Pool,
-    id: SourceId,
-    url: &str,
-    api_key: Option<EncryptedSecret>,
-    encryption_key: &EncryptionKey,
-    http_client: &HttpClient,
-) -> Result<Servarr, CheckExistingSourceError> {
-    let source = store::get_by_id(db, id)
-        .await?
-        .ok_or(CheckExistingSourceError::SourceNotFound)?;
-    let SourceConfiguration::Servarr(configuration) = source.configuration else {
-        return Err(CheckExistingSourceError::SourceNotFound);
-    };
-
-    let api_key = api_key.unwrap_or(configuration.api_key);
-    Ok(Servarr::connect(
-        configuration.app,
-        url,
-        &api_key,
-        encryption_key,
-        http_client,
-    )
-    .await?)
 }

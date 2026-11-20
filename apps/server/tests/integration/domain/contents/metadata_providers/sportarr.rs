@@ -125,7 +125,7 @@ async fn search_finds_nothing_on_the_next_pages_without_asking_sportarr() {
 }
 
 #[tokio::test]
-async fn search_fails_with_what_sportarr_says_went_wrong() {
+async fn search_fails_with_the_status_sportarr_answers() {
     let sportarr = FakeSportarr::start().await;
     Mock::given(method("GET"))
         .respond_with(ResponseTemplate::new(400).set_body_string("Bad Request"))
@@ -138,9 +138,10 @@ async fn search_fails_with_what_sportarr_says_went_wrong() {
         .await
         .unwrap_err();
 
-    assert_eq!(
-        format!("{error:#}"),
-        "127.0.0.1 answered GET /search/event/{pattern} with 400 Bad Request: Bad Request"
+    let error = format!("{error:#}");
+    assert!(
+        error.starts_with("HTTP status client error (400 Bad Request) for url"),
+        "{error}"
     );
 }
 

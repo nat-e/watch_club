@@ -421,9 +421,9 @@ mod update {
     }
 }
 
-mod check_existing_source {
+mod check_existing_servarr_source {
     use sqlx::PgPool;
-    use watch_club::domain::sources::CheckExistingSourceError;
+    use watch_club::domain::sources::CheckExistingServarrSourceError;
     use watch_club_test_macros::database_test;
 
     use super::*;
@@ -434,7 +434,7 @@ mod check_existing_source {
         let radarr = FakeServarr::radarr().await;
         let source = create_radarr_source(&db, &radarr).await;
 
-        let client = sources::check_existing_source(
+        let check = sources::check_existing_servarr_source(
             &db,
             source.id,
             &radarr.url(),
@@ -445,7 +445,7 @@ mod check_existing_source {
         .await
         .unwrap();
 
-        assert_eq!(client.list_root_folders().await.unwrap(), [ROOT_FOLDER]);
+        assert_eq!(check.root_folders, [ROOT_FOLDER]);
     }
 
     #[database_test]
@@ -456,7 +456,7 @@ mod check_existing_source {
         let source = create_radarr_source(&db, &radarr).await;
         let new_api_key = support::encryption_key().encrypt(&"new-api-key".into());
 
-        let with_saved_key = sources::check_existing_source(
+        let with_saved_key = sources::check_existing_servarr_source(
             &db,
             source.id,
             &moved_radarr.url(),
@@ -465,7 +465,7 @@ mod check_existing_source {
             &support::http_client(),
         )
         .await;
-        let with_new_key = sources::check_existing_source(
+        let with_new_key = sources::check_existing_servarr_source(
             &db,
             source.id,
             &moved_radarr.url(),
@@ -478,7 +478,7 @@ mod check_existing_source {
         assert!(
             matches!(
                 with_saved_key,
-                Err(CheckExistingSourceError::Connection(
+                Err(CheckExistingServarrSourceError::Connection(
                     ConnectionError::InvalidApiKey
                 ))
             ),
@@ -494,7 +494,7 @@ mod check_existing_source {
         let source = create_radarr_source(&db, &radarr).await;
         let requests_before = request_count(&radarr).await;
 
-        let result = sources::check_existing_source(
+        let result = sources::check_existing_servarr_source(
             &db,
             source.id,
             &radarr.url(),
@@ -507,7 +507,7 @@ mod check_existing_source {
         assert!(
             matches!(
                 result,
-                Err(CheckExistingSourceError::Connection(
+                Err(CheckExistingServarrSourceError::Connection(
                     ConnectionError::InvalidApiKey
                 ))
             ),

@@ -11,8 +11,8 @@ use watch_club::{
     domain::{
         contents::MediaType,
         sources::{
-            self, CheckExistingSourceError, ConfigurationError, ConfigurationInput, DeleteError,
-            FilesystemConfigurationInput, Source, SourceId, UpdateError,
+            self, CheckExistingServarrSourceError, ConfigurationError, ConfigurationInput,
+            DeleteError, FilesystemConfigurationInput, Source, SourceId, UpdateError,
         },
     },
     utils::filesystem::FolderError,
@@ -186,7 +186,7 @@ async fn checks_only_the_apps_of_sources_that_exist(db: PgPool) {
     let deleted = deleted_source_id(&db).await;
 
     for id in [folder.id, deleted] {
-        let result = sources::check_existing_source(
+        let result = sources::check_existing_servarr_source(
             &db,
             id,
             "http://radarr:7878",
@@ -197,7 +197,7 @@ async fn checks_only_the_apps_of_sources_that_exist(db: PgPool) {
         .await;
 
         assert!(
-            matches!(result, Err(CheckExistingSourceError::SourceNotFound)),
+            matches!(result, Err(CheckExistingServarrSourceError::SourceNotFound)),
             "{result:?}"
         );
     }

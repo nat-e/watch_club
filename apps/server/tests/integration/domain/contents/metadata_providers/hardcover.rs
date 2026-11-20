@@ -200,7 +200,7 @@ async fn search_fails_with_the_errors_hardcover_answers() {
 }
 
 #[tokio::test]
-async fn search_fails_with_what_hardcover_says_went_wrong() {
+async fn search_fails_with_the_status_hardcover_answers() {
     let hardcover = FakeHardcover::start().await;
     Mock::given(method("POST"))
         .respond_with(ResponseTemplate::new(401).set_body_json(json!({
@@ -218,11 +218,7 @@ async fn search_fails_with_what_hardcover_says_went_wrong() {
 
     let error = format!("{error:#}");
     assert!(
-        error.starts_with("127.0.0.1 answered POST /graphql with 401 Unauthorized: {"),
-        "{error}"
-    );
-    assert!(
-        error.contains("Token is not associated with a user"),
+        error.starts_with("HTTP status client error (401 Unauthorized) for url"),
         "{error}"
     );
 }

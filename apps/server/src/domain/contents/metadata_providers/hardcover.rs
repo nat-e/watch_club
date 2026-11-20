@@ -14,7 +14,7 @@ use serde::{Deserialize, Deserializer, Serialize, de::DeserializeOwned};
 use serde_json::json;
 
 use crate::{
-    api_client::{ApiClient, ApiCredentials, HttpClient, Retries},
+    api_client::{ApiClient, ApiCredentials, HttpClient},
     domain::{
         InternalError,
         contents::{
@@ -91,7 +91,7 @@ impl Hardcover {
             .context("Hardcover's API token is invalid")?;
 
         Ok(Self {
-            api: ApiClient::new(http_client, base_url, credentials, Retries::Twice),
+            api: ApiClient::new(http_client, base_url, credentials),
         })
     }
 

@@ -21,10 +21,10 @@ use crate::{
         InternalError,
         contents::MediaType,
         sources::{
-            self, CheckExistingSourceError, ConfigurationError, ConfigurationInput,
+            self, CheckExistingServarrSourceError, ConfigurationError, ConfigurationInput,
             ConnectionError, CreateError, DeleteError, FilesystemConfigurationInput,
-            QualityProfile, Servarr, ServarrApp, ServarrConfigurationError,
-            ServarrConfigurationInput, Source, SourceConfiguration, SourceId, UpdateError,
+            QualityProfile, ServarrApp, ServarrConfigurationError, ServarrConfigurationInput,
+            ServarrSourceCheck, Source, SourceConfiguration, SourceId, UpdateError,
         },
     },
     error::{self, ApiError, ErrorBody},
@@ -37,8 +37,8 @@ pub(super) fn routes() -> OpenApiRouter<ApiContext> {
     OpenApiRouter::new()
         .routes(routes!(list_sources, create_source))
         .routes(routes!(update_source, delete_source))
-        .routes(routes!(check_new_source))
-        .routes(routes!(check_existing_source))
+        .routes(routes!(check_new_servarr_source))
+        .routes(routes!(check_existing_servarr_source))
 }
 
 /// Returns every Source, oldest first.
@@ -132,22 +132,24 @@ async fn delete_source(
 #[utoipa::path(
     post,
     path = "/sources/check",
-    request_body = CheckNewSourceRequest,
+    request_body = CheckNewServarrSourceRequest,
     responses(
-        (status = OK, body = CheckSourceResponse),
+        (status = OK, body = ServarrSourceCheck),
         (status = UNPROCESSABLE_ENTITY, body = ErrorBody<ConnectionError>, description = "WatchClub can't call the app with this URL and API key"),
     ),
     security(("session_cookie" = ["instance_administrator"]), ("session_token" = ["instance_administrator"])),
 )]
-async fn check_new_source(
+async fn check_new_servarr_source(
     State(key): State<EncryptionKey>,
     State(http_client): State<HttpClient>,
     _: InstanceAdministrator,
-    Json(request): Json<CheckNewSourceRequest>,
-) -> Result<Json<CheckSourceResponse>, ConnectionError> {
+    Json(request): Json<CheckNewServarrSourceRequest>,
+) -> Result<Json<ServarrSourceCheck>, ConnectionError> {
     let api_key = key.encrypt(&request.api_key);
-    let servarr = Servarr::connect(request.app, &request.url, &api_key, &key, &http_client).await?;
-    Ok(Json(CheckSourceResponse::list(&servarr).await?))
+    let check =
+        sources::check_new_servarr_source(request.app, &request.url, &api_key, &key, &http_client)
+            .await?;
+    Ok(Json(check))
 }
 
 /// Returns the quality profiles and root folders of a Radarr, Sonarr or Sportarr Source's app, once
@@ -157,48 +159,27 @@ async fn check_new_source(
     post,
     path = "/sources/{id}/check",
     params(("id" = SourceId, Path, description = "The Source's ID")),
-    request_body = CheckExistingSourceRequest,
+    request_body = CheckExistingServarrSourceRequest,
     responses(
-        (status = OK, body = CheckSourceResponse),
-        (status = NOT_FOUND, body = ErrorBody<CheckExistingSourceRequestError>, description = "There's no such Radarr, Sonarr or Sportarr Source"),
+        (status = OK, body = ServarrSourceCheck),
+        (status = NOT_FOUND, body = ErrorBody<CheckExistingServarrSourceRequestError>, description = "There's no such Radarr, Sonarr or Sportarr Source"),
         (status = UNPROCESSABLE_ENTITY, body = ErrorBody<ConnectionError>, description = "WatchClub can't call the app with this URL and API key"),
     ),
     security(("session_cookie" = ["instance_administrator"]), ("session_token" = ["instance_administrator"])),
 )]
-async fn check_existing_source(
+async fn check_existing_servarr_source(
     State(db): State<Pool>,
     State(key): State<EncryptionKey>,
     State(http_client): State<HttpClient>,
     _: InstanceAdministrator,
     Path(id): Path<SourceId>,
-    Json(request): Json<CheckExistingSourceRequest>,
-) -> Result<Json<CheckSourceResponse>, CheckExistingSourceRequestError> {
+    Json(request): Json<CheckExistingServarrSourceRequest>,
+) -> Result<Json<ServarrSourceCheck>, CheckExistingServarrSourceRequestError> {
     let api_key = request.api_key.map(|api_key| key.encrypt(&api_key));
-    let servarr =
-        sources::check_existing_source(&db, id, &request.url, api_key, &key, &http_client).await?;
-    Ok(Json(CheckSourceResponse::list(&servarr).await?))
-}
-
-/// The quality profiles and root folders of the app that a check called, which the Instance
-/// Administrator chooses the Source's from.
-#[derive(Serialize, ToSchema)]
-#[schema(as = SourceCheck)]
-struct CheckSourceResponse {
-    quality_profiles: Vec<QualityProfile>,
-    /// The paths of its root folders, as it sees them, such as `/movies`
-    root_folders: Vec<String>,
-}
-
-impl CheckSourceResponse {
-    /// Lists the app's quality profiles and root folders, at once.
-    async fn list(servarr: &Servarr) -> Result<Self, ConnectionError> {
-        let (quality_profiles, root_folders) =
-            tokio::try_join!(servarr.list_quality_profiles(), servarr.list_root_folders())?;
-        Ok(Self {
-            quality_profiles,
-            root_folders,
-        })
-    }
+    let check =
+        sources::check_existing_servarr_source(&db, id, &request.url, api_key, &key, &http_client)
+            .await?;
+    Ok(Json(check))
 }
 
 /// A Source, with its Source Configuration, which depends on its type.
@@ -333,7 +314,7 @@ impl SourceConfigurationBody {
 /// A Radarr, Sonarr or Sportarr app to check, for a new Source.
 #[derive(Deserialize, ToSchema)]
 #[schema(as = ServarrConnection)]
-struct CheckNewSourceRequest {
+struct CheckNewServarrSourceRequest {
     #[serde(rename = "type")]
     app: ServarrApp,
     /// The address WatchClub calls the app at
@@ -344,8 +325,8 @@ struct CheckNewSourceRequest {
 
 /// The address of a Source's app to check, and the API key, unless it's the Source's saved one.
 #[derive(Deserialize, ToSchema)]
-#[schema(as = SourceConnection)]
-struct CheckExistingSourceRequest {
+#[schema(as = ServarrSourceConnection)]
+struct CheckExistingServarrSourceRequest {
     /// The address WatchClub calls the app at
     url: String,
     /// Another API key, or none to use the Source's saved one
@@ -360,10 +341,10 @@ impl IntoResponse for ConnectionError {
     }
 }
 
-/// The failures of a request to check a Source's app.
+/// The failures of a request to check the app of a Radarr, Sonarr or Sportarr Source.
 #[derive(Debug, Serialize, ToSchema, thiserror::Error)]
 #[serde(tag = "code", rename_all = "snake_case")]
-enum CheckExistingSourceRequestError {
+enum CheckExistingServarrSourceRequestError {
     #[error("no such Radarr, Sonarr or Sportarr Source")]
     NotFound,
     /// Answers as its `ConnectionError`
@@ -375,17 +356,17 @@ enum CheckExistingSourceRequestError {
     Internal(#[from] InternalError),
 }
 
-impl From<CheckExistingSourceError> for CheckExistingSourceRequestError {
-    fn from(error: CheckExistingSourceError) -> Self {
+impl From<CheckExistingServarrSourceError> for CheckExistingServarrSourceRequestError {
+    fn from(error: CheckExistingServarrSourceError) -> Self {
         match error {
-            CheckExistingSourceError::SourceNotFound => Self::NotFound,
-            CheckExistingSourceError::Connection(error) => Self::Connection(error),
-            CheckExistingSourceError::Internal(error) => Self::Internal(error.into()),
+            CheckExistingServarrSourceError::SourceNotFound => Self::NotFound,
+            CheckExistingServarrSourceError::Connection(error) => Self::Connection(error),
+            CheckExistingServarrSourceError::Internal(error) => Self::Internal(error.into()),
         }
     }
 }
 
-impl IntoResponse for CheckExistingSourceRequestError {
+impl IntoResponse for CheckExistingServarrSourceRequestError {
     fn into_response(self) -> Response {
         match self {
             Self::NotFound => error::response(StatusCode::NOT_FOUND, &self),

@@ -1,13 +1,17 @@
 //! Radarr, Sonarr and Sportarr Sources: their app, their Source Configuration, which WatchClub
-//! validates by calling the app with its API key, and `Servarr`, the gateway that calls the app.
+//! validates by calling the app with its API key, the checks that list the app's quality profiles
+//! and root folders for the Instance Administrator to choose from, and `Servarr`, the gateway that
+//! calls the app.
 
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use tracing::Level;
 use utoipa::ToSchema;
 
+use super::{SourceConfiguration, SourceId, store};
 use crate::{
-    api_client::{ApiClient, ApiCredentials, ApiCredentialsError, CallError, HttpClient, Retries},
+    api_client::{ApiClient, ApiCredentials, ApiCredentialsError, HttpClient},
+    db::Pool,
     domain::contents::MediaType,
     utils::{
         encryption::{EncryptedSecret, EncryptionKey},
@@ -130,6 +134,27 @@ pub enum ConnectionError {
     InvalidApiKey,
 }
 
+/// The quality profiles and root folders of a Radarr, Sonarr or Sportarr app, which the Instance
+/// Administrator chooses a Source's from.
+#[derive(Debug, PartialEq, Eq, Serialize, ToSchema)]
+pub struct ServarrSourceCheck {
+    pub quality_profiles: Vec<QualityProfile>,
+    /// The paths of its root folders, as it sees them, such as `/movies`
+    pub root_folders: Vec<String>,
+}
+
+/// The reason WatchClub didn't check the app of an existing Radarr, Sonarr or Sportarr Source.
+#[derive(Debug, thiserror::Error)]
+pub enum CheckExistingServarrSourceError {
+    /// There's no Source with the ID, or it's a Filesystem Source, which has no app
+    #[error("no such Radarr, Sonarr or Sportarr Source")]
+    SourceNotFound,
+    #[error(transparent)]
+    Connection(#[from] ConnectionError),
+    #[error(transparent)]
+    Internal(#[from] anyhow::Error),
+}
+
 impl ServarrConfiguration {
     /// Returns the configuration to save, with its URL tidied, once `AbsoluteFolder::parse` found
     /// the local root folder, `Servarr::connect` checked the app, and the app has the quality
@@ -160,8 +185,10 @@ impl ServarrConfiguration {
         let api_key = api_key.ok_or(ConnectionError::InvalidApiKey)?;
         let url = url::tidy_http_url(&url).ok_or(ConnectionError::InvalidServarrUrl)?;
         let servarr = Servarr::connect(app, &url, &api_key, encryption_key, http_client).await?;
-        let (quality_profiles, root_folders) =
-            tokio::try_join!(servarr.list_quality_profiles(), servarr.list_root_folders())?;
+        let ServarrSourceCheck {
+            quality_profiles,
+            root_folders,
+        } = ServarrSourceCheck::fetch(&servarr).await?;
 
         // The app has the quality profile and root folder
         let quality_profile = quality_profiles
@@ -183,13 +210,68 @@ impl ServarrConfiguration {
     }
 }
 
+impl ServarrSourceCheck {
+    /// Returns the app's quality profiles and root folders, which it asks for at once.
+    async fn fetch(servarr: &Servarr) -> Result<Self, ConnectionError> {
+        let (quality_profiles, root_folders) =
+            tokio::try_join!(servarr.list_quality_profiles(), servarr.list_root_folders())?;
+        Ok(Self {
+            quality_profiles,
+            root_folders,
+        })
+    }
+}
+
+/// Returns the quality profiles and root folders of the app at `url`, for a new Source, once
+/// `Servarr::connect` checked that it's `app` and takes the API key.
+#[tracing::instrument(skip_all, fields(servarr.app = app.name()))]
+pub async fn check_new_servarr_source(
+    app: ServarrApp,
+    url: &str,
+    api_key: &EncryptedSecret,
+    encryption_key: &EncryptionKey,
+    http_client: &HttpClient,
+) -> Result<ServarrSourceCheck, ConnectionError> {
+    let servarr = Servarr::connect(app, url, api_key, encryption_key, http_client).await?;
+    ServarrSourceCheck::fetch(&servarr).await
+}
+
+/// Returns the quality profiles and root folders of the app of the Radarr, Sonarr or Sportarr
+/// Source with `id`, once `Servarr::connect` checked that the app at `url` takes the API key: the
+/// one entered, or else the Source's saved one.
+#[tracing::instrument(skip_all, fields(source.id = %id))]
+pub async fn check_existing_servarr_source(
+    db: &Pool,
+    id: SourceId,
+    url: &str,
+    api_key: Option<EncryptedSecret>,
+    encryption_key: &EncryptionKey,
+    http_client: &HttpClient,
+) -> Result<ServarrSourceCheck, CheckExistingServarrSourceError> {
+    let source = store::get_by_id(db, id)
+        .await?
+        .ok_or(CheckExistingServarrSourceError::SourceNotFound)?;
+    let SourceConfiguration::Servarr(configuration) = source.configuration else {
+        return Err(CheckExistingServarrSourceError::SourceNotFound);
+    };
+
+    let api_key = api_key.unwrap_or(configuration.api_key);
+    let servarr = Servarr::connect(
+        configuration.app,
+        url,
+        &api_key,
+        encryption_key,
+        http_client,
+    )
+    .await?;
+    Ok(ServarrSourceCheck::fetch(&servarr).await?)
+}
+
 /// The gateway to a Radarr, Sonarr or Sportarr app: the app at a Source's URL, which answered,
 /// took the API key and is the app the Source expects.
 #[derive(Debug)]
 pub struct Servarr {
     app: ServarrApp,
-    /// Calls the app once, without retries: the Instance Administrator waits for the answer, which
-    /// retries would delay when the URL is wrong
     api: ApiClient,
 }
 
@@ -222,7 +304,7 @@ impl Servarr {
             .pop_if_empty()
             .extend(app.api_path());
         let credentials = ApiCredentials::api_key(&api_key)?;
-        let api = ApiClient::new(http_client, api_url, credentials, Retries::Never);
+        let api = ApiClient::new(http_client, api_url, credentials);
         let servarr = Self { app, api };
 
         let app_name = servarr.fetch_app_name().await?;
@@ -290,22 +372,19 @@ impl From<ApiCredentialsError> for ConnectionError {
 
 /// Tells which setting a failed call shows is wrong: the API key when the app rejects it with a
 /// 401, or else the URL. Logs the cause, which the Instance Administrator doesn't see.
-impl From<CallError> for ConnectionError {
-    fn from(error: CallError) -> Self {
+impl From<reqwest::Error> for ConnectionError {
+    fn from(error: reqwest::Error) -> Self {
         tracing::event!(
             name: "servarr.call.failed",
             Level::WARN,
             exception.message = %format_args!("{error:#}"),
             "failed to call a Source's app",
         );
-        match error {
-            CallError::Failed { status, .. } if status == StatusCode::UNAUTHORIZED => {
-                Self::InvalidApiKey
-            }
+        if error.status() == Some(StatusCode::UNAUTHORIZED) {
+            Self::InvalidApiKey
+        } else {
             // Nothing answered, or not as the app's API does, such as a web page or an error
-            CallError::Unreachable { .. }
-            | CallError::Failed { .. }
-            | CallError::InvalidAnswer { .. } => Self::InvalidServarrUrl,
+            Self::InvalidServarrUrl
         }
     }
 }

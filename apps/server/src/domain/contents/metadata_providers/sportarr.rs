@@ -15,7 +15,7 @@ use reqwest::Url;
 use serde::{Deserialize, Deserializer};
 
 use crate::{
-    api_client::{ApiClient, ApiCredentials, HttpClient, Retries},
+    api_client::{ApiClient, ApiCredentials, HttpClient},
     domain::{
         InternalError,
         contents::{
@@ -75,12 +75,7 @@ impl Sportarr {
     /// Returns a sportarr.net at another address, such as a fake one in tests.
     pub fn with_base_url(http_client: &HttpClient, base_url: Url) -> Self {
         Self {
-            api: ApiClient::new(
-                http_client,
-                base_url,
-                ApiCredentials::anonymous(),
-                Retries::Twice,
-            ),
+            api: ApiClient::new(http_client, base_url, ApiCredentials::anonymous()),
         }
     }
 

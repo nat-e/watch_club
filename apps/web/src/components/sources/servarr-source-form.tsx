@@ -1,5 +1,5 @@
 import {useMutation} from '@tanstack/react-query';
-import type {QualityProfile, ServarrApp, SourceCheck} from '@watchclub/api';
+import type {QualityProfile, ServarrApp, ServarrSourceCheck} from '@watchclub/api';
 import {
   ConnectionRefusedError,
   checkExistingSourceApp,
@@ -63,7 +63,7 @@ export function ServarrSourceForm({
     apiKey: '',
   });
   // Null until the app answers the check, with its quality profiles and root folders
-  const [sourceCheck, setSourceCheck] = useState<SourceCheck | null>(null);
+  const [sourceCheck, setSourceCheck] = useState<ServarrSourceCheck | null>(null);
 
   if (sourceCheck === null) {
     return (
@@ -106,7 +106,7 @@ function ConnectionStep({
   app: ServarrApp;
   source?: ServarrSource;
   credentials: Credentials;
-  onConnected: (credentials: Credentials, sourceCheck: SourceCheck) => void;
+  onConnected: (credentials: Credentials, sourceCheck: ServarrSourceCheck) => void;
 }) {
   const {t} = useTranslation(['web', 'core']);
   const name = useSourceTypeTexts()[app].name;
@@ -129,7 +129,7 @@ function ConnectionStep({
       },
     ],
     onSubmit: async ({value, createValidationError}) => {
-      let sourceCheck: SourceCheck;
+      let sourceCheck: ServarrSourceCheck;
       try {
         // biome-ignore-start lint/style/useNamingConvention: the API's fields are snake_case
         sourceCheck =

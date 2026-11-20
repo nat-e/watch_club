@@ -22,7 +22,7 @@ use secrecy::SecretString;
 use serde::{Deserialize, Deserializer};
 
 use crate::{
-    api_client::{ApiClient, ApiCredentials, HttpClient, Retries},
+    api_client::{ApiClient, ApiCredentials, HttpClient},
     domain::contents::{Image, ImageSource},
 };
 
@@ -91,7 +91,7 @@ impl Tmdb {
         let credentials = ApiCredentials::bearer_token(token)
             .context("TMDB's API Read Access Token is invalid")?;
         Ok(Self {
-            api: ApiClient::new(http_client, base_url, credentials, Retries::Twice),
+            api: ApiClient::new(http_client, base_url, credentials),
         })
     }
 }
