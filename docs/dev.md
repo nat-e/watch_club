@@ -17,10 +17,10 @@ In each worktree, `pnpm dev` runs its own server and web app, on ports of their 
 
 ### Dev processes
 
-[process-compose](https://f1bonacc1.github.io/process-compose/) runs each worktree's dev processes, which `process-compose.yaml` describes: it starts the shared Postgres unless it runs, generates the API client, and runs the server and the web app, which restart or reload on changes. Expo's dev server is off by default, to save resources.
+[process-compose](https://f1bonacc1.github.io/process-compose/) runs each worktree's dev processes, which `process-compose.yaml` describes: it starts the shared Postgres unless it runs, generates the API client, and runs the server, the web app and Expo's dev server for the mobile app. The server and the web app restart or reload on changes.
 
 - `pnpm dev` starts them in the background, unless they run. `wt dev` also shows them, as `process-compose attach` does: quitting the view leaves them running
-- `process-compose` controls them, and only reaches the current worktree's: `process-compose process restart server`, `process-compose process logs server`, `process-compose process start expo`…
+- `process-compose` controls them, and only reaches the current worktree's: `process-compose process restart server`, `process-compose process logs server`, `process-compose process restart expo`…
 - `process-compose down` stops them, and so does removing the worktree. After changing `.env` or `process-compose.yaml`, run `process-compose down && pnpm dev`
 
 ### Database

@@ -47,13 +47,11 @@ processes:
       period_seconds: 1
       failure_threshold: 60
 
-  # Expo's dev server, for the mobile app. Off by default to save resources: start it with
-  # `process-compose process start expo`. Not interactive, as `process-compose attach` can't show
+  # Expo's dev server, for the mobile app. Not interactive, as `process-compose attach` can't show
   # interactive processes
   expo:
     working_dir: apps/mobile
     command: pnpm exec expo start
-    disabled: true
     depends_on:
       generate:
         condition: process_completed_successfully
