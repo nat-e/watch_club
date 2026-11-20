@@ -129,7 +129,7 @@ defmodule WatchClub.Playbacks.Playback do
     end
 
     calculate :quality_choices, :struct, QualityChoices do
-      description "The Qualities of its Video, and the one it plays: its Playback Session's, or Auto when its Video doesn't have it."
+      description "The Qualities of its Video, and the one it plays: its Playback Session's, or Auto when its Video has none with that label."
       constraints instance_of: QualityChoices
       public? true
     end

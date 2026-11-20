@@ -244,15 +244,19 @@ defmodule WatchClubWeb.RemotePage do
                   label={dgettext("player", "Quality")}
                   event="pick_quality"
                   choices={
-                    case @playback_session.current_playback.quality_choices.choices do
-                      [only] -> [{only, only}]
-                      ids -> [{"auto", dgettext("player", "Auto")} | Enum.map(ids, &{&1, &1})]
+                    case Enum.map(
+                           @playback_session.current_playback.quality_choices.choices,
+                           &{&1.label, &1.label}
+                         ) do
+                      [only] -> [only]
+                      labels -> [{"auto", dgettext("player", "Auto")} | labels]
                     end
                   }
                   selected={
                     case @playback_session.current_playback.quality_choices do
-                      %{choices: [only]} -> only
-                      %{picked: picked} -> picked || "auto"
+                      %{choices: [only]} -> only.label
+                      %{picked: nil} -> "auto"
+                      %{picked: picked} -> picked.label
                     end
                   }
                 />
@@ -343,7 +347,11 @@ defmodule WatchClubWeb.RemotePage do
       "position_seconds" => NowPlaying.position_now(session),
       "audio" => audio_track && audio_track.display_label,
       "subtitles" => playback.text_track_choices.names[playback.text_track_id],
-      "quality" => playback.quality_choices.picked || dgettext("player", "Auto"),
+      "quality" =>
+        if(playback.quality_choices.picked,
+          do: playback.quality_choices.picked.label,
+          else: dgettext("player", "Auto")
+        ),
       "user_agent" => session.tv_user_agent
     }
 

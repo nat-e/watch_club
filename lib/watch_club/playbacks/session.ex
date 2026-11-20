@@ -325,7 +325,7 @@ defmodule WatchClub.Playbacks.Session do
     end
 
     attribute :quality, :string do
-      description "The id of the Quality its Screens play, such as 720p, or nil for Auto."
+      description "The label of the Quality its Screens play, such as 720p, or nil for Auto."
       public? true
     end
 

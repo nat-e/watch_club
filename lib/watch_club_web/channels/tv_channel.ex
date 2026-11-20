@@ -149,11 +149,12 @@ defmodule WatchClubWeb.TvChannel do
   defp state(%Session{current_playback: %Playback{media: %{video: video}} = playback} = session) do
     choices = playback.text_track_choices
     forced = choices.forced[playback.audio_track_id]
+    quality = playback.quality_choices.picked
 
     %{
       playback: %{
         id: playback.id,
-        path: PlaybackPaths.master_playlist(playback, playback.quality_choices.picked),
+        path: PlaybackPaths.master_playlist(playback, quality && quality.id),
         title: NowPlaying.title(video),
         subtitle: NowPlaying.subtitle(video),
         image: image_url(NowPlaying.still_path(video)),

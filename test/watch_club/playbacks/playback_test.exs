@@ -106,19 +106,24 @@ defmodule WatchClub.Playbacks.PlaybackTest do
   end
 
   describe "quality_choices" do
-    test "names the Original by its height, or by its width's standard height when it's wider than 16:9" do
-      assert quality_choices(video_track: %{width: 1920, height: 800}).choices ==
-               ["1080p", "720p", "480p", "360p"]
+    test "labels the Original by its height, or by its width's standard height when it's wider than 16:9" do
+      assert quality_choices(video_track: %{width: 1920, height: 800}).choices == [
+               %{id: "original", label: "1080p"},
+               %{id: "720p", label: "720p"},
+               %{id: "480p", label: "480p"},
+               %{id: "360p", label: "360p"}
+             ]
 
-      assert quality_choices(video_track: %{width: 1440, height: 1080}).choices ==
-               ["1080p", "720p", "480p", "360p"]
+      assert %{choices: [%{id: "original", label: "1080p"} | _]} =
+               quality_choices(video_track: %{width: 1440, height: 1080})
 
-      assert quality_choices(video_track: %{width: 720, height: 576}).choices ==
-               ["576p", "480p", "360p"]
+      assert %{choices: [%{id: "original", label: "576p"} | _]} =
+               quality_choices(video_track: %{width: 720, height: 576})
     end
 
-    test "plays the Quality of the Playback Session" do
-      assert %QualityChoices{picked: "720p"} = quality_choices(quality: "720p")
+    test "plays the Quality of the Playback Session, by its label" do
+      assert %QualityChoices{picked: %{id: "original"}} =
+               quality_choices(video_track: %{width: 1280, height: 720}, quality: "720p")
     end
 
     test "plays Auto when the Video doesn't have the Quality of the Playback Session" do

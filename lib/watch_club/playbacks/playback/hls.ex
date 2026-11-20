@@ -28,8 +28,9 @@ defmodule WatchClub.Playbacks.Playback.Hls do
   @segments_ahead 5
 
   @doc """
-  `query`, such as `?token=…`, follows every URI of the playlists, which need it. With a
-  `quality_id`, it lists only that Quality, which a Screen then plays rather than adapting.
+  `query`, such as `?token=…`, follows every URI of the playlists, which need it. With the
+  `quality_id` of a variant, it lists only that one, which a Screen then plays rather than
+  adapting.
   """
   def master_playlist(%Playback{media: %{video: %Video{} = video}} = playback, query, quality_id) do
     metadata = %{
