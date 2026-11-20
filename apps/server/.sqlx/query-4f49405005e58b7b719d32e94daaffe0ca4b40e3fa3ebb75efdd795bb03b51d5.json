@@ -1,0 +1,257 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT c.id, c.original_title, c.original_language, c.release_date, c.genres, c.rating,\n            c.backdrop, c.metadata_refreshed_at, l.title, l.overview, l.poster, l.trailer_url,\n            media.count AS \"media_count!\", media.group_count AS \"media_group_count!\",\n            media.runtime_seconds\n        FROM contents c\n        JOIN content_localizations l ON l.content_id = c.id AND l.locale = $4\n        CROSS JOIN LATERAL (\n            SELECT count(*) AS count, count(DISTINCT group_number)::integer AS group_count,\n                max(runtime_seconds) AS runtime_seconds\n            FROM media\n            WHERE content_id = c.id\n        ) media\n        WHERE c.content_type = $1 AND c.metadata_provider = $2 AND c.main_external_id = $3\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "contents",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "original_title",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "contents",
+            "name": "original_title"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "original_language",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "contents",
+            "name": "original_language"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "release_date",
+        "type_info": "Date",
+        "origin": {
+          "Table": {
+            "table": "contents",
+            "name": "release_date"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "genres",
+        "type_info": {
+          "Custom": {
+            "name": "genre[]",
+            "kind": {
+              "Array": {
+                "Custom": {
+                  "name": "genre",
+                  "kind": {
+                    "Enum": [
+                      "action",
+                      "adventure",
+                      "animation",
+                      "comedy",
+                      "crime",
+                      "documentary",
+                      "drama",
+                      "family",
+                      "fantasy",
+                      "history",
+                      "horror",
+                      "kids",
+                      "music",
+                      "mystery",
+                      "news",
+                      "politics",
+                      "reality",
+                      "romance",
+                      "science_fiction",
+                      "soap",
+                      "talk",
+                      "thriller",
+                      "tv_movie",
+                      "war",
+                      "western"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "origin": {
+          "Table": {
+            "table": "contents",
+            "name": "genres"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "rating",
+        "type_info": "Float4",
+        "origin": {
+          "Table": {
+            "table": "contents",
+            "name": "rating"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "backdrop",
+        "type_info": "Jsonb",
+        "origin": {
+          "Table": {
+            "table": "contents",
+            "name": "backdrop"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "metadata_refreshed_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "contents",
+            "name": "metadata_refreshed_at"
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "title",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "content_localizations",
+            "name": "title"
+          }
+        }
+      },
+      {
+        "ordinal": 9,
+        "name": "overview",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "content_localizations",
+            "name": "overview"
+          }
+        }
+      },
+      {
+        "ordinal": 10,
+        "name": "poster",
+        "type_info": "Jsonb",
+        "origin": {
+          "Table": {
+            "table": "content_localizations",
+            "name": "poster"
+          }
+        }
+      },
+      {
+        "ordinal": 11,
+        "name": "trailer_url",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "content_localizations",
+            "name": "trailer_url"
+          }
+        }
+      },
+      {
+        "ordinal": 12,
+        "name": "media_count!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 13,
+        "name": "media_group_count!",
+        "type_info": "Int4",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 14,
+        "name": "runtime_seconds",
+        "type_info": "Int4",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "content_type",
+            "kind": {
+              "Enum": [
+                "movie",
+                "tv_show",
+                "sports_event",
+                "book"
+              ]
+            }
+          }
+        },
+        {
+          "Custom": {
+            "name": "metadata_provider",
+            "kind": {
+              "Enum": [
+                "tmdb",
+                "sportarr",
+                "hardcover"
+              ]
+            }
+          }
+        },
+        "Text",
+        {
+          "Custom": {
+            "name": "locale",
+            "kind": {
+              "Enum": [
+                "en-US",
+                "fr-FR"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      false,
+      false,
+      true,
+      true,
+      true,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "4f49405005e58b7b719d32e94daaffe0ca4b40e3fa3ebb75efdd795bb03b51d5"
+}

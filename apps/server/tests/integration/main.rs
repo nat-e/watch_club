@@ -28,6 +28,7 @@ mod routes {
     }
     mod contents {
         mod get;
+        mod list_media;
     }
     mod me {
         mod get;

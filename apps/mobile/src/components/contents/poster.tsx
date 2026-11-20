@@ -1,32 +1,20 @@
 import type {Image} from '@watchclub/api';
-import {Image as ExpoImage} from 'expo-image';
 import {View} from 'react-native';
+import {SizedImage} from '@/components/contents/sized-image';
 
 /**
- * A Content's poster, `width` points wide, or a placeholder when it has none. Expo Image downloads
- * the size closest to what the screen shows. Screen readers skip it, as the Content's title is
- * always beside it.
+ * A Content's poster, `width` points wide, or a placeholder when it has none. Screen readers skip
+ * it, as the Content's title is always beside it.
  */
 export function Poster({image, width}: {image: Image | null; width: number}) {
   return (
     <View
-      className="aspect-2/3 overflow-hidden rounded-md bg-accent"
+      className="aspect-2/3 overflow-hidden rounded-lg bg-accent"
       style={{width}}
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      {image !== null && (
-        <ExpoImage
-          source={image.map(source => ({
-            uri: source.url,
-            width: source.width,
-            height: source.height,
-          }))}
-          style={{flex: 1}}
-          contentFit="cover"
-          transition={150}
-        />
-      )}
+      {image !== null && <SizedImage image={image} style={{flex: 1}} />}
     </View>
   );
 }

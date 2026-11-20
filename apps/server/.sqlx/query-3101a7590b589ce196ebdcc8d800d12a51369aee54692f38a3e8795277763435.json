@@ -1,0 +1,100 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO contents (\n            content_type, metadata_provider, external_ids, original_title, original_language,\n            origin_country, release_date, genres, rating, backdrop, metadata_refreshed_at\n        )\n        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now())\n        ON CONFLICT (content_type, metadata_provider, main_external_id) DO UPDATE\n        SET external_ids = EXCLUDED.external_ids,\n            original_title = EXCLUDED.original_title,\n            original_language = EXCLUDED.original_language,\n            origin_country = EXCLUDED.origin_country,\n            release_date = EXCLUDED.release_date,\n            genres = EXCLUDED.genres,\n            rating = EXCLUDED.rating,\n            backdrop = EXCLUDED.backdrop,\n            metadata_refreshed_at = EXCLUDED.metadata_refreshed_at\n        RETURNING id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "contents",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "content_type",
+            "kind": {
+              "Enum": [
+                "movie",
+                "tv_show",
+                "sports_event",
+                "book"
+              ]
+            }
+          }
+        },
+        {
+          "Custom": {
+            "name": "metadata_provider",
+            "kind": {
+              "Enum": [
+                "tmdb",
+                "sportarr",
+                "hardcover"
+              ]
+            }
+          }
+        },
+        "Jsonb",
+        "Text",
+        "Text",
+        "Text",
+        "Date",
+        {
+          "Custom": {
+            "name": "genre[]",
+            "kind": {
+              "Array": {
+                "Custom": {
+                  "name": "genre",
+                  "kind": {
+                    "Enum": [
+                      "action",
+                      "adventure",
+                      "animation",
+                      "comedy",
+                      "crime",
+                      "documentary",
+                      "drama",
+                      "family",
+                      "fantasy",
+                      "history",
+                      "horror",
+                      "kids",
+                      "music",
+                      "mystery",
+                      "news",
+                      "politics",
+                      "reality",
+                      "romance",
+                      "science_fiction",
+                      "soap",
+                      "talk",
+                      "thriller",
+                      "tv_movie",
+                      "war",
+                      "western"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "Float4",
+        "Jsonb"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "3101a7590b589ce196ebdcc8d800d12a51369aee54692f38a3e8795277763435"
+}

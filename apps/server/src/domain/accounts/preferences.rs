@@ -43,7 +43,7 @@ impl UserPreferences {
 
 /// A language and country preference.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, sqlx::Type, ToSchema)]
-#[sqlx(type_name = "text")]
+#[sqlx(type_name = "locale")]
 pub enum Locale {
     #[serde(rename = "en-US")]
     #[sqlx(rename = "en-US")]
@@ -54,11 +54,30 @@ pub enum Locale {
 }
 
 impl Locale {
+    /// Every Locale
+    pub const ALL: [Self; 2] = [Self::EnUs, Self::FrFr];
+
     /// Returns its BCP 47 language tag, such as `en-US`.
     pub const fn language_tag(self) -> &'static str {
         match self {
             Self::EnUs => "en-US",
             Self::FrFr => "fr-FR",
+        }
+    }
+
+    /// Returns its language's ISO 639-1 code, such as `en`.
+    pub const fn language(self) -> &'static str {
+        match self {
+            Self::EnUs => "en",
+            Self::FrFr => "fr",
+        }
+    }
+
+    /// Returns its country's ISO 3166-1 code, such as `US`.
+    pub const fn country(self) -> &'static str {
+        match self {
+            Self::EnUs => "US",
+            Self::FrFr => "FR",
         }
     }
 }

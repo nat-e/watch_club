@@ -1,39 +1,20 @@
 {
-  "adult": false,
+  "id": 194,
+  "original_language": "fr",
+  "origin_country": ["FR"],
+  "overview": "At a tiny Parisian café, the adorable yet painfully shy Amélie accidentally discovers a gift for helping others. Soon Amelie is spending her days as a matchmaker, guardian angel, and all-around do-gooder. But when she bumps into a handsome stranger, will she find the courage to become the star of her very own love story?",
+  "poster_path": "/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg",
   "backdrop_path": "/6n53UI4mX9QMfe2S0Pgt8mGebY1.jpg",
-  "belongs_to_collection": null,
-  "budget": 10000000,
+  "vote_average": 7.92,
+  "vote_count": 12841,
   "genres": [
     {
       "id": 35,
-      "name": "Comédie"
+      "name": "Comedy"
     },
     {
       "id": 10749,
       "name": "Romance"
-    }
-  ],
-  "homepage": "https://www.miramax.com/movie/amelie/",
-  "id": 194,
-  "imdb_id": "tt0211915",
-  "origin_country": ["FR"],
-  "original_language": "fr",
-  "original_title": "Le Fabuleux Destin d'Amélie Poulain",
-  "overview": "Amélie, une jeune serveuse dans un bar de Montmartre, passe son temps à observer les gens et à laisser son imagination divaguer. Elle s'est fixée un but : faire le bien de ceux qui l'entourent. Elle invente alors des stratagèmes pour intervenir incognito dans leur existence. Le chemin d'Amélie est jalonné de rencontres: Georgette, la buraliste hypocondriaque, Lucien, le commis d'épicerie, Madeleine Wallace, la concierge portée sur le porto et les chiens empaillés, ou encore Raymond Dufayel alias « l'homme de verre », son voisin qui ne vit qu'à travers une reproduction d'un tableau de Renoir. Cette quête du bonheur amène Amélie à faire la connaissance de Nino Quincampoix, un étrange « prince charmant ». Celui-ci partage son temps entre un train fantôme et un sex-shop, et cherche à identifier un inconnu dont la photo réapparaît sans cesse dans plusieurs cabines de photomaton.",
-  "popularity": 13.1319,
-  "poster_path": "/tdXtLG6L1QMwrv0MNdW6B9IwC8B.jpg",
-  "production_companies": [
-    {
-      "id": 25020,
-      "logo_path": null,
-      "name": "Victoires Productions",
-      "origin_country": "FR"
-    },
-    {
-      "id": 12000,
-      "logo_path": null,
-      "name": "Tapioca Films",
-      "origin_country": "FR"
     }
   ],
   "production_countries": [
@@ -46,28 +27,11 @@
       "name": "Germany"
     }
   ],
+  "title": "Amélie",
+  "original_title": "Le Fabuleux Destin d'Amélie Poulain",
   "release_date": "2001-04-25",
-  "revenue": 173921954,
-  "runtime": 120,
-  "softcore": false,
-  "spoken_languages": [
-    {
-      "english_name": "French",
-      "iso_639_1": "fr",
-      "name": "Français"
-    },
-    {
-      "english_name": "Russian",
-      "iso_639_1": "ru",
-      "name": "Pусский"
-    }
-  ],
-  "status": "Released",
-  "tagline": "Une personne peut changer votre vie pour toujours.",
-  "title": "Le Fabuleux Destin d'Amélie Poulain",
-  "video": false,
-  "vote_average": 7.921,
-  "vote_count": 12840,
+  "runtime": 122,
+  "imdb_id": "tt0211915",
   "translations": {
     "translations": [
       {
@@ -81,6 +45,19 @@
           "runtime": 122,
           "tagline": "She’ll change your life.",
           "title": "Amélie"
+        }
+      },
+      {
+        "iso_3166_1": "DE",
+        "iso_639_1": "de",
+        "name": "Deutsch",
+        "english_name": "German",
+        "data": {
+          "homepage": "http://www.die-fabelhafte-welt-der-amelie.de",
+          "overview": "Im Herzen von Paris arbeitet die schüchterne Amélie als Kellnerin in einem kleinen Straßencafé. Eine Wendung nimmt das vergleichsweise ereignisarme, von kuriosen Alltagsbeobachtungen gewürzte Leben der jungen Frau, als sie eine Schachtel mit Kindheitserinnerungen eines Fremden entdeckt und dem ursprünglichen Besitzer damit große Freude bereitet. Fortan macht es sich Amélie zur Lebensaufgabe, helfend in das Schicksal ihrer Mitmenschen einzugreifen. Nur als es um das eigene Liebesglück geht, scheint ihr Talent zu versagen.",
+          "runtime": 122,
+          "tagline": "",
+          "title": "Die fabelhafte Welt der Amélie"
         }
       },
       {
@@ -112,51 +89,27 @@
     ]
   },
   "images": {
-    "backdrops": [
+    "posters": [
       {
-        "aspect_ratio": 1.778,
-        "height": 2160,
-        "iso_3166_1": null,
-        "iso_639_1": null,
-        "file_path": "/6n53UI4mX9QMfe2S0Pgt8mGebY1.jpg",
-        "vote_average": 6.346,
-        "vote_count": 12,
-        "width": 3840
-      },
-      {
-        "aspect_ratio": 1.778,
-        "height": 1080,
-        "iso_3166_1": null,
-        "iso_639_1": null,
-        "file_path": "/9TEUJy5aRP7LaM1LKTfcxVK34JK.jpg",
-        "vote_average": 5.25,
-        "vote_count": 16,
-        "width": 1920
-      },
-      {
-        "aspect_ratio": 1.778,
-        "height": 1080,
-        "iso_3166_1": null,
-        "iso_639_1": null,
-        "file_path": "/sylBlnpwqI9LAcyw7jH3oqazbAx.jpg",
-        "vote_average": 4.12,
-        "vote_count": 21,
-        "width": 1920
-      }
-    ],
-    "logos": [
-      {
-        "aspect_ratio": 3.321,
-        "height": 1257,
+        "aspect_ratio": 0.667,
+        "height": 3000,
         "iso_3166_1": "US",
         "iso_639_1": "en",
-        "file_path": "/pIjwwbSgqq6sMbL0Umr7zKmEEUF.png",
-        "vote_average": 3.334,
-        "vote_count": 1,
-        "width": 4174
-      }
-    ],
-    "posters": [
+        "file_path": "/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg",
+        "vote_average": 6.722,
+        "vote_count": 9,
+        "width": 2000
+      },
+      {
+        "aspect_ratio": 0.667,
+        "height": 1920,
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "file_path": "/oTKduWL2tpIKEmkAqF4mFEAWAsv.jpg",
+        "vote_average": 4.884,
+        "vote_count": 14,
+        "width": 1280
+      },
       {
         "aspect_ratio": 0.667,
         "height": 3000,
@@ -170,77 +123,85 @@
       {
         "aspect_ratio": 0.667,
         "height": 3000,
-        "iso_3166_1": "US",
-        "iso_639_1": "en",
-        "file_path": "/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg",
-        "vote_average": 6.722,
-        "vote_count": 9,
+        "iso_3166_1": "FR",
+        "iso_639_1": "fr",
+        "file_path": "/7dkCfOJ4rjEZNrNJQReht5od7aW.jpg",
+        "vote_average": 3.334,
+        "vote_count": 2,
         "width": 2000
-      }
-    ]
-  },
-  "credits": {
-    "cast": [
-      {
-        "adult": false,
-        "gender": 1,
-        "id": 2405,
-        "known_for_department": "Acting",
-        "name": "Audrey Tautou",
-        "original_name": "Audrey Tautou",
-        "popularity": 1.775,
-        "profile_path": "/d1HVrV8zXy1FJVptmOCkHWG8Jf2.jpg",
-        "cast_id": 4,
-        "character": "Amélie Poulain",
-        "credit_id": "52fe4225c3a36847f800779b",
-        "order": 0
       },
       {
-        "adult": false,
-        "gender": 2,
-        "id": 2406,
-        "known_for_department": "Acting",
-        "name": "Mathieu Kassovitz",
-        "original_name": "Mathieu Kassovitz",
-        "popularity": 1.6592,
-        "profile_path": "/3FRBEdKKlxhvPWPt0jzgmSjeHwn.jpg",
-        "cast_id": 28,
-        "character": "Nino Quincampoix",
-        "credit_id": "52fe4225c3a36847f8007805",
-        "order": 1
+        "aspect_ratio": 0.667,
+        "height": 1920,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/bgWRWA4cSjMrBEGaJSrWxsItsXE.jpg",
+        "vote_average": 3.334,
+        "vote_count": 1,
+        "width": 1280
       }
     ],
-    "crew": [
+    "backdrops": [
       {
-        "adult": false,
-        "gender": 2,
-        "id": 2420,
-        "known_for_department": "Writing",
-        "name": "Guillaume Laurant",
-        "original_name": "Guillaume Laurant",
-        "popularity": 0.5423,
-        "profile_path": "/4l92fKi1WuJmTlS8lrTVVSSK2XG.jpg",
-        "credit_id": "52fe4225c3a36847f80077fb",
-        "department": "Writing",
-        "job": "Dialogue"
+        "aspect_ratio": 1.778,
+        "height": 720,
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "file_path": "/iC21kBqdxieLEwg10Tlos24S4pe.jpg",
+        "vote_average": 3.334,
+        "vote_count": 1,
+        "width": 1280
       },
       {
-        "adult": false,
-        "gender": 2,
-        "id": 2423,
-        "known_for_department": "Camera",
-        "name": "Bruno Delbonnel",
-        "original_name": "Bruno Delbonnel",
-        "popularity": 0.3515,
-        "profile_path": "/1egXj9S7Bni5HxeqCUVWTXiJNhz.jpg",
-        "credit_id": "52fe4225c3a36847f80077e9",
-        "department": "Camera",
-        "job": "Director of Photography"
+        "aspect_ratio": 1.778,
+        "height": 2160,
+        "iso_3166_1": null,
+        "iso_639_1": null,
+        "file_path": "/6n53UI4mX9QMfe2S0Pgt8mGebY1.jpg",
+        "vote_average": 6.346,
+        "vote_count": 12,
+        "width": 3840
       }
     ]
   },
   "videos": {
     "results": [
+      {
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "name": "The Wait is Over! It's time to get (re)Acquainted with AMÉLIE. [Subtitled]",
+        "key": "j0aotpJRPgc",
+        "site": "YouTube",
+        "size": 1080,
+        "type": "Teaser",
+        "official": true,
+        "id": "69d0d79c85fd8a43464d29e0",
+        "published_at": "2026-04-03T07:45:02.000Z"
+      },
+      {
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "name": "AMÉLIE Is Coming Back to The Big Screen on 3 April [Subtitled]",
+        "key": "NkvJh8cpVCE",
+        "site": "YouTube",
+        "size": 1080,
+        "type": "Teaser",
+        "official": true,
+        "id": "69b2b94d0f132ad972a76f8d",
+        "published_at": "2026-03-11T11:30:17.000Z"
+      },
+      {
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "name": "How 'Amélie' Convinced Eva Longoria She Was in Paris!",
+        "key": "LqZ3eW33oRw",
+        "site": "YouTube",
+        "size": 1080,
+        "type": "Featurette",
+        "official": true,
+        "id": "6a5227ae40554f7ebe595b90",
+        "published_at": "2026-07-01T16:00:15.000Z"
+      },
       {
         "iso_639_1": "fr",
         "iso_3166_1": "FR",
@@ -266,5 +227,100 @@
         "published_at": "2014-10-09T07:25:30.000Z"
       }
     ]
+  },
+  "credits": {
+    "cast": [
+      {
+        "adult": false,
+        "gender": 1,
+        "id": 2405,
+        "known_for_department": "Acting",
+        "name": "Audrey Tautou",
+        "original_name": "Audrey Tautou",
+        "popularity": 1.8008,
+        "profile_path": "/d1HVrV8zXy1FJVptmOCkHWG8Jf2.jpg",
+        "cast_id": 4,
+        "character": "Amélie Poulain",
+        "credit_id": "52fe4225c3a36847f800779b",
+        "order": 0
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 2406,
+        "known_for_department": "Acting",
+        "name": "Mathieu Kassovitz",
+        "original_name": "Mathieu Kassovitz",
+        "popularity": 1.3017,
+        "profile_path": "/3FRBEdKKlxhvPWPt0jzgmSjeHwn.jpg",
+        "cast_id": 28,
+        "character": "Nino Quincampoix",
+        "credit_id": "52fe4225c3a36847f8007805",
+        "order": 1
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 2407,
+        "known_for_department": "Acting",
+        "name": "Rufus",
+        "original_name": "Rufus",
+        "popularity": 0.768,
+        "profile_path": "/aC6rEJrBgCNjeG6vetJPBdgj5h3.jpg",
+        "cast_id": 6,
+        "character": "Raphaël Poulain",
+        "credit_id": "52fe4225c3a36847f800779f",
+        "order": 2
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 2410,
+        "known_for_department": "Acting",
+        "name": "Serge Merlin",
+        "original_name": "Serge Merlin",
+        "popularity": 0.5414,
+        "profile_path": "/90Kwb8hfORDXcEeA1lzikAubcQe.jpg",
+        "cast_id": 9,
+        "character": "Raymond Dufayel",
+        "credit_id": "52fe4225c3a36847f80077ab",
+        "order": 3
+      }
+    ],
+    "crew": [
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 2419,
+        "known_for_department": "Directing",
+        "name": "Jean-Pierre Jeunet",
+        "original_name": "Jean-Pierre Jeunet",
+        "popularity": 1.0334,
+        "profile_path": "/4DhPaNaxYnkgxVJHVLyL5gKmKpG.jpg",
+        "credit_id": "52fe4225c3a36847f8007801",
+        "department": "Directing",
+        "job": "Director"
+      },
+      {
+        "adult": false,
+        "gender": 2,
+        "id": 2420,
+        "known_for_department": "Writing",
+        "name": "Guillaume Laurant",
+        "original_name": "Guillaume Laurant",
+        "popularity": 0.3867,
+        "profile_path": "/4l92fKi1WuJmTlS8lrTVVSSK2XG.jpg",
+        "credit_id": "52fe4225c3a36847f80077fb",
+        "department": "Writing",
+        "job": "Dialogue"
+      }
+    ]
+  },
+  "external_ids": {
+    "imdb_id": "tt0211915",
+    "wikidata_id": "Q484048",
+    "facebook_id": null,
+    "instagram_id": null,
+    "twitter_id": null
   }
 }

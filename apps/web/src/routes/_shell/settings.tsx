@@ -5,6 +5,7 @@ import {
   savePreferencesMutation,
   useTrackLanguageOptions,
 } from '@watchclub/core/accounts/preferences';
+import {TMDB_LOGO_SVG, TMDB_URL} from '@watchclub/core/contents/tmdb';
 import {useInstanceName} from '@watchclub/core/instance';
 import {LOCALES, useLocaleNames} from '@watchclub/core/l10n';
 import type {ReactNode} from 'react';
@@ -28,6 +29,7 @@ function Settings() {
       </p>
       <LanguageSection />
       <AudioAndSubtitlesSection />
+      <AboutSection />
     </Page>
   );
 }
@@ -152,6 +154,33 @@ function AudioAndSubtitlesSection() {
           </form.SubmitButton>
         </form.Form>
       </form.AppForm>
+    </SettingsSection>
+  );
+}
+
+/**
+ * TMDB's notice and logo, which its terms require: the exact notice, and the logo unaltered and
+ * less prominent than the Instance's name.
+ */
+function AboutSection() {
+  const {t} = useTranslation('core');
+  return (
+    <SettingsSection
+      title={t($ => $.core.settings.about)}
+      description={t($ => $.core.settings.tmdbNotice)}
+    >
+      <a
+        href={TMDB_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex min-h-11 items-center"
+      >
+        <img
+          src={`data:image/svg+xml,${encodeURIComponent(TMDB_LOGO_SVG)}`}
+          alt={t($ => $.core.settings.tmdbLogo)}
+          className="h-4"
+        />
+      </a>
     </SettingsSection>
   );
 }

@@ -235,10 +235,127 @@
         ]
       }
     },
+    "/api/contents/{content_id}/media": {
+      "get": {
+        "summary": "Returns the Content's Media in order, such as a TV Show's Episodes by season and episode, with\ntheir texts in the signed-in User's Locale. A Content that isn't saved has none.",
+        "operationId": "list_media_of_content",
+        "parameters": [
+          {
+            "name": "content_id",
+            "in": "path",
+            "description": "The Content's ID in WatchClub",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ContentId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Media"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request was not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session_cookie": []
+          },
+          {
+            "session_token": []
+          }
+        ]
+      }
+    },
     "/api/contents/{content_type}/{external_id}": {
       "get": {
-        "summary": "Returns the Content, with its title in the signed-in User's language when its Metadata Provider\nhas it.",
-        "operationId": "get_content",
+        "summary": "Returns the Content, with its texts in the signed-in User's Locale. The first time someone opens\nit, WatchClub saves it from its Metadata Provider first.",
+        "operationId": "get_content_by_external_id",
         "parameters": [
           {
             "name": "content_type",
@@ -912,16 +1029,123 @@
           {
             "type": "object",
             "required": [
-              "title"
+              "id",
+              "title",
+              "original_title",
+              "original_language",
+              "overview",
+              "poster",
+              "backdrop",
+              "release_date",
+              "genres",
+              "rating",
+              "trailer_url",
+              "credits",
+              "runtime_seconds",
+              "media_group_count"
             ],
             "properties": {
+              "backdrop": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Image"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "credits": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Credit"
+                },
+                "description": "Who made it and who's in it, in display order"
+              },
+              "genres": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Genre"
+                }
+              },
+              "id": {
+                "$ref": "#/components/schemas/ContentId"
+              },
+              "media_group_count": {
+                "type": "integer",
+                "format": "int32",
+                "description": "The number of groups its Media are in, such as a TV Show's seasons"
+              },
+              "original_language": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Its original language, as an ISO 639-1 code such as `fr`"
+              },
+              "original_title": {
+                "type": "string",
+                "description": "Its title in its original language"
+              },
+              "overview": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "poster": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Image"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "rating": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "format": "float",
+                "description": "The average of its votes out of 10, to one decimal, or null when too few people voted"
+              },
+              "release_date": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date",
+                "description": "The day it came out, first aired or takes place"
+              },
+              "runtime_seconds": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "int32",
+                "description": "The runtime of its Media, when it has only one, such as a Movie"
+              },
               "title": {
                 "type": "string"
+              },
+              "trailer_url": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The YouTube URL of its trailer"
               }
             }
           }
         ],
-        "description": "A Content, with its title in the User's language when its Metadata Provider has it."
+        "description": "A Content as its page shows it, with its texts in one Locale."
+      },
+      "ContentId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "The unique ID of a Content in WatchClub. Actions take it rather than an External ID, which a\nMetadata Provider can change."
       },
       "ContentType": {
         "type": "string",
@@ -987,6 +1211,54 @@
             "type": "string"
           }
         }
+      },
+      "Credit": {
+        "type": "object",
+        "description": "A person or an organization who made a Content or is in it.",
+        "required": [
+          "kind",
+          "name",
+          "character",
+          "photo"
+        ],
+        "properties": {
+          "character": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The character an actor plays"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/CreditKind"
+          },
+          "name": {
+            "type": "string"
+          },
+          "photo": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Image"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "CreditKind": {
+        "type": "string",
+        "description": "The part a person or an organization has in a Content.",
+        "enum": [
+          "director",
+          "actor",
+          "author",
+          "illustrator",
+          "narrator",
+          "artist",
+          "league"
+        ]
       },
       "CurrentUser": {
         "type": "object",
@@ -1157,6 +1429,37 @@
           }
         }
       },
+      "Genre": {
+        "type": "string",
+        "description": "A kind of story a Movie or a TV Show tells.",
+        "enum": [
+          "action",
+          "adventure",
+          "animation",
+          "comedy",
+          "crime",
+          "documentary",
+          "drama",
+          "family",
+          "fantasy",
+          "history",
+          "horror",
+          "kids",
+          "music",
+          "mystery",
+          "news",
+          "politics",
+          "reality",
+          "romance",
+          "science_fiction",
+          "soap",
+          "talk",
+          "thriller",
+          "tv_movie",
+          "war",
+          "western"
+        ]
+      },
       "GetContentRequestError": {
         "oneOf": [
           {
@@ -1280,6 +1583,83 @@
           }
         ],
         "description": "The failures of a request to sign in."
+      },
+      "Media": {
+        "type": "object",
+        "description": "A Media of a Content, such as a TV Show Episode, with its texts in one Locale.",
+        "required": [
+          "id",
+          "group_number",
+          "number_in_group",
+          "title",
+          "overview",
+          "image",
+          "release_date",
+          "runtime_seconds"
+        ],
+        "properties": {
+          "group_number": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "description": "The group it's in, such as a TV Show Episode's season"
+          },
+          "id": {
+            "$ref": "#/components/schemas/MediaId"
+          },
+          "image": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Image"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "number_in_group": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "description": "Its number in its group, such as a TV Show Episode's"
+          },
+          "overview": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "release_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "description": "The day it came out or aired, which tells whether it's out"
+          },
+          "runtime_seconds": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "MediaId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "The unique ID of a Media."
       },
       "NewInstanceAdministrator": {
         "type": "object",

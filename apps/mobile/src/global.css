@@ -1,3 +1,10 @@
 @import "tailwindcss";
 @import "uniwind";
 @import "@watchclub/core/theme.css";
+
+@theme {
+  /* The headings' font, as on the web app, which app.json builds into the app. Its file is named
+     after its PostScript name, so both platforms know it by it. React Native takes a font per
+     weight: this one is semibold, so headings set no weight */
+  --font-heading: "Oxanium-SemiBold";
+}

@@ -20,6 +20,7 @@ export default function YouLayout() {
       <Stack.Screen name="settings/index" options={{title: t($ => $.core.settings.title)}} />
       <Stack.Screen name="settings/language" options={{title: t($ => $.core.settings.language)}} />
       <Stack.Screen name="settings/audio" options={{title: t($ => $.core.settings.audio)}} />
+      <Stack.Screen name="settings/about" options={{title: t($ => $.core.settings.about)}} />
       <Stack.Screen
         name="settings/subtitles"
         options={{title: t($ => $.core.settings.subtitles)}}

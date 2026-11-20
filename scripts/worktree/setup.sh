@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Sets up a new worktree, once .env and the build cache are copied into it: its own database in the
-# Postgres that the worktrees share, with the migrations and the demo data.
+# Postgres that the worktrees share, a copy of the primary worktree's, which its seed filled.
 # Usage: setup.sh <slug> <port> <database>
 set -euo pipefail
 
+primary=$(dirname "$0")/../..
 slug=$1
 port=$2
 database=${3:?Usage: setup.sh <slug> <port> <database>}
@@ -26,9 +27,23 @@ mv .env.worktree .env
 mise trust --quiet mise.toml
 
 # The primary worktree's command, which this branch may not have
-mise exec -- pnpm --dir "$(dirname "$0")/../.." dev:shared
+mise exec -- pnpm --dir "$primary" dev:shared
 mise exec -- pnpm install
 # The API client and Expo Router's types aren't committed: generate them now, for the editor
 mise exec -- turbo run generate:client generate:routes
-mise exec -- sqlx database setup --source apps/server/migrations
-mise exec -- pnpm --filter server seed
+
+# Copies the primary worktree's database, then applies this branch's newer migrations. pg_dump
+# copies it while the primary worktree's server uses it, unlike CREATE DATABASE with a template
+in_postgres() {
+  docker compose --file "$primary/docker-compose.dev.yml" exec -T db "$@"
+}
+primary_database=$(sed -nE 's|^DATABASE_URL=.*/([^/?]+).*|\1|p' "$primary/.env")
+# Into an empty database, also when a setup that failed runs again
+in_postgres psql -U postgres --quiet -v ON_ERROR_STOP=1 -v database="$database" <<'SQL'
+SET client_min_messages = warning;
+DROP DATABASE IF EXISTS :"database";
+CREATE DATABASE :"database";
+SQL
+in_postgres pg_dump -U postgres "$primary_database" |
+  in_postgres psql -U postgres --quiet -v ON_ERROR_STOP=1 --dbname "$database" >/dev/null
+mise exec -- sqlx migrate run --source apps/server/migrations

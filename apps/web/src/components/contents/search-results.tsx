@@ -63,7 +63,11 @@ export function SearchResultSummary({
   const Icon = CONTENT_TYPE_ICONS[result.content_type];
   return (
     <>
-      <Poster image={result.poster} width={overview ? 64 : 48} />
+      <Poster
+        image={result.poster}
+        width={overview ? 64 : 48}
+        className={overview ? 'w-16' : 'w-12'}
+      />
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="truncate font-semibold">{result.title}</span>
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
@@ -145,7 +149,7 @@ function StatusBody({
         <div className="flex flex-col" aria-hidden="true">
           {[0, 1, 2, 3].map(row => (
             <div key={row} className="flex items-center gap-4 p-2">
-              <Skeleton className="aspect-2/3 w-12 rounded-sm" />
+              <Skeleton className="aspect-2/3 w-12 rounded-lg" />
               <span className="flex flex-1 flex-col gap-2">
                 <Skeleton className="h-3 w-1/2 rounded-full" />
                 <Skeleton className="h-3 w-1/4 rounded-full" />

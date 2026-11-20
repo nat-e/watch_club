@@ -1,11 +1,12 @@
 import type {Image} from '@watchclub/api';
 import {cn} from 'cn';
 import {ImageIcon} from 'lucide-react';
+import {SizedImage} from '@/components/contents/sized-image';
 
 /**
- * A Content's poster, `width` pixels wide, or a placeholder when it has none. The browser downloads
- * the smallest size that stays sharp on the screen. Its text alternative is empty, as the Content's
- * title is always beside it.
+ * A Content's poster, or a placeholder when it has none. `className` sets its width, and `width`
+ * says the widest it shows, in pixels, for the browser to download the smallest size that stays
+ * sharp.
  */
 export function Poster({
   image,
@@ -14,23 +15,19 @@ export function Poster({
 }: {
   image: Image | null;
   width: number;
-  className?: string;
+  className: string;
 }) {
   return (
     <div
       className={cn(
-        'relative flex aspect-2/3 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-accent text-subtle-foreground',
+        'relative flex aspect-2/3 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-accent text-subtle-foreground',
         className,
       )}
-      style={{width}}
     >
       {image ? (
-        <img
-          src={image[0]?.url}
-          srcSet={image.map(source => `${source.url} ${source.width}w`).join(', ')}
-          sizes={`${width}px`}
-          alt=""
-          loading="lazy"
+        <SizedImage
+          image={image}
+          width={width}
           className="absolute inset-0 size-full object-cover"
         />
       ) : (

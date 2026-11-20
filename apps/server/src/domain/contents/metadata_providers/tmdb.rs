@@ -1,26 +1,27 @@
 //! TMDB, The Movie Database: the Metadata Provider of Movies and TV Shows.
+//!
+//! The client, and what its modules share, such as the sizes of TMDB's images: `search` searches
+//! TMDB, `details` reads a Movie's or a TV Show's details, `tv_show` a TV Show's Episodes, and
+//! `credits` who made a Content and who's in it.
+
+mod credits;
+mod details;
+mod search;
+mod tv_show;
 
 use std::{
     fmt::{self, Display, Formatter},
-    num::{NonZeroU32, ParseIntError},
+    num::ParseIntError,
     str::FromStr,
 };
 
-use anyhow::Context;
 use jiff::civil::Date;
 use secrecy::SecretString;
 use serde::{Deserialize, Deserializer};
 
 use crate::{
     api_client::ApiClient,
-    domain::{
-        InternalError,
-        accounts::Locale,
-        contents::{
-            Content, ExternalContentId, Image, ImageSource, LookUpError, SearchResult,
-            SearchResults,
-        },
-    },
+    domain::contents::{Image, ImageSource},
 };
 
 /// The address of TMDB's API
@@ -32,11 +33,14 @@ const IMAGES_URL: &str = "https://image.tmdb.org/t/p";
 /// The widths of TMDB's posters, in pixels. It also has the original, whose size it doesn't say.
 const POSTER_WIDTHS: [u32; 6] = [92, 154, 185, 342, 500, 780];
 
-/// The last page of results TMDB serves, whatever their number
-const LAST_PAGE: u32 = 500;
+/// The widths of TMDB's backdrops, in pixels
+const BACKDROP_WIDTHS: [u32; 3] = [300, 780, 1280];
 
-/// The number of TMDB's pages a search reads at most to find some Content, as some only have people
-const MAX_PAGES_READ: u32 = 5;
+/// The widths of TMDB's photos of people, in pixels
+const PROFILE_WIDTHS: [u32; 2] = [45, 185];
+
+/// The widths of TMDB's stills of TV Show Episodes, in pixels
+const STILL_WIDTHS: [u32; 3] = [92, 185, 300];
 
 /// The ID of a Movie or a TV Show at TMDB, which numbers Movies and TV Shows apart: a Movie and a TV
 /// Show can have the same.
@@ -81,203 +85,53 @@ impl Tmdb {
             api: ApiClient::new(base_url, Some(token))?,
         })
     }
-
-    /// Returns a page of the Movies and TV Shows whose title matches the query, most relevant
-    /// first, with their texts in the Locale's language. It leaves out adult content, and the
-    /// videos: what TMDB lists as movies but flags as not truly ones, such as filmed sports events,
-    /// concerts and compilations.
-    ///
-    /// TMDB's pages also list people, who aren't Content: when one has only people and videos, the
-    /// search reads the next one, up to `MAX_PAGES_READ`, so that the apps don't load pages that
-    /// show nothing.
-    pub async fn search(
-        &self,
-        query: &str,
-        mut page: NonZeroU32,
-        locale: Locale,
-    ) -> Result<SearchResults, InternalError> {
-        let mut pages_read = 1;
-        loop {
-            let page_number = page.to_string();
-            let params = [
-                ("query", query),
-                ("page", &page_number),
-                ("include_adult", "false"),
-                ("language", locale.language_tag()),
-            ];
-            let found: MultiSearchPage = self
-                .api
-                .get("/search/multi", &[], &params)
-                .await?
-                .context("TMDB answered GET /search/multi with 404 Not Found")?;
-
-            let next_page = found.next_page();
-            let results: Vec<_> = found
-                .results
-                .into_iter()
-                .filter_map(search_result)
-                .collect();
-
-            match next_page {
-                Some(next_page) if results.is_empty() && pages_read < MAX_PAGES_READ => {
-                    page = next_page;
-                    pages_read += 1;
-                }
-                _ => return Ok(SearchResults { results, next_page }),
-            }
-        }
-    }
-
-    /// Returns the Movie with this ID, with its title in the Locale's language.
-    pub async fn look_up_movie(&self, id: TmdbId, locale: Locale) -> Result<Content, LookUpError> {
-        let movie: MovieDetails = self
-            .api
-            .get(
-                "/movie/{id}",
-                &[&id.to_string()],
-                &[("language", locale.language_tag())],
-            )
-            .await?
-            .ok_or(LookUpError::NotFound)?;
-
-        Ok(Content {
-            external_content_id: ExternalContentId::Movie(id),
-            title: movie.title,
-        })
-    }
-
-    /// Returns the TV Show with this ID, with its title in the Locale's language.
-    pub async fn look_up_tv_show(
-        &self,
-        id: TmdbId,
-        locale: Locale,
-    ) -> Result<Content, LookUpError> {
-        let tv_show: TvShowDetails = self
-            .api
-            .get(
-                "/tv/{id}",
-                &[&id.to_string()],
-                &[("language", locale.language_tag())],
-            )
-            .await?
-            .ok_or(LookUpError::NotFound)?;
-
-        Ok(Content {
-            external_content_id: ExternalContentId::TvShow(id),
-            title: tv_show.name,
-        })
-    }
-}
-
-/// Returns the Content a result of TMDB's search is, or None for a person or a video.
-fn search_result(result: MultiSearchResult) -> Option<SearchResult> {
-    match result {
-        MultiSearchResult::Movie(movie) if movie.video => None,
-        MultiSearchResult::Movie(movie) => Some(SearchResult {
-            external_content_id: ExternalContentId::Movie(TmdbId(movie.id)),
-            title: movie.title,
-            date: movie.release_date,
-            overview: movie.overview,
-            poster: movie.poster_path.as_deref().and_then(poster),
-            // TMDB's search doesn't say who makes them
-            creators: Vec::new(),
-        }),
-        MultiSearchResult::TvShow(tv_show) => Some(SearchResult {
-            external_content_id: ExternalContentId::TvShow(TmdbId(tv_show.id)),
-            title: tv_show.name,
-            date: tv_show.first_air_date,
-            overview: tv_show.overview,
-            poster: tv_show.poster_path.as_deref().and_then(poster),
-            // TMDB's search doesn't say who makes them
-            creators: Vec::new(),
-        }),
-        MultiSearchResult::Person => None,
-    }
 }
 
 /// Returns the poster at this path on TMDB's image server, in each of its sizes.
 fn poster(path: &str) -> Option<Image> {
-    Image::new(POSTER_WIDTHS.map(|width| ImageSource {
+    // TMDB doesn't say the heights: most posters are 2:3
+    image(path, &POSTER_WIDTHS, (2, 3))
+}
+
+/// Returns the backdrop at this path on TMDB's image server, in each of its sizes.
+fn backdrop(path: &str) -> Option<Image> {
+    // Most backdrops are 16:9
+    image(path, &BACKDROP_WIDTHS, (16, 9))
+}
+
+/// Returns the photo of a person at this path on TMDB's image server, in each of its sizes.
+fn profile(path: &str) -> Option<Image> {
+    // Most photos of people are 2:3
+    image(path, &PROFILE_WIDTHS, (2, 3))
+}
+
+/// Returns the still of a TV Show Episode at this path on TMDB's image server, in each of its
+/// sizes.
+fn still(path: &str) -> Option<Image> {
+    // Most stills are 16:9
+    image(path, &STILL_WIDTHS, (16, 9))
+}
+
+/// Returns the image at this path on TMDB's image server, in each of these widths, with the
+/// heights that its aspect ratio, `(width, height)`, gives.
+fn image(path: &str, widths: &[u32], (ratio_width, ratio_height): (u32, u32)) -> Option<Image> {
+    Image::new(widths.iter().map(|&width| ImageSource {
         url: format!("{IMAGES_URL}/w{width}{path}"),
         width,
-        // TMDB doesn't say it: most posters are 2:3
-        height: (width * 3).div_ceil(2),
+        height: (width * ratio_height).div_ceil(ratio_width),
     }))
-}
-
-/// A page of the results of a search for Movies, TV Shows and people.
-#[derive(Debug, Deserialize)]
-struct MultiSearchPage {
-    /// The page's number, from 1
-    page: u32,
-    results: Vec<MultiSearchResult>,
-    /// The number of pages, of which TMDB serves the first 500
-    total_pages: u32,
-}
-
-impl MultiSearchPage {
-    /// Returns the number of the next page TMDB serves, or None on the last one.
-    fn next_page(&self) -> Option<NonZeroU32> {
-        NonZeroU32::new(self.page)
-            .and_then(|page| page.checked_add(1))
-            .filter(|next| next.get() <= self.total_pages.min(LAST_PAGE))
-    }
-}
-
-/// A result of a search for Movies, TV Shows and people.
-#[derive(Debug, Deserialize)]
-#[serde(tag = "media_type", rename_all = "lowercase")]
-enum MultiSearchResult {
-    Movie(MovieResult),
-    #[serde(rename = "tv")]
-    TvShow(TvShowResult),
-    Person,
-}
-
-/// A Movie in search results, with its texts in the search's language.
-#[derive(Debug, Deserialize)]
-struct MovieResult {
-    id: u32,
-    title: String,
-    #[serde(default, deserialize_with = "optional_text")]
-    overview: Option<String>,
-    poster_path: Option<String>,
-    #[serde(default, deserialize_with = "optional_date")]
-    release_date: Option<Date>,
-    /// Whether TMDB flags it as a video rather than a movie, such as a filmed sports event, a
-    /// concert or a compilation
-    #[serde(default)]
-    video: bool,
-}
-
-/// A TV Show in search results, with its texts in the search's language.
-#[derive(Debug, Deserialize)]
-struct TvShowResult {
-    id: u32,
-    name: String,
-    #[serde(default, deserialize_with = "optional_text")]
-    overview: Option<String>,
-    poster_path: Option<String>,
-    #[serde(default, deserialize_with = "optional_date")]
-    first_air_date: Option<Date>,
-}
-
-/// A Movie's details, with its texts in the details' language.
-#[derive(Debug, Deserialize)]
-struct MovieDetails {
-    title: String,
-}
-
-/// A TV Show's details, with its texts in the details' language.
-#[derive(Debug, Deserialize)]
-struct TvShowDetails {
-    name: String,
 }
 
 /// Reads a text that TMDB sends empty, or null, when it has none.
 fn optional_text<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Option<String>, D::Error> {
     let text = Option::<String>::deserialize(deserializer)?;
     Ok(text.filter(|text| !text.is_empty()))
+}
+
+/// Reads a runtime in minutes that TMDB sends as 0, or null, when it doesn't know it.
+fn optional_minutes<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Option<i32>, D::Error> {
+    let minutes = Option::<i32>::deserialize(deserializer)?;
+    Ok(minutes.filter(|&minutes| minutes > 0))
 }
 
 /// Reads a date that TMDB sends as `YYYY-MM-DD`, or empty, or null, when it has none.

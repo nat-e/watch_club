@@ -23,6 +23,12 @@
       "@react-native-tvos/config-tv",
       "expo-secure-store",
       "expo-localization",
+      [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/Oxanium-SemiBold.ttf"]
+        }
+      ],
       "@sentry/react-native/expo",
       [
         "expo-build-properties",

@@ -2,6 +2,9 @@ export default {
   combobox: {
     remove: 'Retirer',
   },
+  contents: {
+    back: 'Retour',
+  },
   mediaBrowser: {
     title: 'Explorateur de médias',
   },

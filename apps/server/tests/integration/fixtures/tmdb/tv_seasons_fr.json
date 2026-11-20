@@ -1,0 +1,88 @@
+{
+  "id": 87108,
+  "original_language": "en",
+  "origin_country": ["US"],
+  "overview": "L'histoire vraie de la pire catastrophe causée par l'homme et de ceux qui ont sacrifié leur vie pour sauver l'Europe du drame.",
+  "poster_path": "/hlLXt2tOPT6RRnjiUmoxyG1LTFi.jpg",
+  "backdrop_path": "/900tHlUYUkp7Ol04XFSoAaEIXcT.jpg",
+  "vote_average": 8.7,
+  "vote_count": 8561,
+  "genres": [
+    {
+      "id": 18,
+      "name": "Drame"
+    }
+  ],
+  "production_countries": [
+    {
+      "iso_3166_1": "GB",
+      "name": "United Kingdom"
+    },
+    {
+      "iso_3166_1": "US",
+      "name": "United States of America"
+    }
+  ],
+  "name": "Chernobyl",
+  "original_name": "Chernobyl",
+  "first_air_date": "2019-05-06",
+  "seasons": [
+    {
+      "season_number": 1,
+      "episode_count": 5,
+      "name": "Mini-série"
+    }
+  ],
+  "season/1": {
+    "season_number": 1,
+    "air_date": "2019-05-06",
+    "name": "Mini-série",
+    "episodes": [
+      {
+        "episode_number": 1,
+        "season_number": 1,
+        "name": "1:23:45",
+        "overview": "Le 26 avril 1986, une explosion retentit dans la centrale nucléaire de Tchernobyl, en Ukraine, provoquant une catastrophe sans précédent.",
+        "air_date": "2019-05-06",
+        "runtime": 61,
+        "still_path": "/thaMHLz5l6TVL8R4EzaBkjn2EZA.jpg"
+      },
+      {
+        "episode_number": 2,
+        "season_number": 1,
+        "name": "Veuillez garder votre calme",
+        "overview": "Mikhail Gorbatchev envoie Boris Shcherbina et Valery Legasov à Tchernobyl pour lui rapporter la situation. Ulana Khomyuk comprend l'imminence du danger.",
+        "air_date": "2019-05-13",
+        "runtime": 66,
+        "still_path": "/kVsUEtOOYeLRmABVuZztl4k9onO.jpg"
+      },
+      {
+        "episode_number": 3,
+        "season_number": 1,
+        "name": "Que la terre s’ouvre !",
+        "overview": "Après l'explosion du réacteur n°4 dans la centrale nucléaire ukrainienne de Tchernobyl, la situation devient de plus en plus critique. Les autorités comprennent que cette catastrophe va changer le cours de l'histoire. Il faut sauver ce qui peut l'être et les secours vont devoir faire des choix radicaux...",
+        "air_date": "2019-05-20",
+        "runtime": 64,
+        "still_path": "/2Eje4lD5MWkTdbFdtlHnrHT2kA2.jpg"
+      },
+      {
+        "episode_number": 4,
+        "season_number": 1,
+        "name": "Le Bonheur de toute l’humanité",
+        "overview": "Valery Legasov et le vice-premier ministre soviétique Boris Shcherbina envisagent d'utiliser des rovers lunaires pour enlever les débris radioactifs, tandis qu'Ulana Khomyuk se heurte à des obstacles gouvernementaux pour déterminer la vérité sur les causes de l'explosion...",
+        "air_date": "2019-05-27",
+        "runtime": 67,
+        "still_path": "/xV2eVT4ejGhVn9OIMCo4uBOhmCC.jpg"
+      },
+      {
+        "episode_number": 5,
+        "season_number": 1,
+        "name": "Vechnaya Pamyat",
+        "overview": "Valery Legasov, Boris Shcherbina et Ulana Khomyuk prennent des risques pour révéler toute la vérité sur la catastrophe de Tchernobyl. Depuis l'explosion du réacteur n°4, le pouvoir politique a toujours minimisé les faits et surtout les conséquences de ce drame...",
+        "air_date": "2019-06-03",
+        "runtime": 73,
+        "still_path": "/mgXm2Y6SOFDHtD5thi2LmS7uQBj.jpg"
+      }
+    ]
+  }
+}

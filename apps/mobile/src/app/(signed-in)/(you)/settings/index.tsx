@@ -7,7 +7,10 @@ import {ListScreen} from '@/components/layouts/list-screen';
 import {linkRow} from '@/components/lists/link-row';
 import {Feedback} from '@/components/text';
 
-/** Settings, where Users choose their User Preferences: each row opens the screen to change it. */
+/**
+ * Settings, where Users choose their User Preferences: each row opens the screen to change it. Then
+ * About, with TMDB's notice.
+ */
 export default function Settings() {
   const {t} = useTranslation(['core', 'mobile']);
   const localeNames = useLocaleNames();
@@ -48,6 +51,9 @@ export default function Settings() {
         <FieldGroup.SectionFooter>
           <Feedback hint={t($ => $.core.settings.audioAndSubtitlesDescription)} />
         </FieldGroup.SectionFooter>
+      </FieldGroup.Section>
+      <FieldGroup.Section>
+        {linkRow({label: t($ => $.core.settings.about), href: '/settings/about'})}
       </FieldGroup.Section>
     </ListScreen>
   );

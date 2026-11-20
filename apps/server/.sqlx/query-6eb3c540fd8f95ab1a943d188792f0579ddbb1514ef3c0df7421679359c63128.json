@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        DELETE FROM media\n        WHERE content_id = $1\n            AND NOT EXISTS (\n                SELECT FROM UNNEST($2::media_type[], $3::integer[], $4::integer[])\n                    AS listed (media_type, group_number, number_in_group)\n                WHERE listed.media_type = media.media_type\n                    AND ARRAY[listed.group_number, listed.number_in_group]\n                        = ARRAY[media.group_number, media.number_in_group]\n            )\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        {
+          "Custom": {
+            "name": "media_type[]",
+            "kind": {
+              "Array": {
+                "Custom": {
+                  "name": "media_type",
+                  "kind": {
+                    "Enum": [
+                      "movie",
+                      "tv_show_episode",
+                      "sports_event"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "Int4Array",
+        "Int4Array"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "6eb3c540fd8f95ab1a943d188792f0579ddbb1514ef3c0df7421679359c63128"
+}

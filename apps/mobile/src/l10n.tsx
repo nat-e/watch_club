@@ -7,6 +7,13 @@
 import '@formatjs/intl-pluralrules/polyfill.js';
 import '@formatjs/intl-pluralrules/locale-data/en.js';
 import '@formatjs/intl-pluralrules/locale-data/fr.js';
+// Nor Intl.Locale and Intl.DisplayNames, which a Content's original language needs, for its flag
+// and its name. Intl.Locale needs Intl.getCanonicalLocales
+import '@formatjs/intl-getcanonicallocales/polyfill.js';
+import '@formatjs/intl-locale/polyfill.js';
+import '@formatjs/intl-displaynames/polyfill.js';
+import '@formatjs/intl-displaynames/locale-data/en.js';
+import '@formatjs/intl-displaynames/locale-data/fr.js';
 import {createI18n, type Messages, negotiateLocale} from '@watchclub/core/l10n';
 import {getLocales} from 'expo-localization';
 import {type ReactNode, useMemo} from 'react';

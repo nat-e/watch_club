@@ -1,0 +1,55 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        WITH localization AS (\n            SELECT *\n            FROM UNNEST(\n                $2::media_type[], $3::integer[], $4::integer[], $5::locale[], $6::text[], $7::text[]\n            ) AS localization (media_type, group_number, number_in_group, locale, title, overview)\n        )\n        INSERT INTO media_localizations (media_id, locale, title, overview)\n        SELECT media.id, localization.locale, localization.title, localization.overview\n        FROM localization\n        JOIN media ON media.content_id = $1\n            AND media.media_type = localization.media_type\n            AND ARRAY[media.group_number, media.number_in_group]\n                = ARRAY[localization.group_number, localization.number_in_group]\n        ON CONFLICT (media_id, locale) DO UPDATE\n        SET title = EXCLUDED.title,\n            overview = EXCLUDED.overview\n        WHERE (media_localizations.title, media_localizations.overview)\n            IS DISTINCT FROM (EXCLUDED.title, EXCLUDED.overview)\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        {
+          "Custom": {
+            "name": "media_type[]",
+            "kind": {
+              "Array": {
+                "Custom": {
+                  "name": "media_type",
+                  "kind": {
+                    "Enum": [
+                      "movie",
+                      "tv_show_episode",
+                      "sports_event"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "Int4Array",
+        "Int4Array",
+        {
+          "Custom": {
+            "name": "locale[]",
+            "kind": {
+              "Array": {
+                "Custom": {
+                  "name": "locale",
+                  "kind": {
+                    "Enum": [
+                      "en-US",
+                      "fr-FR"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "TextArray",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "0df88fcd93a0cfdd229095e89cd985a0a480a79e3a855e198d8cbc8d7a8f1a7d"
+}

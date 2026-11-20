@@ -4,7 +4,7 @@ use jiff::civil::date;
 use secrecy::SecretString;
 use serde_json::{Value, json};
 use watch_club::domain::contents::{
-    Content, ExternalContentId, Hardcover, HardcoverId, Image, ImageSource, LookUpError,
+    CreditKind, ExternalContentId, Hardcover, HardcoverId, Image, ImageSource, LookUpError,
     SearchResult,
 };
 use wiremock::{
@@ -223,7 +223,7 @@ async fn search_fails_with_what_hardcover_says_went_wrong() {
 }
 
 #[tokio::test]
-async fn look_up_book_returns_its_title() {
+async fn fetch_book_returns_it_with_its_authors_and_no_media() {
     let hardcover = FakeHardcover::start().await;
     Mock::given(method("POST"))
         .and(path("/graphql"))
@@ -233,18 +233,75 @@ async fn look_up_book_returns_its_title() {
         .mount(&hardcover.server)
         .await;
 
-    let content = hardcover
+    let book = hardcover
         .client()
-        .look_up_book(HardcoverId::new(442_623))
+        .fetch_book(HardcoverId::new(442_623))
         .await
         .unwrap();
 
+    assert_eq!(book.id, ExternalContentId::Book(HardcoverId::new(442_623)));
+    assert_eq!(book.original_title, "Asterix the Gaul");
+    assert_eq!(book.release_date, Some(date(1961, 9, 1)));
+    assert!(book.texts.overviews.original.is_some());
     assert_eq!(
-        content,
-        Content {
-            external_content_id: ExternalContentId::Book(HardcoverId::new(442_623)),
-            title: "Asterix the Gaul".to_owned(),
-        }
+        book.texts.posters.original.unwrap().sources(),
+        [ImageSource {
+            url: "https://assets.hardcover.app/edition/17733379/1b12f2204159c59a4c5f644014bc1ada55440d4e.jpeg".to_owned(),
+            width: 377,
+            height: 500,
+        }]
+    );
+    let credits: Vec<_> = book
+        .credits
+        .iter()
+        .map(|credit| (credit.kind, credit.name.as_str(), credit.photo.is_some()))
+        .collect();
+    assert_eq!(
+        credits,
+        [
+            (CreditKind::Author, "René Goscinny", true),
+            (CreditKind::Author, "Albert Uderzo", false),
+        ]
+    );
+    assert_eq!(book.media, []);
+}
+
+#[tokio::test]
+async fn fetch_book_credits_each_person_once_per_role_and_leaves_out_translators() {
+    let hardcover = FakeHardcover::start().await;
+    let contribution = |id: u32, name: &str, role: Option<&str>| json!({"contribution": role, "author": {"id": id, "name": name, "image": null}});
+    hardcover
+        .answer(
+            "Book",
+            json!({"data": {"books_by_pk": {
+                "title": "Asterix the Gaul",
+                "contributions": [
+                    contribution(1, "René Goscinny", None),
+                    contribution(1, "René Goscinny", Some("Author")),
+                    contribution(2, "Albert Uderzo", Some("Illustrations")),
+                    contribution(3, "Anthea Bell", Some("Translator")),
+                ],
+            }}}),
+        )
+        .await;
+
+    let book = hardcover
+        .client()
+        .fetch_book(HardcoverId::new(442_623))
+        .await
+        .unwrap();
+
+    let credits: Vec<_> = book
+        .credits
+        .iter()
+        .map(|credit| (credit.kind, credit.name.as_str()))
+        .collect();
+    assert_eq!(
+        credits,
+        [
+            (CreditKind::Author, "René Goscinny"),
+            (CreditKind::Illustrator, "Albert Uderzo"),
+        ]
     );
 }
 
@@ -257,7 +314,7 @@ async fn look_up_book_fails_with_not_found_when_hardcover_has_no_book_with_the_i
 
     let error = hardcover
         .client()
-        .look_up_book(HardcoverId::new(999_999_999))
+        .fetch_book(HardcoverId::new(999_999_999))
         .await
         .unwrap_err();
 
