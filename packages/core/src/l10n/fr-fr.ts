@@ -102,6 +102,17 @@ export default {
     goHome: "Retour à l'accueil",
     title: 'Page introuvable',
   },
+  password: {
+    choosePassword: 'Choisis un mot de passe',
+    confirmPassword: 'Confirmer le mot de passe',
+    currentPassword: 'Mot de passe actuel',
+    enterCurrentPassword: 'Saisis ton mot de passe actuel',
+    hint: 'Au moins {{min}} caractères.',
+    newPassword: 'Nouveau mot de passe',
+    passwordsDiffer: 'Les mots de passe ne correspondent pas',
+    tooShort: 'Le mot de passe doit contenir au moins {{min}} caractères',
+    wrongCurrentPassword: 'Mot de passe actuel incorrect',
+  },
   playlists: {
     title: 'Playlists',
   },
@@ -142,15 +153,20 @@ export default {
     languagesWithoutSubtitlesDescription:
       "Quand l'audio est dans l'une de ces langues, seuls les sous-titres forcés s'affichent, pour les panneaux ou les répliques dans une autre langue.",
     originalLanguage: 'Langue originale',
+    passwordUpdated: 'Ton mot de passe a été mis à jour',
     preferences: 'Préférences',
     preferencesDescription: 'Choisis la langue utilisée dans {{name}}.',
     save: 'Enregistrer',
+    security: 'Sécurité',
+    securityDescription:
+      'Modifie le mot de passe utilisé pour te connecter. Tes autres appareils seront déconnectés.',
     subtitles: 'Sous-titres',
     subtitlesOff: 'Désactivés',
     title: 'Paramètres',
     tmdbLogo: 'The Movie Database (TMDB)',
     tmdbNotice:
       "Ce produit utilise TMDB et les API TMDB, mais n'est ni cautionné, ni certifié, ni approuvé d'aucune autre manière par TMDB.",
+    updatePassword: 'Mettre à jour le mot de passe',
   },
   signIn: {
     enterPassword: 'Saisis ton mot de passe',

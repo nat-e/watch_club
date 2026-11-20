@@ -264,12 +264,12 @@ pub(crate) fn instrument<S: Clone + Send + Sync + 'static>(
                 .on_failure(()),
         )
         // Names the spans after the route, such as `GET /api/me`, once the router has matched it.
-        // Hides the Invitations' codes, in the links to the page that redeems them and in the API.
-        // The list replaces the default one, which names other services' signatures that no request
-        // here carries
+        // Hides the codes of Invitations and the tokens of Password Reset Links, in the links to the
+        // pages that open them and in the API. The list replaces the default one, which names other
+        // services' signatures that no request here carries
         .layer(
             otel_http::LayerBuilder::builder()
-                .with_sensitive_query_parameters(["code"])
+                .with_sensitive_query_parameters(["code", "token"])
                 .build()
                 .expect("the layer builds with the global providers"),
         )

@@ -20,6 +20,7 @@ import { Route as ShellPlaylistsRouteImport } from './routes/_shell/playlists'
 import { Route as ShellSearchRouteImport } from './routes/_shell/search'
 import { Route as ShellSettingsRouteImport } from './routes/_shell/settings'
 import { Route as SignedOutJoinRouteImport } from './routes/_signed-out/join'
+import { Route as SignedOutResetPasswordRouteImport } from './routes/_signed-out/reset-password'
 import { Route as SignedOutSetupRouteImport } from './routes/_signed-out/setup'
 import { Route as SignedOutSignInRouteImport } from './routes/_signed-out/sign-in'
 import { Route as ShellBooksIdRouteImport } from './routes/_shell/books/$id'
@@ -81,6 +82,11 @@ const ShellSettingsRoute = ShellSettingsRouteImport.update({
 const SignedOutJoinRoute = SignedOutJoinRouteImport.update({
   id: '/join',
   path: '/join',
+  getParentRoute: () => SignedOutRoute,
+} as any)
+const SignedOutResetPasswordRoute = SignedOutResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => SignedOutRoute,
 } as any)
 const SignedOutSetupRoute = SignedOutSetupRouteImport.update({
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof ShellSearchRoute
   '/settings': typeof ShellSettingsRoute
   '/join': typeof SignedOutJoinRoute
+  '/reset-password': typeof SignedOutResetPasswordRoute
   '/setup': typeof SignedOutSetupRoute
   '/sign-in': typeof SignedOutSignInRoute
   '/books/$id': typeof ShellBooksIdRoute
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/search': typeof ShellSearchRoute
   '/settings': typeof ShellSettingsRoute
   '/join': typeof SignedOutJoinRoute
+  '/reset-password': typeof SignedOutResetPasswordRoute
   '/setup': typeof SignedOutSetupRoute
   '/sign-in': typeof SignedOutSignInRoute
   '/books/$id': typeof ShellBooksIdRoute
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/_shell/search': typeof ShellSearchRoute
   '/_shell/settings': typeof ShellSettingsRoute
   '/_signed-out/join': typeof SignedOutJoinRoute
+  '/_signed-out/reset-password': typeof SignedOutResetPasswordRoute
   '/_signed-out/setup': typeof SignedOutSetupRoute
   '/_signed-out/sign-in': typeof SignedOutSignInRoute
   '/_shell/': typeof ShellIndexRoute
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/settings'
     | '/join'
+    | '/reset-password'
     | '/setup'
     | '/sign-in'
     | '/books/$id'
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/settings'
     | '/join'
+    | '/reset-password'
     | '/setup'
     | '/sign-in'
     | '/books/$id'
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/_shell/search'
     | '/_shell/settings'
     | '/_signed-out/join'
+    | '/_signed-out/reset-password'
     | '/_signed-out/setup'
     | '/_signed-out/sign-in'
     | '/_shell/'
@@ -348,6 +360,13 @@ declare module '@tanstack/react-router' {
       path: '/join'
       fullPath: '/join'
       preLoaderRoute: typeof SignedOutJoinRouteImport
+      parentRoute: typeof SignedOutRoute
+    }
+    '/_signed-out/reset-password': {
+      id: '/_signed-out/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof SignedOutResetPasswordRouteImport
       parentRoute: typeof SignedOutRoute
     }
     '/_signed-out/setup': {
@@ -475,12 +494,14 @@ const ShellRouteWithChildren = ShellRoute._addFileChildren(ShellRouteChildren)
 
 interface SignedOutRouteChildren {
   SignedOutJoinRoute: typeof SignedOutJoinRoute
+  SignedOutResetPasswordRoute: typeof SignedOutResetPasswordRoute
   SignedOutSetupRoute: typeof SignedOutSetupRoute
   SignedOutSignInRoute: typeof SignedOutSignInRoute
 }
 
 const SignedOutRouteChildren: SignedOutRouteChildren = {
   SignedOutJoinRoute: SignedOutJoinRoute,
+  SignedOutResetPasswordRoute: SignedOutResetPasswordRoute,
   SignedOutSetupRoute: SignedOutSetupRoute,
   SignedOutSignInRoute: SignedOutSignInRoute,
 }

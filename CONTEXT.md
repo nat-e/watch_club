@@ -40,6 +40,10 @@ _Avoid_: Use limit, seats, quota
 A new person creates their **User** through an **Invitation**, which counts one use against its **Max Uses**.
 _Avoid_: Accept invitation, sign up
 
+**Password Reset Link**:
+A link the **Instance Administrator** shares so that a **User** who forgot their password can choose a new one.
+_Avoid_: Reset token, recovery link
+
 **Locale**:
 A language and country preference.
 _Avoid_: Language, region
@@ -194,6 +198,9 @@ _Avoid_: Source settings, source options
 - Only new people **Redeem Invitations**: a signed-in **User** never does
 - Deleting an **Invitation** keeps the **Users** it created
 - The **Instance Administrator** can delete any other **User**, and can't be deleted
+- Only the **Instance Administrator** creates **Password Reset Links**, for any **User**
+- A **Password Reset Link** works once, for 3 days, and a new one replaces the **User**'s last one
+- A **User** who changes their password is signed out on their other devices; one who resets it with a **Password Reset Link** is signed out everywhere, and signs in again
 
 ### Conversations
 

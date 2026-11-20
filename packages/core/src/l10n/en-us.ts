@@ -100,6 +100,17 @@ export default {
     goHome: 'Go home',
     title: 'Page not found',
   },
+  password: {
+    choosePassword: 'Choose a password',
+    confirmPassword: 'Confirm password',
+    currentPassword: 'Current password',
+    enterCurrentPassword: 'Enter your current password',
+    hint: 'At least {{min}} characters.',
+    newPassword: 'New password',
+    passwordsDiffer: 'Passwords do not match',
+    tooShort: 'Password must be at least {{min}} characters',
+    wrongCurrentPassword: 'Wrong current password',
+  },
   playlists: {
     title: 'Playlists',
   },
@@ -138,15 +149,20 @@ export default {
     languagesWithoutSubtitlesDescription:
       'When the audio is in one of these languages, only forced subtitles show, for signs or lines in another language.',
     originalLanguage: 'Original language',
+    passwordUpdated: 'Your password has been updated',
     preferences: 'Preferences',
     preferencesDescription: 'Choose the language used across {{name}}.',
     save: 'Save',
+    security: 'Security',
+    securityDescription:
+      'Change the password used to sign in. Your other devices will be signed out.',
     subtitles: 'Subtitles',
     subtitlesOff: 'Off',
     title: 'Settings',
     tmdbLogo: 'The Movie Database (TMDB)',
     tmdbNotice:
       'This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.',
+    updatePassword: 'Update password',
   },
   signIn: {
     enterPassword: 'Enter your password',

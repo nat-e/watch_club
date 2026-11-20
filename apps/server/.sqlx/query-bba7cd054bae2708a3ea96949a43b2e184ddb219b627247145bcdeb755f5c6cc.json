@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT u.username\n        FROM password_reset_links l\n        JOIN users u ON u.id = l.user_id\n        WHERE l.token_hash = $1 AND l.expires_at > now()\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "username",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "username"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Bytea"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "bba7cd054bae2708a3ea96949a43b2e184ddb219b627247145bcdeb755f5c6cc"
+}

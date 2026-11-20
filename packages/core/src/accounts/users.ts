@@ -1,8 +1,9 @@
 /**
- * The Users of the Instance, which only the Instance Administrator lists and deletes.
+ * The Users of the Instance, which only the Instance Administrator lists and deletes, and whose
+ * Password Reset Links they create.
  */
 import {mutationOptions, queryOptions} from '@tanstack/react-query';
-import {deleteUser, listUsersOptions, type UserId} from '@watchclub/api';
+import {createPasswordResetLink, deleteUser, listUsersOptions, type UserId} from '@watchclub/api';
 
 /** The query of every User, the first to join first. */
 export const usersQuery = queryOptions(listUsersOptions());
@@ -18,5 +19,20 @@ export const deleteUserMutation = mutationOptions({
   },
   onSettled: async (_result, _error, _userId, _onMutateResult, {client}) => {
     await client.invalidateQueries({queryKey: usersQuery.queryKey});
+  },
+});
+
+/**
+ * The mutation that creates a Password Reset Link for a User, which replaces their last one, and
+ * returns the link's token.
+ */
+export const createPasswordResetLinkMutation = mutationOptions({
+  mutationFn: async (userId: UserId) => {
+    const {data} = await createPasswordResetLink({
+      // biome-ignore lint/style/useNamingConvention: the API's fields are snake_case
+      path: {user_id: userId},
+      throwOnError: true,
+    });
+    return data.token;
   },
 });

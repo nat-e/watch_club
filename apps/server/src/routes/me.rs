@@ -1,19 +1,30 @@
-//! The signed-in User, and their User Preferences, with how the API sends and takes them.
+//! The signed-in User, their User Preferences, with how the API sends and takes them, and their
+//! password.
 
 use std::collections::BTreeSet;
 
-use axum::extract::State;
+use axum::{
+    extract::State,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
+use secrecy::SecretString;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
     ApiContext,
+    auth::CurrentSession,
     db::Pool,
-    domain::accounts::{
-        self, AudioLanguage, CurrentUser, Locale, TrackLanguage, UserId, UserPreferences,
+    domain::{
+        InternalError,
+        accounts::{
+            self, AudioLanguage, ChangePasswordError, CurrentUser, Locale, Password, PasswordError,
+            TrackLanguage, UserId, UserPreferences,
+        },
     },
-    error::ApiError,
+    error::{self, ApiError, ErrorBody},
     routes::Json,
 };
 
@@ -21,6 +32,7 @@ pub(super) fn routes() -> OpenApiRouter<ApiContext> {
     OpenApiRouter::new()
         .routes(routes!(get_current_user))
         .routes(routes!(update_preferences))
+        .routes(routes!(change_password))
 }
 
 /// Returns the signed-in User.
@@ -50,6 +62,81 @@ async fn update_preferences(
     let current_user =
         accounts::save_preferences(&db, current_user.id, &preferences.into()).await?;
     Ok(Json(current_user.into()))
+}
+
+/// Changes the signed-in User's password, and signs them out on their other devices.
+#[utoipa::path(
+    put,
+    path = "/me/password",
+    request_body = ChangePasswordRequest,
+    responses(
+        (status = NO_CONTENT, description = "Changed"),
+        (status = UNPROCESSABLE_ENTITY, body = ErrorBody<ChangePasswordRequestError>, description = "The current password is wrong, or the new one breaks the rules"),
+    ),
+    security(("session_cookie" = []), ("session_token" = [])),
+)]
+async fn change_password(
+    State(db): State<Pool>,
+    session: CurrentSession,
+    Json(request): Json<ChangePasswordRequest>,
+) -> Result<StatusCode, ChangePasswordRequestError> {
+    let new_password = Password::parse(request.new_password)?;
+    accounts::change_password(
+        &db,
+        session.user.id,
+        &session.token,
+        request.current_password,
+        new_password,
+    )
+    .await?;
+    Ok(StatusCode::NO_CONTENT)
+}
+
+/// The signed-in User's current password, and the one they choose instead.
+#[derive(Deserialize, ToSchema)]
+#[schema(as = PasswordChange)]
+struct ChangePasswordRequest {
+    #[schema(value_type = String)]
+    current_password: SecretString,
+    #[schema(value_type = String)]
+    new_password: SecretString,
+}
+
+/// The failures of a request to change the signed-in User's password.
+#[derive(Debug, Serialize, ToSchema, thiserror::Error)]
+#[serde(tag = "code", rename_all = "snake_case")]
+enum ChangePasswordRequestError {
+    #[error("wrong current password")]
+    WrongPassword,
+    /// The new password breaks the rules
+    #[error(transparent)]
+    InvalidPassword {
+        #[from]
+        reason: PasswordError,
+    },
+    #[error(transparent)]
+    #[serde(skip)]
+    Internal(#[from] InternalError),
+}
+
+impl From<ChangePasswordError> for ChangePasswordRequestError {
+    fn from(error: ChangePasswordError) -> Self {
+        match error {
+            ChangePasswordError::WrongPassword => Self::WrongPassword,
+            ChangePasswordError::Internal(error) => Self::Internal(error.into()),
+        }
+    }
+}
+
+impl IntoResponse for ChangePasswordRequestError {
+    fn into_response(self) -> Response {
+        match self {
+            Self::WrongPassword | Self::InvalidPassword { .. } => {
+                error::response(StatusCode::UNPROCESSABLE_ENTITY, &self)
+            }
+            Self::Internal(error) => ApiError::from(error).into_response(),
+        }
+    }
 }
 
 /// The signed-in User, including what only this User can see: their User Preferences.

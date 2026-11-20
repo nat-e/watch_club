@@ -5,7 +5,6 @@
 use std::{convert::Infallible, future};
 
 use axum::{
-    RequestPartsExt,
     extract::{FromRef, FromRequestParts, OptionalFromRequestParts},
     http::request::Parts,
     response::{IntoResponse, Response},
@@ -35,13 +34,44 @@ impl<S: Send + Sync> OptionalFromRequestParts<S> for SessionToken {
         parts: &mut Parts,
         _: &S,
     ) -> impl Future<Output = Result<Option<Self>, Infallible>> + Send {
-        let token = match parts.headers.typed_get::<Authorization<Bearer>>() {
-            Some(authorization) => Self::decode(authorization.token()),
-            None => CookieJar::from_headers(&parts.headers)
-                .get(SESSION_COOKIE)
-                .and_then(|cookie| Self::decode(cookie.value())),
+        future::ready(Ok(request_session_token(parts)))
+    }
+}
+
+/// Returns the request's session token: the mobile apps' in the `Authorization` header, or the
+/// browser's in the session cookie.
+fn request_session_token(parts: &Parts) -> Option<SessionToken> {
+    match parts.headers.typed_get::<Authorization<Bearer>>() {
+        Some(authorization) => SessionToken::decode(authorization.token()),
+        None => CookieJar::from_headers(&parts.headers)
+            .get(SESSION_COOKIE)
+            .and_then(|cookie| SessionToken::decode(cookie.value())),
+    }
+}
+
+/// The signed-in User and the session that keeps them signed in, for the endpoints that act on
+/// the session itself, such as keeping it while signing out the User's other devices. Requests
+/// without a valid session fail with a 401.
+pub(crate) struct CurrentSession {
+    pub(crate) user: CurrentUser,
+    pub(crate) token: SessionToken,
+}
+
+impl<S: Send + Sync> FromRequestParts<S> for CurrentSession
+where
+    Pool: FromRef<S>,
+{
+    type Rejection = Response;
+
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Response> {
+        let Some(token) = request_session_token(parts) else {
+            return Err(ApiError::Unauthorized.into_response());
         };
-        future::ready(Ok(token))
+        let user = accounts::session_user(&Pool::from_ref(state), &token)
+            .await
+            .map_err(|error| ApiError::from(error).into_response())?;
+        let user = user.ok_or_else(|| ApiError::Unauthorized.into_response())?;
+        Ok(Self { user, token })
     }
 }
 
@@ -55,13 +85,8 @@ where
     type Rejection = Response;
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Response> {
-        let Ok(Some(token)) = parts.extract::<Option<SessionToken>>().await else {
-            return Err(ApiError::Unauthorized.into_response());
-        };
-        let current_user = accounts::session_user(&Pool::from_ref(state), &token)
-            .await
-            .map_err(|error| ApiError::from(error).into_response())?;
-        current_user.ok_or_else(|| ApiError::Unauthorized.into_response())
+        let session = CurrentSession::from_request_parts(parts, state).await?;
+        Ok(session.user)
     }
 }
 
