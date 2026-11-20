@@ -124,8 +124,7 @@ pub struct ServarrConfigurationUpdate {
 
 /// The reason WatchClub can't use a Source's app: which of its URL and API key the Instance
 /// Administrator has to change. The logs say why.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, ToSchema, thiserror::Error)]
-#[serde(tag = "code", rename_all = "snake_case")]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, thiserror::Error)]
 pub enum ConnectionError {
     /// It isn't an http or https URL, nothing answers there, or what answers isn't the app the
     /// Source expects, or answers with an error

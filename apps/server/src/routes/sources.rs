@@ -78,7 +78,9 @@ async fn create_source(
 ) -> Result<(StatusCode, Json<SourceResponse>), CreateSourceRequestError> {
     let source = match body {
         SourceConfigurationBody::Filesystem { media_type, path } => {
-            let path = AbsoluteFolder::parse(&path).await?;
+            let path = AbsoluteFolder::parse(&path)
+                .await
+                .map_err(ApiFolderError::from)?;
             sources::create_filesystem_source(&db, media_type, path).await?
         }
         SourceConfigurationBody::Radarr(body) => {
@@ -131,7 +133,9 @@ async fn update_source(
                 .into_filesystem(saved.media_type)
                 .ok_or(UpdateSourceRequestError::TypeChanged)?;
 
-            let path = AbsoluteFolder::parse(&path).await?;
+            let path = AbsoluteFolder::parse(&path)
+                .await
+                .map_err(ApiFolderError::from)?;
             sources::update_filesystem_source(&db, id, path).await?
         }
         SourceConfiguration::Servarr(saved) => {
@@ -175,7 +179,7 @@ async fn delete_source(
     request_body = TestNewSourceServarrConnectionRequest,
     responses(
         (status = OK, body = ServarrChoices),
-        (status = UNPROCESSABLE_ENTITY, body = ErrorBody<ConnectionError>, description = "WatchClub can't call the app with this URL and API key"),
+        (status = UNPROCESSABLE_ENTITY, body = ErrorBody<ApiConnectionError>, description = "WatchClub can't call the app with this URL and API key"),
     ),
     security(("session_cookie" = ["instance_administrator"]), ("session_token" = ["instance_administrator"])),
 )]
@@ -183,7 +187,7 @@ async fn test_new_source_servarr_connection(
     State(http_client): State<HttpClient>,
     _: InstanceAdministrator,
     Json(request): Json<TestNewSourceServarrConnectionRequest>,
-) -> Result<Json<ServarrChoices>, ConnectionError> {
+) -> Result<Json<ServarrChoices>, ApiConnectionError> {
     let choices =
         sources::test_servarr_connection(request.app, &request.url, &request.api_key, &http_client)
             .await?;
@@ -201,7 +205,7 @@ async fn test_new_source_servarr_connection(
     responses(
         (status = OK, body = ServarrChoices),
         (status = NOT_FOUND, body = ErrorBody<TestSavedSourceServarrConnectionRequestError>, description = "There's no such Radarr, Sonarr or Sportarr Source"),
-        (status = UNPROCESSABLE_ENTITY, body = ErrorBody<ConnectionError>, description = "WatchClub can't call the app with this URL and API key"),
+        (status = UNPROCESSABLE_ENTITY, body = ErrorBody<ApiConnectionError>, description = "WatchClub can't call the app with this URL and API key"),
     ),
     security(("session_cookie" = ["instance_administrator"]), ("session_token" = ["instance_administrator"])),
 )]
@@ -223,11 +227,14 @@ async fn test_saved_source_servarr_connection(
     // No API key keeps the Source's saved one
     let api_key = match request.api_key {
         Some(api_key) => api_key,
-        None => configuration.decrypt_api_key(&key)?,
+        None => configuration
+            .decrypt_api_key(&key)
+            .map_err(ApiConnectionError::from)?,
     };
     let choices =
         sources::test_servarr_connection(configuration.app, &request.url, &api_key, &http_client)
-            .await?;
+            .await
+            .map_err(ApiConnectionError::from)?;
     Ok(Json(choices))
 }
 
@@ -347,7 +354,7 @@ impl ServarrConfigurationBody {
             root_folder_path,
             local_root_folder_path,
         } = self.parse_for_update(encryption_key).await?;
-        let api_key = api_key.ok_or(ConnectionError::InvalidApiKey)?;
+        let api_key = api_key.ok_or(ApiConnectionError::InvalidApiKey)?;
 
         Ok(ServarrConfiguration {
             app,
@@ -371,11 +378,14 @@ impl ServarrConfigurationBody {
             Some(path) if !path.is_empty() => Some(
                 AbsoluteFolder::parse(path)
                     .await
-                    .map_err(ServarrConfigurationError::LocalRootFolder)?,
+                    .map_err(|error| ServarrConfigurationError::LocalRootFolder(error.into()))?,
             ),
             _ => None,
         };
-        let url = self.url.parse().map_err(ConnectionError::from)?;
+        let url = self
+            .url
+            .parse()
+            .map_err(|_| ApiConnectionError::InvalidServarrUrl)?;
 
         Ok(ServarrConfigurationUpdate {
             url,
@@ -435,10 +445,57 @@ struct TestSavedSourceServarrConnectionRequest {
     api_key: Option<SecretString>,
 }
 
+/// The reason WatchClub can't use a Source's app: which of its URL and API key the Instance
+/// Administrator has to change. The logs say why.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, ToSchema, thiserror::Error)]
+#[serde(tag = "code", rename_all = "snake_case")]
+#[schema(as = ConnectionError)]
+enum ApiConnectionError {
+    /// It isn't an http or https URL, nothing answers there, or what answers isn't the app the
+    /// Source expects, or answers with an error
+    #[error("the URL doesn't lead to the app's API")]
+    InvalidServarrUrl,
+    /// There's none, WatchClub can't decrypt the saved one, or the app rejects it
+    #[error("there's no API key the app takes")]
+    InvalidApiKey,
+}
+
+impl From<ConnectionError> for ApiConnectionError {
+    fn from(error: ConnectionError) -> Self {
+        match error {
+            ConnectionError::InvalidServarrUrl => Self::InvalidServarrUrl,
+            ConnectionError::InvalidApiKey => Self::InvalidApiKey,
+        }
+    }
+}
+
 /// Answers with a 422 when WatchClub can't call an app with a URL and an API key.
-impl IntoResponse for ConnectionError {
+impl IntoResponse for ApiConnectionError {
     fn into_response(self) -> Response {
         error::response(StatusCode::UNPROCESSABLE_ENTITY, &self)
+    }
+}
+
+/// The reasons WatchClub can't read a folder.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, ToSchema, thiserror::Error)]
+#[serde(tag = "code", rename_all = "snake_case")]
+#[schema(as = FolderError)]
+enum ApiFolderError {
+    /// Such as `movies` rather than `/media/movies`, or the root, which is the whole server rather
+    /// than one of its folders
+    #[error("the path doesn't start from the root")]
+    NotAbsolute,
+    /// Nothing is there, or a file is
+    #[error("no folder is at the path on the server")]
+    NotFound,
+}
+
+impl From<FolderError> for ApiFolderError {
+    fn from(error: FolderError) -> Self {
+        match error {
+            FolderError::NotAbsolute => Self::NotAbsolute,
+            FolderError::NotFound => Self::NotFound,
+        }
     }
 }
 
@@ -448,10 +505,10 @@ impl IntoResponse for ConnectionError {
 enum TestSavedSourceServarrConnectionRequestError {
     #[error("no such Radarr, Sonarr or Sportarr Source")]
     NotFound,
-    /// Answers as its `ConnectionError`
+    /// Answers as its `ApiConnectionError`
     #[error(transparent)]
     #[serde(skip)]
-    Connection(#[from] ConnectionError),
+    Connection(#[from] ApiConnectionError),
     #[error(transparent)]
     #[serde(skip)]
     Internal(#[from] anyhow::Error),
@@ -474,9 +531,9 @@ impl IntoResponse for TestSavedSourceServarrConnectionRequestError {
 enum ServarrConfigurationError {
     /// The app's URL or API key
     #[error(transparent)]
-    Connection(#[from] ConnectionError),
+    Connection(#[from] ApiConnectionError),
     #[error("the local root folder: {0}")]
-    LocalRootFolder(FolderError),
+    LocalRootFolder(ApiFolderError),
 }
 
 /// The failures of a request to create a Source.
@@ -486,7 +543,7 @@ enum CreateSourceRequestError {
     #[error("WatchClub can't read the folder")]
     InvalidFilesystemConfiguration {
         #[from]
-        error: FolderError,
+        error: ApiFolderError,
     },
     #[error("the app's configuration is invalid")]
     InvalidServarrConfiguration {
@@ -517,7 +574,7 @@ enum UpdateSourceRequestError {
     #[error("WatchClub can't read the folder")]
     InvalidFilesystemConfiguration {
         #[from]
-        error: FolderError,
+        error: ApiFolderError,
     },
     #[error("the app's configuration is invalid")]
     InvalidServarrConfiguration {

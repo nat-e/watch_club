@@ -1,5 +1,5 @@
 //! The Users of the Instance, which the Instance Administrator lists and deletes, and whose Password
-//! Reset Links they create.
+//! Reset Links they create. Also how the API reports a username or password that breaks the rules.
 
 use axum::{
     extract::State,
@@ -15,7 +15,10 @@ use crate::{
     ApiContext,
     auth::InstanceAdministrator,
     db::Pool,
-    domain::accounts::{self, CreatePasswordResetLinkError, DeleteUserError, User, UserId},
+    domain::accounts::{
+        self, CreatePasswordResetLinkError, DeleteUserError, PasswordError, User, UserId,
+        UsernameError,
+    },
     error::{self, ApiError, ErrorBody},
     routes::{Json, Path},
 };
@@ -152,6 +155,53 @@ impl IntoResponse for CreatePasswordResetLinkRequestError {
         match self {
             Self::UserNotFound => error::response(StatusCode::NOT_FOUND, &self),
             Self::Internal(error) => ApiError::from(error).into_response(),
+        }
+    }
+}
+
+/// Potential errors when parsing Usernames
+#[derive(Debug, Serialize, ToSchema, thiserror::Error)]
+#[serde(tag = "code", rename_all = "snake_case")]
+#[schema(as = UsernameProblem)]
+pub(super) enum ApiUsernameError {
+    #[error("the username is missing")]
+    Missing,
+    #[error("the username is shorter than {min} characters")]
+    TooShort { min: usize },
+    #[error("the username is longer than {max} characters")]
+    TooLong { max: usize },
+    /// Characters other than lowercase letters, digits and underscores
+    #[error("the username has characters other than lowercase letters, digits and underscores")]
+    InvalidCharacters,
+}
+
+impl From<UsernameError> for ApiUsernameError {
+    fn from(error: UsernameError) -> Self {
+        match error {
+            UsernameError::Missing => Self::Missing,
+            UsernameError::TooShort { min } => Self::TooShort { min },
+            UsernameError::TooLong { max } => Self::TooLong { max },
+            UsernameError::InvalidCharacters => Self::InvalidCharacters,
+        }
+    }
+}
+
+/// Potential errors when parsing Passwords
+#[derive(Debug, Serialize, ToSchema, thiserror::Error)]
+#[serde(tag = "code", rename_all = "snake_case")]
+#[schema(as = PasswordProblem)]
+pub(super) enum ApiPasswordError {
+    #[error("the password is missing")]
+    Missing,
+    #[error("the password is shorter than {min} characters")]
+    TooShort { min: usize },
+}
+
+impl From<PasswordError> for ApiPasswordError {
+    fn from(error: PasswordError) -> Self {
+        match error {
+            PasswordError::Missing => Self::Missing,
+            PasswordError::TooShort { min } => Self::TooShort { min },
         }
     }
 }

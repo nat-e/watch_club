@@ -110,9 +110,7 @@ impl Username {
 }
 
 /// Potential errors when parsing Usernames
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema, thiserror::Error)]
-#[serde(tag = "code", rename_all = "snake_case")]
-#[schema(as = UsernameProblem)]
+#[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
 pub enum UsernameError {
     #[error("the username is missing")]
     Missing,
@@ -154,9 +152,7 @@ impl Password {
 }
 
 /// Potential errors when parsing Passwords
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema, thiserror::Error)]
-#[serde(tag = "code", rename_all = "snake_case")]
-#[schema(as = PasswordProblem)]
+#[derive(Clone, Debug, PartialEq, Eq, thiserror::Error)]
 pub enum PasswordError {
     #[error("the password is missing")]
     Missing,

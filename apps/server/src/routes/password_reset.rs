@@ -13,9 +13,9 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::{
     ApiContext,
     db::Pool,
-    domain::accounts::{self, Password, PasswordError, ResetPasswordError},
+    domain::accounts::{self, Password, ResetPasswordError},
     error::{self, ApiError, ErrorBody},
-    routes::{Json, Query},
+    routes::{Json, Query, users::ApiPasswordError},
 };
 
 pub(super) fn routes() -> OpenApiRouter<ApiContext> {
@@ -69,7 +69,7 @@ async fn reset_password(
     State(db): State<Pool>,
     Json(request): Json<ResetPasswordRequest>,
 ) -> Result<StatusCode, ResetPasswordRequestError> {
-    let password = Password::parse(request.password)?;
+    let password = Password::parse(request.password).map_err(ApiPasswordError::from)?;
     accounts::reset_password(&db, &request.token, password).await?;
     Ok(StatusCode::NO_CONTENT)
 }
@@ -91,7 +91,7 @@ enum ResetPasswordRequestError {
     #[error(transparent)]
     InvalidPassword {
         #[from]
-        reason: PasswordError,
+        reason: ApiPasswordError,
     },
     /// The Password Reset Link expired, was used or replaced, or never existed
     #[error("the Password Reset Link no longer works")]

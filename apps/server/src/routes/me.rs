@@ -18,11 +18,11 @@ use crate::{
     auth::CurrentSession,
     db::Pool,
     domain::accounts::{
-        self, AudioLanguage, ChangePasswordError, CurrentUser, Locale, Password, PasswordError,
-        TrackLanguage, UserId, UserPreferences,
+        self, AudioLanguage, ChangePasswordError, CurrentUser, Locale, Password, TrackLanguage,
+        UserId, UserPreferences,
     },
     error::{self, ApiError, ErrorBody},
-    routes::Json,
+    routes::{Json, users::ApiPasswordError},
 };
 
 pub(super) fn routes() -> OpenApiRouter<ApiContext> {
@@ -77,7 +77,7 @@ async fn change_password(
     session: CurrentSession,
     Json(request): Json<ChangePasswordRequest>,
 ) -> Result<StatusCode, ChangePasswordRequestError> {
-    let new_password = Password::parse(request.new_password)?;
+    let new_password = Password::parse(request.new_password).map_err(ApiPasswordError::from)?;
     accounts::change_password(
         &db,
         session.user.id,
@@ -109,7 +109,7 @@ enum ChangePasswordRequestError {
     #[error(transparent)]
     InvalidPassword {
         #[from]
-        reason: PasswordError,
+        reason: ApiPasswordError,
     },
     #[error(transparent)]
     #[serde(skip)]

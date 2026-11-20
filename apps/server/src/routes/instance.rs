@@ -18,12 +18,13 @@ use crate::{
     ApiContext,
     auth::SessionCookie,
     db::Pool,
-    domain::accounts::{
-        self, CreateInstanceAdministratorError, Locale, Password, PasswordError, Username,
-        UsernameError,
-    },
+    domain::accounts::{self, CreateInstanceAdministratorError, Locale, Password, Username},
     error::{self, ApiError, ErrorBody},
-    routes::{Json, me::CurrentUserResponse},
+    routes::{
+        Json,
+        me::CurrentUserResponse,
+        users::{ApiPasswordError, ApiUsernameError},
+    },
 };
 
 pub(super) fn routes() -> OpenApiRouter<ApiContext> {
@@ -96,8 +97,8 @@ async fn create_instance_administrator(
         password,
         locale,
     } = request;
-    let username = Username::parse(&username)?;
-    let password = Password::parse(password)?;
+    let username = Username::parse(&username).map_err(ApiUsernameError::from)?;
+    let password = Password::parse(password).map_err(ApiPasswordError::from)?;
     let (user, token) =
         accounts::create_instance_administrator(&db, username, password, locale).await?;
     Ok((StatusCode::CREATED, cookie.set(&token), Json(user.into())))
@@ -121,12 +122,12 @@ enum CreateInstanceAdministratorRequestError {
     #[error(transparent)]
     InvalidUsername {
         #[from]
-        reason: UsernameError,
+        reason: ApiUsernameError,
     },
     #[error(transparent)]
     InvalidPassword {
         #[from]
-        reason: PasswordError,
+        reason: ApiPasswordError,
     },
     #[error("WatchClub already has its Instance Administrator")]
     InstanceAdministratorAlreadyExists,

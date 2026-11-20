@@ -19,11 +19,15 @@ use crate::{
     auth::{InstanceAdministrator, SessionCookie},
     db::Pool,
     domain::accounts::{
-        self, DeleteInvitationError, Invitation, InvitationId, Locale, Password, PasswordError,
-        RedeemInvitationError, UpdateInvitationError, Username, UsernameError,
+        self, DeleteInvitationError, Invitation, InvitationId, Locale, Password,
+        RedeemInvitationError, UpdateInvitationError, Username,
     },
     error::{self, ApiError, ErrorBody},
-    routes::{Json, Path, Query, me::CurrentUserResponse},
+    routes::{
+        Json, Path, Query,
+        me::CurrentUserResponse,
+        users::{ApiPasswordError, ApiUsernameError},
+    },
 };
 
 pub(super) fn routes() -> OpenApiRouter<ApiContext> {
@@ -236,8 +240,8 @@ async fn redeem_invitation(
         password,
         locale,
     } = request;
-    let username = Username::parse(&username)?;
-    let password = Password::parse(password)?;
+    let username = Username::parse(&username).map_err(ApiUsernameError::from)?;
+    let password = Password::parse(password).map_err(ApiPasswordError::from)?;
     let (user, token) = accounts::redeem_invitation(&db, &code, username, password, locale).await?;
     Ok((StatusCode::CREATED, cookie.set(&token), Json(user.into())))
 }
@@ -262,12 +266,12 @@ enum RedeemInvitationRequestError {
     #[error(transparent)]
     InvalidUsername {
         #[from]
-        reason: UsernameError,
+        reason: ApiUsernameError,
     },
     #[error(transparent)]
     InvalidPassword {
         #[from]
-        reason: PasswordError,
+        reason: ApiPasswordError,
     },
     #[error("another User has the username")]
     UsernameTaken,
