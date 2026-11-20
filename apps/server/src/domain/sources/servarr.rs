@@ -4,14 +4,18 @@
 
 mod client;
 
+use anyhow::Context;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
+use sqlx_otel::QueryAnnotateExt;
 use tracing::Level;
 use utoipa::ToSchema;
 
 use self::client::ServarrClient;
+use super::{Source, SourceConfiguration, SourceId, UpdateError};
 use crate::{
     api_client::{ApiCredentialsError, ApiUrl, ApiUrlError, HttpClient},
+    db::Pool,
     domain::contents::MediaType,
     utils::{
         encryption::{EncryptedSecret, EncryptionKey},
@@ -99,6 +103,21 @@ pub struct ServarrConfigurationInput {
     pub local_root_folder_path: Option<String>,
 }
 
+/// The new Source Configuration of a Radarr, Sonarr or Sportarr Source, which keeps its app.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ServarrConfigurationUpdate {
+    /// The address WatchClub calls the app at, with its API under it
+    pub url: ApiUrl,
+    /// A new key to call the app with, or None to keep the saved one
+    pub api_key: Option<EncryptedSecret>,
+    /// The quality the app downloads requested Content in
+    pub quality_profile: QualityProfile,
+    /// The folder the app downloads requested Content to, as the app sees it
+    pub root_folder_path: String,
+    /// The root folder, as WatchClub sees it when that's another path, such as in Docker
+    pub local_root_folder_path: Option<AbsoluteFolder>,
+}
+
 /// The first error WatchClub found in the Source Configuration the Instance Administrator entered
 /// for a Radarr, Sonarr or Sportarr Source: the part to change, and why.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, ToSchema, thiserror::Error)]
@@ -170,6 +189,58 @@ impl ServarrConfiguration {
             local_root_folder_path,
         })
     }
+}
+
+/// Gives the Radarr, Sonarr or Sportarr Source with this ID the configuration, and returns it. The
+/// Source keeps its app.
+#[tracing::instrument(skip_all, fields(source.id = %id))]
+pub async fn update_servarr_source(
+    db: &Pool,
+    id: SourceId,
+    configuration: ServarrConfigurationUpdate,
+) -> Result<Source, UpdateError> {
+    // Without a new API key, `COALESCE` keeps the one in the row as it is when Postgres writes it,
+    // rather than the one the caller read before: a key that another request saved meanwhile stays
+    let updated = sqlx::query!(
+        r#"
+        UPDATE sources
+        SET url = $2,
+            api_key_encrypted = COALESCE($3, api_key_encrypted),
+            quality_profile_id = $4,
+            quality_profile_name = $5,
+            root_folder_path = $6,
+            local_root_folder_path = $7
+        WHERE id = $1 AND source_type IN ('radarr', 'sonarr', 'sportarr')
+        RETURNING source_type, api_key_encrypted AS "api_key_encrypted!: EncryptedSecret"
+        "#,
+        id as SourceId,
+        configuration.url.as_str(),
+        configuration.api_key.as_ref() as Option<&EncryptedSecret>,
+        configuration.quality_profile.id,
+        configuration.quality_profile.name,
+        configuration.root_folder_path,
+        configuration.local_root_folder_path.as_ref() as Option<&AbsoluteFolder>,
+    )
+    .with_operation("UPDATE", "sources")
+    .fetch_optional(db)
+    .await
+    .context("failed to update the app's Source")?
+    .ok_or(UpdateError::SourceNotFound)?;
+
+    Ok(Source {
+        id,
+        configuration: SourceConfiguration::Servarr(ServarrConfiguration {
+            app: updated
+                .source_type
+                .app()
+                .expect("the update only finds apps' Sources"),
+            url: configuration.url,
+            api_key: updated.api_key_encrypted,
+            quality_profile: configuration.quality_profile,
+            root_folder_path: configuration.root_folder_path,
+            local_root_folder_path: configuration.local_root_folder_path,
+        }),
+    })
 }
 
 /// Checks that `app` answers at `url` and takes the API key, which it

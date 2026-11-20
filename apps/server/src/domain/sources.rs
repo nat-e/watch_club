@@ -2,10 +2,10 @@
 //! server; the others are a Radarr, Sonarr or Sportarr app, which downloads the Content its Source
 //! requests. Only the Instance Administrator manages them.
 //!
-//! This module and its `store`, which saves the Sources in the database, are the only ones that
-//! handle every Source Type. It hands each Source Configuration to its type's module, `filesystem`
-//! or `servarr`, which validates it. `servarr` also tests the connection to Radarr, Sonarr and
-//! Sportarr apps.
+//! This module and its `store`, which saves the Sources in the database, list, create and delete
+//! every Source Type's Sources. Each type's module, `filesystem` or `servarr`, validates its Source
+//! Configurations and updates its Sources. `servarr` also tests the connection to Radarr, Sonarr
+//! and Sportarr apps.
 
 mod filesystem;
 mod servarr;
@@ -18,10 +18,11 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 
 pub use self::{
-    filesystem::{FilesystemConfiguration, FilesystemConfigurationInput},
+    filesystem::{FilesystemConfiguration, FilesystemConfigurationInput, update_filesystem_source},
     servarr::{
         ConnectionError, QualityProfile, ServarrApp, ServarrChoices, ServarrConfiguration,
-        ServarrConfigurationError, ServarrConfigurationInput, test_servarr_connection,
+        ServarrConfigurationError, ServarrConfigurationInput, ServarrConfigurationUpdate,
+        test_servarr_connection, update_servarr_source,
     },
 };
 use crate::{
@@ -120,31 +121,11 @@ impl SourceConfiguration {
     }
 }
 
-/// The Source Configuration the Instance Administrator enters, which `create` and `update`
-/// validate.
+/// The Source Configuration the Instance Administrator enters, which `create` validates.
 #[derive(Debug)]
 pub enum ConfigurationInput {
     Filesystem(FilesystemConfigurationInput),
     Servarr(ServarrConfigurationInput),
-}
-
-impl ConfigurationInput {
-    /// Returns the Source Type this configuration is for, which `update` compares with the
-    /// Source's.
-    fn source_type(&self) -> SourceType {
-        match self {
-            Self::Filesystem(_) => SourceType::Filesystem,
-            Self::Servarr(configuration) => configuration.app.into(),
-        }
-    }
-
-    /// Returns the Media Type this configuration is for, which `update` compares with the Source's.
-    const fn media_type(&self) -> MediaType {
-        match self {
-            Self::Filesystem(configuration) => configuration.media_type,
-            Self::Servarr(configuration) => configuration.app.media_type(),
-        }
-    }
 }
 
 /// The error WatchClub found in the Source Configuration the Instance Administrator entered, which
@@ -170,15 +151,9 @@ pub enum CreateError {
 /// The reason a Source wasn't updated.
 #[derive(Debug, thiserror::Error)]
 pub enum UpdateError {
-    /// There's no Source with the ID, or it was deleted while WatchClub validated its new
-    /// configuration
+    /// There's no Source of the type with the ID, such as one deleted meanwhile
     #[error("no such Source")]
     SourceNotFound,
-    /// The new configuration is for another Source Type or Media Type, which a Source keeps
-    #[error("the Source's type or Media Type would change")]
-    TypeChanged,
-    #[error("the configuration is invalid")]
-    InvalidConfiguration(ConfigurationError),
     #[error(transparent)]
     Internal(#[from] anyhow::Error),
 }
@@ -212,39 +187,6 @@ pub async fn create(db: &Pool, configuration: ConfigurationInput) -> Result<Sour
         .map_err(CreateError::InvalidConfiguration)?;
 
     Ok(store::insert(db, configuration).await?)
-}
-
-/// Validates the configuration, then gives it to the Source, which keeps its type and Media Type,
-/// and its API key unless the configuration has another one.
-#[tracing::instrument(skip_all, fields(source.id = %id))]
-pub async fn update(
-    db: &Pool,
-    id: SourceId,
-    mut configuration: ConfigurationInput,
-) -> Result<Source, UpdateError> {
-    let current = store::get_by_id(db, id)
-        .await?
-        .ok_or(UpdateError::SourceNotFound)?;
-    let keeps_its_type = configuration.source_type() == current.configuration.source_type()
-        && configuration.media_type() == current.configuration.media_type();
-    if !keeps_its_type {
-        return Err(UpdateError::TypeChanged);
-    }
-
-    // Keeps the saved API key, unless the configuration has another one
-    if let (ConfigurationInput::Servarr(input), SourceConfiguration::Servarr(saved)) =
-        (&mut configuration, current.configuration)
-    {
-        input.api_key.get_or_insert(saved.api_key);
-    }
-    let configuration = SourceConfiguration::validate(configuration)
-        .await
-        .map_err(UpdateError::InvalidConfiguration)?;
-
-    // None when the Source was deleted while its configuration was validated
-    store::update(db, id, configuration)
-        .await?
-        .ok_or(UpdateError::SourceNotFound)
 }
 
 /// Deletes the Source. Its files stay on disk.

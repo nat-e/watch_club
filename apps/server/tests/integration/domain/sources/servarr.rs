@@ -203,9 +203,26 @@ mod create {
 
 mod update {
     use sqlx::PgPool;
+    use watch_club::domain::sources::{ServarrConfigurationUpdate, UpdateError};
     use watch_club_test_macros::database_test;
 
     use super::*;
+    use crate::domain::sources::{deleted_source_id, movies_folder};
+
+    /// Returns the update that gives a Source of this fake app the configuration it was created
+    /// with, without an API key.
+    fn configuration_update(app: &FakeServarr) -> ServarrConfigurationUpdate {
+        ServarrConfigurationUpdate {
+            url: app.url().parse().unwrap(),
+            api_key: None,
+            quality_profile: QualityProfile {
+                id: 4,
+                name: "HD-1080p".to_owned(),
+            },
+            root_folder_path: ROOT_FOLDER.to_owned(),
+            local_root_folder_path: None,
+        }
+    }
 
     #[database_test]
     async fn changes_the_apps_configuration(db: PgPool) {
@@ -216,13 +233,15 @@ mod update {
             id: 1,
             name: "Any".to_owned(),
         };
-        let configuration = ServarrConfigurationInput {
+        let folder = AbsoluteFolder::parse(FOLDER).await.unwrap();
+        let configuration = ServarrConfigurationUpdate {
             quality_profile: any.clone(),
-            local_root_folder_path: Some(FOLDER.to_owned()),
-            ..radarr.configuration_input()
+            local_root_folder_path: Some(folder.clone()),
+            api_key: Some(support::encryption_key().encrypt(&"new-api-key".into())),
+            ..configuration_update(&radarr)
         };
 
-        let updated = sources::update(&db, source.id, ConfigurationInput::Servarr(configuration))
+        let updated = sources::update_servarr_source(&db, source.id, configuration)
             .await
             .unwrap();
 
@@ -230,51 +249,46 @@ mod update {
             panic!("{updated:?}");
         };
         assert_eq!(updated.id, source.id);
+        assert_eq!(saved.app, ServarrApp::Radarr);
         assert_eq!(saved.quality_profile, any);
+        assert_eq!(saved.local_root_folder_path, Some(folder));
         assert_eq!(
-            saved
-                .local_root_folder_path
-                .as_ref()
-                .map(AbsoluteFolder::as_str),
-            Some(FOLDER)
+            decrypted_api_key(&updated, &support::encryption_key()),
+            "new-api-key"
         );
         assert_eq!(sources::list(&db).await.unwrap(), [updated]);
     }
 
     #[database_test]
-    async fn keeps_the_saved_api_key_when_the_configuration_has_none(db: PgPool) {
+    async fn keeps_the_saved_api_key_without_a_new_one(db: PgPool) {
         let db = watch_club::db::instrument(db);
         let radarr = FakeServarr::radarr().await;
         let source = create_radarr_source(&db, &radarr).await;
-        let configuration = ServarrConfigurationInput {
-            api_key: None,
-            ..radarr.configuration_input()
-        };
 
-        let updated = sources::update(&db, source.id, ConfigurationInput::Servarr(configuration))
+        let updated = sources::update_servarr_source(&db, source.id, configuration_update(&radarr))
             .await
             .unwrap();
 
         assert_eq!(updated, source);
+        assert_eq!(sources::list(&db).await.unwrap(), [source]);
     }
 
     #[database_test]
-    async fn replaces_the_api_key_with_the_one_in_the_configuration(db: PgPool) {
+    async fn updates_only_an_apps_source(db: PgPool) {
         let db = watch_club::db::instrument(db);
         let radarr = FakeServarr::radarr().await;
-        let source = create_radarr_source(&db, &radarr).await;
-        let configuration = ServarrConfigurationInput {
-            api_key: Some(support::encryption_key().encrypt(&"new-api-key".into())),
-            ..radarr.configuration_input()
-        };
+        let folder = create(&db, movies_folder(FOLDER)).await;
+        let deleted = deleted_source_id(&db).await;
 
-        let updated = sources::update(&db, source.id, ConfigurationInput::Servarr(configuration))
-            .await
-            .unwrap();
+        for id in [folder.id, deleted] {
+            let result =
+                sources::update_servarr_source(&db, id, configuration_update(&radarr)).await;
 
-        assert_eq!(
-            decrypted_api_key(&updated, &support::encryption_key()),
-            "new-api-key"
-        );
+            assert!(
+                matches!(result, Err(UpdateError::SourceNotFound)),
+                "{result:?}"
+            );
+        }
+        assert_eq!(sources::list(&db).await.unwrap(), [folder]);
     }
 }

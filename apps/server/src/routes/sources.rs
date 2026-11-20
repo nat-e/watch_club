@@ -23,13 +23,16 @@ use crate::{
         sources::{
             self, ConfigurationError, ConfigurationInput, ConnectionError, CreateError,
             DeleteError, FilesystemConfigurationInput, QualityProfile, ServarrApp, ServarrChoices,
-            ServarrConfigurationError, ServarrConfigurationInput, Source, SourceConfiguration,
-            SourceId, UpdateError,
+            ServarrConfigurationError, ServarrConfigurationInput, ServarrConfigurationUpdate,
+            Source, SourceConfiguration, SourceId, UpdateError,
         },
     },
     error::{self, ApiError, ErrorBody},
     routes::{Json, Path},
-    utils::{encryption::EncryptionKey, filesystem::FolderError},
+    utils::{
+        encryption::EncryptionKey,
+        filesystem::{AbsoluteFolder, FolderError},
+    },
 };
 
 /// Returns the endpoints that manage Sources, which only the Instance Administrator calls.
@@ -98,10 +101,32 @@ async fn update_source(
     State(key): State<EncryptionKey>,
     _: InstanceAdministrator,
     Path(id): Path<SourceId>,
-    Json(configuration): Json<SourceConfigurationBody>,
+    Json(body): Json<SourceConfigurationBody>,
 ) -> Result<Json<SourceResponse>, UpdateSourceRequestError> {
-    let source = sources::update(&db, id, configuration.into_input(&key)).await?;
-    Ok(Json(source.into()))
+    let source = sources::get(&db, id)
+        .await?
+        .ok_or(UpdateSourceRequestError::NotFound)?;
+
+    let updated = match source.configuration {
+        SourceConfiguration::Filesystem(saved) => {
+            let path = body
+                .into_filesystem(saved.media_type)
+                .ok_or(UpdateSourceRequestError::TypeChanged)?;
+
+            let path = AbsoluteFolder::parse(&path).await?;
+            sources::update_filesystem_source(&db, id, path).await?
+        }
+        SourceConfiguration::Servarr(saved) => {
+            let body = body
+                .into_servarr(saved.app)
+                .ok_or(UpdateSourceRequestError::TypeChanged)?;
+
+            let configuration = body.parse(&key).await?;
+            sources::update_servarr_source(&db, id, configuration).await?
+        }
+    };
+
+    Ok(Json(updated.into()))
 }
 
 /// Deletes the Source.
@@ -296,7 +321,58 @@ struct ServarrConfigurationBody {
     local_root_folder_path: Option<String>,
 }
 
+impl ServarrConfigurationBody {
+    /// Returns the configuration to save, with its API key encrypted, once WatchClub found the local
+    /// root folder and parsed the URL. Doesn't call the app: the Instance Administrator chose the
+    /// quality profile and root folder among those `test_servarr_connection` listed.
+    async fn parse(
+        self,
+        encryption_key: &EncryptionKey,
+    ) -> Result<ServarrConfigurationUpdate, ServarrConfigurationError> {
+        // None or blank when WatchClub sees the root folder at the app's path
+        let local_root_folder_path = match self.local_root_folder_path.as_deref().map(str::trim) {
+            Some(path) if !path.is_empty() => Some(
+                AbsoluteFolder::parse(path)
+                    .await
+                    .map_err(ServarrConfigurationError::LocalRootFolder)?,
+            ),
+            _ => None,
+        };
+        let url = self.url.parse().map_err(ConnectionError::from)?;
+
+        Ok(ServarrConfigurationUpdate {
+            url,
+            api_key: self.api_key.map(|api_key| encryption_key.encrypt(&api_key)),
+            quality_profile: self.quality_profile,
+            root_folder_path: self.root_folder_path,
+            local_root_folder_path,
+        })
+    }
+}
+
 impl SourceConfigurationBody {
+    /// Returns the folder of a Filesystem Source of `media_type`, or None when the body is for
+    /// another type or Media Type.
+    fn into_filesystem(self, media_type: MediaType) -> Option<String> {
+        match self {
+            Self::Filesystem {
+                media_type: body_media_type,
+                path,
+            } if body_media_type == media_type => Some(path),
+            _ => None,
+        }
+    }
+
+    /// Returns the configuration of a Source of `app`, or None when the body is for another type.
+    fn into_servarr(self, app: ServarrApp) -> Option<ServarrConfigurationBody> {
+        match (app, self) {
+            (ServarrApp::Radarr, Self::Radarr(configuration))
+            | (ServarrApp::Sonarr, Self::Sonarr(configuration))
+            | (ServarrApp::Sportarr, Self::Sportarr(configuration)) => Some(configuration),
+            _ => None,
+        }
+    }
+
     /// Returns the configuration to validate, with its API key encrypted, which WatchClub decrypts
     /// only to call the app.
     fn into_input(self, encryption_key: &EncryptionKey) -> ConfigurationInput {
@@ -424,9 +500,15 @@ impl IntoResponse for CreateSourceRequestError {
 #[serde(tag = "code", rename_all = "snake_case")]
 enum UpdateSourceRequestError {
     #[error("WatchClub can't read the folder")]
-    InvalidFilesystemConfiguration { error: FolderError },
+    InvalidFilesystemConfiguration {
+        #[from]
+        error: FolderError,
+    },
     #[error("the app's configuration is invalid")]
-    InvalidServarrConfiguration { error: ServarrConfigurationError },
+    InvalidServarrConfiguration {
+        #[from]
+        error: ServarrConfigurationError,
+    },
     #[error("a Source keeps its type and Media Type")]
     TypeChanged,
     #[error("no such Source")]
@@ -440,13 +522,6 @@ impl From<UpdateError> for UpdateSourceRequestError {
     fn from(error: UpdateError) -> Self {
         match error {
             UpdateError::SourceNotFound => Self::NotFound,
-            UpdateError::TypeChanged => Self::TypeChanged,
-            UpdateError::InvalidConfiguration(ConfigurationError::Filesystem(error)) => {
-                Self::InvalidFilesystemConfiguration { error }
-            }
-            UpdateError::InvalidConfiguration(ConfigurationError::Servarr(error)) => {
-                Self::InvalidServarrConfiguration { error }
-            }
             UpdateError::Internal(error) => Self::Internal(error.into()),
         }
     }

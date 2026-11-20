@@ -1,4 +1,5 @@
 use axum::http::StatusCode;
+use secrecy::ExposeSecret;
 use serde_json::{Value, json};
 use sqlx::PgPool;
 use watch_club_test_macros::database_test;
@@ -67,6 +68,58 @@ async fn keeps_the_saved_api_key_when_the_body_leaves_it_out_or_sends_null(db: P
 }
 
 #[database_test]
+async fn replaces_the_api_key_with_the_one_in_the_body(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    let radarr = FakeServarr::radarr().await;
+    let mut browser = support::admin_browser(&db).await;
+    let id = create(&mut browser, radarr.configuration()).await;
+    let mut configuration = radarr.configuration();
+    configuration["api_key"] = json!("new-api-key");
+
+    let response = browser
+        .put(&format!("/api/sources/{id}"), configuration)
+        .await;
+
+    assert_eq!(response.status, StatusCode::OK, "{response:?}");
+    let saved = support::saved_api_key(&db, &id).await;
+    let decrypted = support::encryption_key().decrypt(&saved).unwrap();
+    assert_eq!(decrypted.expose_secret(), "new-api-key");
+}
+
+#[database_test]
+async fn keeps_the_sources_type_and_media_type(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    let radarr = FakeServarr::radarr().await;
+    let sonarr = FakeServarr::sonarr().await;
+    let mut browser = support::admin_browser(&db).await;
+    let movies_folder = json!({ "type": "filesystem", "media_type": "movie", "path": FOLDER });
+    let folder = create(&mut browser, movies_folder.clone()).await;
+    let app = create(&mut browser, radarr.configuration()).await;
+    let sources = browser.get("/api/sources").await.body;
+
+    for (id, configuration) in [
+        (
+            &folder,
+            json!({ "type": "filesystem", "media_type": "tv_show_episode", "path": FOLDER }),
+        ),
+        (&folder, radarr.configuration()),
+        (&app, sonarr.configuration()),
+        (&app, movies_folder.clone()),
+    ] {
+        let response = browser
+            .put(&format!("/api/sources/{id}"), configuration)
+            .await;
+
+        assert_eq!(response.status, StatusCode::UNPROCESSABLE_ENTITY);
+        assert_eq!(
+            response.body,
+            json!({ "code": "type_changed", "message": "a Source keeps its type and Media Type" })
+        );
+    }
+    assert_eq!(browser.get("/api/sources").await.body, sources);
+}
+
+#[database_test]
 async fn answers_why_the_source_cant_take_the_configuration(db: PgPool) {
     let db = watch_club::db::instrument(db);
     let mut browser = support::admin_browser(&db).await;
@@ -103,6 +156,32 @@ async fn answers_why_the_source_cant_take_the_configuration(db: PgPool) {
         other_type.body,
         json!({ "code": "type_changed", "message": "a Source keeps its type and Media Type" })
     );
+}
+
+#[database_test]
+async fn answers_why_the_app_cant_take_the_configuration(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    let radarr = FakeServarr::radarr().await;
+    let mut browser = support::admin_browser(&db).await;
+    let id = create(&mut browser, radarr.configuration()).await;
+    let sources = browser.get("/api/sources").await.body;
+    let mut configuration = radarr.configuration();
+    configuration["local_root_folder_path"] = json!("/no/such/folder");
+
+    let response = browser
+        .put(&format!("/api/sources/{id}"), configuration)
+        .await;
+
+    assert_eq!(response.status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(
+        response.body,
+        json!({
+            "code": "invalid_servarr_configuration",
+            "error": { "part": "local_root_folder", "code": "not_found" },
+            "message": "the app's configuration is invalid",
+        })
+    );
+    assert_eq!(browser.get("/api/sources").await.body, sources);
 }
 
 #[database_test]

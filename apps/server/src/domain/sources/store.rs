@@ -103,56 +103,6 @@ pub(super) async fn insert(
     Ok(Source { id, configuration })
 }
 
-/// Gives the Source with this ID the configuration, and returns it. None when there's no Source
-/// with the ID. The configuration must keep the Source's Source Type and Media Type, which
-/// `domain::sources` checks: it only sets the columns of the configuration.
-pub(super) async fn update(
-    db: &Pool,
-    id: SourceId,
-    configuration: SourceConfiguration,
-) -> anyhow::Result<Option<Source>> {
-    let updated = match &configuration {
-        SourceConfiguration::Filesystem(filesystem) => {
-            sqlx::query!(
-                "UPDATE sources SET path = $2 WHERE id = $1",
-                id as SourceId,
-                &filesystem.path as &AbsoluteFolder,
-            )
-            .with_operation("UPDATE", "sources")
-            .execute(db)
-            .await
-        }
-        SourceConfiguration::Servarr(servarr) => {
-            sqlx::query!(
-                r#"
-                UPDATE sources
-                SET url = $2,
-                    api_key_encrypted = $3,
-                    quality_profile_id = $4,
-                    quality_profile_name = $5,
-                    root_folder_path = $6,
-                    local_root_folder_path = $7
-                WHERE id = $1
-                "#,
-                id as SourceId,
-                servarr.url.as_str(),
-                &servarr.api_key as &EncryptedSecret,
-                servarr.quality_profile.id,
-                servarr.quality_profile.name,
-                servarr.root_folder_path,
-                servarr.local_root_folder_path.as_ref() as Option<&AbsoluteFolder>,
-            )
-            .with_operation("UPDATE", "sources")
-            .execute(db)
-            .await
-        }
-    }
-    .context("failed to update the Source")?;
-
-    let source = (updated.rows_affected() > 0).then_some(Source { id, configuration });
-    Ok(source)
-}
-
 /// Deletes the Source with this ID, and returns whether there was one.
 pub(super) async fn delete(db: &Pool, id: SourceId) -> anyhow::Result<bool> {
     let deleted = sqlx::query!("DELETE FROM sources WHERE id = $1", id as SourceId)

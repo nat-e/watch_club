@@ -1,7 +1,12 @@
 //! Filesystem Sources: a folder on the server, whose files and subfolders' files all have one Media
 //! Type.
 
+use anyhow::Context;
+use sqlx_otel::QueryAnnotateExt;
+
+use super::{Source, SourceConfiguration, SourceId, UpdateError};
 use crate::{
+    db::Pool,
     domain::contents::MediaType,
     utils::filesystem::{AbsoluteFolder, FolderError},
 };
@@ -35,4 +40,36 @@ impl FilesystemConfiguration {
             path,
         })
     }
+}
+
+/// Gives the Filesystem Source with this ID another folder, and returns it.
+#[tracing::instrument(skip_all, fields(source.id = %id))]
+pub async fn update_filesystem_source(
+    db: &Pool,
+    id: SourceId,
+    path: AbsoluteFolder,
+) -> Result<Source, UpdateError> {
+    let media_type = sqlx::query_scalar!(
+        r#"
+        UPDATE sources
+        SET path = $2
+        WHERE id = $1 AND source_type = 'filesystem'
+        RETURNING media_type
+        "#,
+        id as SourceId,
+        &path as &AbsoluteFolder,
+    )
+    .with_operation("UPDATE", "sources")
+    .fetch_optional(db)
+    .await
+    .context("failed to update the Filesystem Source")?
+    .ok_or(UpdateError::SourceNotFound)?;
+
+    Ok(Source {
+        id,
+        configuration: SourceConfiguration::Filesystem(FilesystemConfiguration {
+            media_type,
+            path,
+        }),
+    })
 }

@@ -1,6 +1,6 @@
-//! Sources, through `domain::sources`: what every Source Type shares, such as listing, deleting and
-//! keeping its type. `filesystem` and `servarr` test what each Source Type checks before WatchClub
-//! saves it.
+//! Sources, through `domain::sources`: what every Source Type shares, such as listing and deleting.
+//! `filesystem` and `servarr` test what each Source Type checks before WatchClub saves it, and
+//! updating it.
 
 mod filesystem;
 mod servarr;
@@ -11,11 +11,9 @@ use watch_club::{
     domain::{
         contents::MediaType,
         sources::{
-            self, ConfigurationError, ConfigurationInput, DeleteError,
-            FilesystemConfigurationInput, Source, SourceId, UpdateError,
+            self, ConfigurationInput, DeleteError, FilesystemConfigurationInput, Source, SourceId,
         },
     },
-    utils::filesystem::FolderError,
 };
 use watch_club_test_macros::database_test;
 
@@ -94,69 +92,4 @@ async fn fails_to_delete_a_source_that_doesnt_exist(db: PgPool) {
         matches!(result, Err(DeleteError::SourceNotFound)),
         "{result:?}"
     );
-}
-
-#[database_test]
-async fn fails_to_update_a_source_that_doesnt_exist(db: PgPool) {
-    let db = watch_club::db::instrument(db);
-    let id = deleted_source_id(&db).await;
-
-    let result = sources::update(&db, id, movies_folder(FOLDER)).await;
-
-    assert!(
-        matches!(result, Err(UpdateError::SourceNotFound)),
-        "{result:?}"
-    );
-}
-
-#[database_test]
-async fn keeps_the_sources_type_and_media_type(db: PgPool) {
-    let db = watch_club::db::instrument(db);
-    let radarr = FakeServarr::radarr().await;
-    let sonarr = FakeServarr::sonarr().await;
-    let folder = create(&db, movies_folder(FOLDER)).await;
-    let app = create(
-        &db,
-        ConfigurationInput::Servarr(radarr.configuration_input()),
-    )
-    .await;
-    let tv_shows_folder = ConfigurationInput::Filesystem(FilesystemConfigurationInput {
-        media_type: MediaType::TvShowEpisode,
-        path: FOLDER.to_owned(),
-    });
-
-    for (source, configuration) in [
-        (&folder, tv_shows_folder),
-        (
-            &folder,
-            ConfigurationInput::Servarr(radarr.configuration_input()),
-        ),
-        (
-            &app,
-            ConfigurationInput::Servarr(sonarr.configuration_input()),
-        ),
-        (&app, movies_folder(FOLDER)),
-    ] {
-        let result = sources::update(&db, source.id, configuration).await;
-
-        assert!(
-            matches!(result, Err(UpdateError::TypeChanged)),
-            "{result:?}"
-        );
-    }
-    assert_eq!(sources::list(&db).await.unwrap(), [folder, app]);
-}
-
-#[database_test]
-async fn keeps_the_saved_configuration_when_the_new_one_is_invalid(db: PgPool) {
-    let db = watch_club::db::instrument(db);
-    let source = create(&db, movies_folder(FOLDER)).await;
-
-    let result = sources::update(&db, source.id, movies_folder("/no/such/folder")).await;
-
-    let Err(UpdateError::InvalidConfiguration(error)) = result else {
-        panic!("{result:?}");
-    };
-    assert_eq!(error, ConfigurationError::Filesystem(FolderError::NotFound));
-    assert_eq!(sources::list(&db).await.unwrap(), [source]);
 }
