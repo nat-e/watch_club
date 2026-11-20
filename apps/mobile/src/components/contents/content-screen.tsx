@@ -1,4 +1,10 @@
 import {Button} from '@expo/ui';
+import {clip, background as composeBackground, height} from '@expo/ui/jetpack-compose/modifiers';
+import {
+  buttonBorderShape,
+  shapes,
+  background as swiftUiBackground,
+} from '@expo/ui/swift-ui/modifiers';
 import {useQuery} from '@tanstack/react-query';
 import {type Content, type ContentType, hasCode} from '@watchclub/api';
 import {
@@ -199,6 +205,7 @@ function Overview({text}: {text: string}) {
 function Actions({content}: {content: Content}) {
   const {t} = useTranslation('core');
   const markAsWatchedLabel = useMarkAsWatchedLabel(content.content_type);
+  const background = String(useCSSVariable('--color-background'));
   const trailerUrl = content.trailer_url;
   return (
     <View className="w-full items-center gap-4">
@@ -208,6 +215,16 @@ function Actions({content}: {content: Content}) {
           label={t($ => $.core.contents.request)}
           disabled
           onPress={() => undefined}
+          // On the page's background, in the button's pill shape, so the backdrop doesn't show
+          // through its see-through disabled fill: Android's, then iOS's. On Android, it's as tall
+          // as its touch area, which the background would otherwise show around it as a dark ring
+          modifiers={[
+            height(48),
+            clip({type: 'circle'}),
+            composeBackground(background),
+            buttonBorderShape('capsule'),
+            swiftUiBackground(background, shapes.capsule()),
+          ]}
         />
       </Host>
       <View className="flex-row justify-center gap-4">
@@ -242,7 +259,11 @@ function Actions({content}: {content: Content}) {
   );
 }
 
-/** A quiet action beside the main one: its symbol in a circle, with its label under it. */
+/**
+ * A quiet action beside the main one: its symbol in a circle, with its label under it. A disabled
+ * one dims its symbol and label, and keeps its circle solid so that the backdrop doesn't show
+ * through.
+ */
 function RoundAction({
   label,
   symbol,
@@ -255,20 +276,31 @@ function RoundAction({
   onPress?: () => void;
   disabled?: boolean;
 }) {
-  const foreground = useCSSVariable('--color-foreground');
+  const [foreground, disabledForeground] = useCSSVariable([
+    '--color-foreground',
+    '--color-disabled-foreground',
+  ]);
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
       disabled={disabled}
       onPress={onPress}
-      className={`w-20 items-center gap-1 rounded-md ${disabled ? 'opacity-50' : ''}`}
+      className="w-20 items-center gap-1 rounded-md"
     >
       {/* The border shows which one a TV's remote is on */}
       <View className="size-12 items-center justify-center rounded-full border border-border bg-secondary focus:border-ring">
-        <SymbolView name={symbol} tintColor={String(foreground)} size={22} />
+        <SymbolView
+          name={symbol}
+          tintColor={String(disabled ? disabledForeground : foreground)}
+          size={22}
+        />
       </View>
-      <Text className="text-center text-xs text-muted-foreground">{label}</Text>
+      <Text
+        className={`text-center text-xs ${disabled ? 'text-disabled-foreground' : 'text-muted-foreground'}`}
+      >
+        {label}
+      </Text>
     </Pressable>
   );
 }
