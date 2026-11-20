@@ -1,5 +1,9 @@
 //! Changing passwords: Users change theirs in Settings, and a User who forgot theirs chooses a new
 //! one with a Password Reset Link, which the Instance Administrator shares.
+//!
+//! Rare races are accepted rather than prevented with row locks: a device that signs in with the
+//! old password while it changes, in the moment the server checks it, keeps its session, and a
+//! change and a reset of the same password at the same instant can fail.
 
 use anyhow::Context;
 use jiff::SignedDuration;
