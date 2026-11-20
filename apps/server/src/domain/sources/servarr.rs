@@ -1,6 +1,7 @@
-//! Radarr, Sonarr and Sportarr Sources: their app, their Source Configuration, and the connection
-//! test that checks the app at a URL takes an API key and lists the quality profiles and root
-//! folders the Instance Administrator chooses from. `client` calls the app.
+//! Radarr, Sonarr and Sportarr Sources: their app, their Source Configuration, creating and updating
+//! them, and the connection test that checks the app at a URL takes an API key and lists the
+//! quality profiles and root folders the Instance Administrator chooses from. `client` calls the
+//! app.
 
 mod client;
 
@@ -12,14 +13,14 @@ use tracing::Level;
 use utoipa::ToSchema;
 
 use self::client::ServarrClient;
-use super::{Source, SourceConfiguration, SourceId, UpdateError};
+use super::{Source, SourceConfiguration, SourceId, SourceType, UpdateError};
 use crate::{
     api_client::{ApiCredentialsError, ApiUrl, ApiUrlError, HttpClient},
     db::Pool,
-    domain::contents::MediaType,
+    domain::{InternalError, contents::MediaType},
     utils::{
         encryption::{EncryptedSecret, EncryptionKey},
-        filesystem::{AbsoluteFolder, FolderError},
+        filesystem::AbsoluteFolder,
     },
 };
 
@@ -86,23 +87,6 @@ pub struct ServarrConfiguration {
     pub local_root_folder_path: Option<AbsoluteFolder>,
 }
 
-/// The Source Configuration the Instance Administrator enters for a Radarr, Sonarr or Sportarr
-/// Source.
-#[derive(Debug)]
-pub struct ServarrConfigurationInput {
-    pub app: ServarrApp,
-    pub url: String,
-    /// The API key the Instance Administrator entered, encrypted as soon as WatchClub received it,
-    /// or None to keep the Source's saved one
-    pub api_key: Option<EncryptedSecret>,
-    /// One of the app's quality profiles, which `test_servarr_connection` lists
-    pub quality_profile: QualityProfile,
-    /// The path of one of the app's root folders, which `test_servarr_connection` lists
-    pub root_folder_path: String,
-    /// None or blank when WatchClub sees the root folder at the app's path
-    pub local_root_folder_path: Option<String>,
-}
-
 /// The new Source Configuration of a Radarr, Sonarr or Sportarr Source, which keeps its app.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ServarrConfigurationUpdate {
@@ -116,18 +100,6 @@ pub struct ServarrConfigurationUpdate {
     pub root_folder_path: String,
     /// The root folder, as WatchClub sees it when that's another path, such as in Docker
     pub local_root_folder_path: Option<AbsoluteFolder>,
-}
-
-/// The first error WatchClub found in the Source Configuration the Instance Administrator entered
-/// for a Radarr, Sonarr or Sportarr Source: the part to change, and why.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, ToSchema, thiserror::Error)]
-#[serde(tag = "part", rename_all = "snake_case")]
-pub enum ServarrConfigurationError {
-    /// The app's URL or API key
-    #[error(transparent)]
-    Connection(#[from] ConnectionError),
-    #[error("the local root folder: {0}")]
-    LocalRootFolder(FolderError),
 }
 
 /// The reason WatchClub can't use a Source's app: which of its URL and API key the Instance
@@ -153,42 +125,39 @@ pub struct ServarrChoices {
     pub root_folders: Vec<String>,
 }
 
-impl ServarrConfiguration {
-    /// Returns the configuration to save, with its URL parsed, once `AbsoluteFolder::parse` found
-    /// the local root folder. Doesn't call the app: it saves the quality profile and root folder
-    /// that the Instance Administrator chose among those `test_servarr_connection` listed.
-    pub(super) async fn validate(
-        configuration: ServarrConfigurationInput,
-    ) -> Result<Self, ServarrConfigurationError> {
-        let ServarrConfigurationInput {
-            app,
-            url,
-            api_key,
-            quality_profile,
-            root_folder_path,
-            local_root_folder_path,
-        } = configuration;
+/// Creates a Source of the configuration's app, and returns it.
+#[tracing::instrument(skip_all, fields(servarr.app = configuration.app.name()))]
+pub async fn create_servarr_source(
+    db: &Pool,
+    configuration: ServarrConfiguration,
+) -> Result<Source, InternalError> {
+    let id = sqlx::query_scalar!(
+        r#"
+        INSERT INTO sources (
+            source_type, media_type, url, api_key_encrypted, quality_profile_id,
+            quality_profile_name, root_folder_path, local_root_folder_path
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        RETURNING id
+        "#,
+        SourceType::from(configuration.app),
+        configuration.app.media_type(),
+        configuration.url.as_str(),
+        &configuration.api_key as &EncryptedSecret,
+        configuration.quality_profile.id,
+        configuration.quality_profile.name,
+        configuration.root_folder_path,
+        configuration.local_root_folder_path.as_ref() as Option<&AbsoluteFolder>,
+    )
+    .with_operation("INSERT", "sources")
+    .fetch_one(db)
+    .await
+    .context("failed to create the app's Source")?;
 
-        let local_root_folder_path = match local_root_folder_path.as_deref().map(str::trim) {
-            Some(path) if !path.is_empty() => Some(
-                AbsoluteFolder::parse(path)
-                    .await
-                    .map_err(ServarrConfigurationError::LocalRootFolder)?,
-            ),
-            _ => None,
-        };
-        let api_key = api_key.ok_or(ConnectionError::InvalidApiKey)?;
-        let url: ApiUrl = url.parse().map_err(ConnectionError::from)?;
-
-        Ok(Self {
-            app,
-            url,
-            api_key,
-            quality_profile,
-            root_folder_path,
-            local_root_folder_path,
-        })
-    }
+    Ok(Source {
+        id,
+        configuration: SourceConfiguration::Servarr(configuration),
+    })
 }
 
 /// Gives the Radarr, Sonarr or Sportarr Source with this ID the configuration, and returns it. The

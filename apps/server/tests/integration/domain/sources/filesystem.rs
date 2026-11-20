@@ -1,62 +1,44 @@
-//! Filesystem Sources: the folder WatchClub looks for on the server before it saves one, and
-//! updating one.
+//! Filesystem Sources: creating and updating them.
 
 use sqlx::PgPool;
 use watch_club::{
     domain::{
         contents::MediaType,
         sources::{
-            self, ConfigurationError, ConfigurationInput, CreateError, FilesystemConfiguration,
-            FilesystemConfigurationInput, Source, SourceConfiguration, SourceType, UpdateError,
+            self, FilesystemConfiguration, Source, SourceConfiguration, SourceType, UpdateError,
         },
     },
-    utils::filesystem::{AbsoluteFolder, FolderError},
+    utils::filesystem::AbsoluteFolder,
 };
 use watch_club_test_macros::database_test;
 
-use super::{FOLDER, OTHER_FOLDER, create, deleted_source_id, movies_folder};
+use super::{FOLDER, OTHER_FOLDER, create_app_source, create_movies_folder, deleted_source_id};
 use crate::support::FakeServarr;
 
 #[database_test]
-async fn creates_a_source_of_a_folder_with_its_path_tidied(db: PgPool) {
+async fn creates_a_source_of_a_folder(db: PgPool) {
     let db = watch_club::db::instrument(db);
-    let configuration = ConfigurationInput::Filesystem(FilesystemConfigurationInput {
-        media_type: MediaType::TvShowEpisode,
-        path: format!(" {FOLDER}/ "),
-    });
+    let path = AbsoluteFolder::parse(FOLDER).await.unwrap();
 
-    let source = sources::create(&db, configuration).await.unwrap();
+    let source = sources::create_filesystem_source(&db, MediaType::TvShowEpisode, path.clone())
+        .await
+        .unwrap();
 
     assert_eq!(
         source.configuration,
         SourceConfiguration::Filesystem(FilesystemConfiguration {
             media_type: MediaType::TvShowEpisode,
-            path: AbsoluteFolder::parse(FOLDER).await.unwrap(),
+            path,
         })
     );
     assert_eq!(source.configuration.source_type(), SourceType::Filesystem);
-    assert_eq!(source.configuration.media_type(), MediaType::TvShowEpisode);
     assert_eq!(sources::list(&db).await.unwrap(), [source]);
-}
-
-// `utils::filesystem` tests which paths lead to a folder
-#[database_test]
-async fn refuses_a_folder_the_server_cant_find(db: PgPool) {
-    let db = watch_club::db::instrument(db);
-
-    let result = sources::create(&db, movies_folder("/no/such/folder")).await;
-
-    let Err(CreateError::InvalidConfiguration(error)) = result else {
-        panic!("{result:?}");
-    };
-    assert_eq!(error, ConfigurationError::Filesystem(FolderError::NotFound));
-    assert_eq!(sources::list(&db).await.unwrap(), Vec::<Source>::new());
 }
 
 #[database_test]
 async fn changes_the_folder(db: PgPool) {
     let db = watch_club::db::instrument(db);
-    let source = create(&db, movies_folder(FOLDER)).await;
+    let source = create_movies_folder(&db, FOLDER).await;
     let path = AbsoluteFolder::parse(OTHER_FOLDER).await.unwrap();
 
     let updated = sources::update_filesystem_source(&db, source.id, path.clone())
@@ -78,11 +60,7 @@ async fn changes_the_folder(db: PgPool) {
 async fn updates_only_a_filesystem_source(db: PgPool) {
     let db = watch_club::db::instrument(db);
     let radarr = FakeServarr::radarr().await;
-    let app = create(
-        &db,
-        ConfigurationInput::Servarr(radarr.configuration_input()),
-    )
-    .await;
+    let app = create_app_source(&db, &radarr).await;
     let deleted = deleted_source_id(&db).await;
     let path = AbsoluteFolder::parse(OTHER_FOLDER).await.unwrap();
 

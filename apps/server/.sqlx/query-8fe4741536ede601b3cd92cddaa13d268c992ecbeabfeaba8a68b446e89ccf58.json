@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                INSERT INTO sources (\n                    source_type, media_type, url, api_key_encrypted, quality_profile_id,\n                    quality_profile_name, root_folder_path, local_root_folder_path\n                )\n                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)\n                RETURNING id\n                ",
+  "query": "\n        INSERT INTO sources (\n            source_type, media_type, url, api_key_encrypted, quality_profile_id,\n            quality_profile_name, root_folder_path, local_root_folder_path\n        )\n        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)\n        RETURNING id\n        ",
   "describe": {
     "columns": [
       {
@@ -54,5 +54,5 @@
       false
     ]
   },
-  "hash": "826484333bef2745d5909231e34df333f69dc986c5c37f77766517e6cb4324a5"
+  "hash": "8fe4741536ede601b3cd92cddaa13d268c992ecbeabfeaba8a68b446e89ccf58"
 }

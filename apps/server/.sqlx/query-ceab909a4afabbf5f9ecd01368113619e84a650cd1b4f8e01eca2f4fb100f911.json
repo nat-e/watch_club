@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                INSERT INTO sources (source_type, media_type, path)\n                VALUES ('filesystem', $1, $2)\n                RETURNING id\n                ",
+  "query": "\n        INSERT INTO sources (source_type, media_type, path)\n        VALUES ('filesystem', $1, $2)\n        RETURNING id\n        ",
   "describe": {
     "columns": [
       {
@@ -36,5 +36,5 @@
       false
     ]
   },
-  "hash": "6b8c3dcd1a22d6e3995bc85728691143875b661d03fc1bee00d9b156e163a228"
+  "hash": "ceab909a4afabbf5f9ecd01368113619e84a650cd1b4f8e01eca2f4fb100f911"
 }

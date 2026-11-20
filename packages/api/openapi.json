@@ -1997,7 +1997,7 @@
     "/api/sources/test-servarr-connection": {
       "post": {
         "summary": "Tests the connection to a Radarr, Sonarr or Sportarr app, for a new Source: checks that the app\nanswers at the URL and takes the API key, then returns its quality profiles and root folders.",
-        "operationId": "test_servarr_connection",
+        "operationId": "test_new_source_servarr_connection",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2470,7 +2470,7 @@
     "/api/sources/{id}/test-servarr-connection": {
       "post": {
         "summary": "Tests the connection to the app of a Radarr, Sonarr or Sportarr Source, at the URL and with the\nAPI key in the request, or else the Source's saved one, then returns the app's quality profiles\nand root folders.",
-        "operationId": "test_servarr_source_connection",
+        "operationId": "test_saved_source_servarr_connection",
         "parameters": [
           {
             "name": "id",
@@ -2585,7 +2585,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorBody_TestServarrSourceConnectionRequestError"
+                  "$ref": "#/components/schemas/ErrorBody_TestSavedSourceServarrConnectionRequestError"
                 }
               }
             }
@@ -3823,7 +3823,7 @@
         ],
         "description": "The body of every error response: the error's `code` and details, and a message."
       },
-      "ErrorBody_TestServarrSourceConnectionRequestError": {
+      "ErrorBody_TestSavedSourceServarrConnectionRequestError": {
         "allOf": [
           {
             "oneOf": [
@@ -5015,7 +5015,7 @@
         "format": "uuid",
         "description": "The unique ID of a Source."
       },
-      "TestServarrSourceConnectionRequestError": {
+      "TestSavedSourceServarrConnectionRequestError": {
         "oneOf": [
           {
             "type": "object",

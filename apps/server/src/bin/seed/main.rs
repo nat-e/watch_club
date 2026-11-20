@@ -17,8 +17,9 @@ use watch_club::{
     domain::{
         accounts::{self, CreateInstanceAdministratorError, Locale, Password, Username},
         contents::{self, Hardcover, MetadataProviders, Sportarr, Tmdb},
-        sources::{self, ConfigurationInput, CreateError, ServarrConfigurationInput, SourceType},
+        sources::{self, ServarrConfiguration, SourceType},
     },
+    utils::filesystem::AbsoluteFolder,
 };
 
 /// The Instance Administrator's username
@@ -134,21 +135,30 @@ async fn seed_catalog_sources(
             })?;
 
         let local_root_folder = primary_worktree.join(source.local_root_folder);
-        let configuration = ConfigurationInput::Servarr(ServarrConfigurationInput {
+        let local_root_folder = match AbsoluteFolder::parse(&local_root_folder.to_string_lossy())
+            .await
+        {
+            Ok(folder) => folder,
+            Err(error) => {
+                println!(
+                    "The dev catalog's {name} wasn't added, as its local root folder: {error}. Run `pnpm catalog`, then seed again"
+                );
+                continue;
+            }
+        };
+        let configuration = ServarrConfiguration {
             app: source.app,
-            url: source.url.to_owned(),
-            api_key: Some(api_key),
+            url: source
+                .url
+                .parse()
+                .with_context(|| format!("the dev catalog's {name} has an invalid URL"))?,
+            api_key,
             quality_profile,
             root_folder_path: source.root_folder_path.to_owned(),
-            local_root_folder_path: Some(local_root_folder.display().to_string()),
-        });
-        match sources::create(db, configuration).await {
-            Ok(_) => println!("Added the dev catalog's {name} as a Source"),
-            Err(CreateError::InvalidConfiguration(error)) => println!(
-                "The dev catalog's {name} wasn't added, as {error}. Run `pnpm catalog`, then seed again"
-            ),
-            Err(CreateError::Internal(error)) => return Err(error),
-        }
+            local_root_folder_path: Some(local_root_folder),
+        };
+        sources::create_servarr_source(db, configuration).await?;
+        println!("Added the dev catalog's {name} as a Source");
     }
     Ok(())
 }

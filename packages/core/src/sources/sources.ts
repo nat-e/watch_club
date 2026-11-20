@@ -66,13 +66,13 @@ export class InvalidServarrConfigurationError extends Error {
  * Tests the connection to a Radarr, Sonarr or Sportarr app, for a new Source: returns its quality
  * profiles and root folders once the server checked that the app is at the URL and takes the API
  * key. Throws a `ConnectionRefusedError` when it isn't or doesn't, and the API's error for other
- * failures. Named apart from the API client's `testServarrConnection`, which doesn't turn its
+ * failures. Named apart from the API client's `testNewSourceServarrConnection`, which doesn't turn its
  * errors into these.
  */
 export async function testAppConnection(
   connection: api.ServarrConnection,
 ): Promise<api.ServarrChoices> {
-  const {data, error} = await api.testServarrConnection({body: connection});
+  const {data, error} = await api.testNewSourceServarrConnection({body: connection});
   if (data) {
     return data;
   }
@@ -88,7 +88,7 @@ export async function testSourceAppConnection(
   id: api.SourceId,
   connection: api.ServarrSourceConnection,
 ): Promise<api.ServarrChoices> {
-  const {data, error} = await api.testServarrSourceConnection({path: {id}, body: connection});
+  const {data, error} = await api.testSavedSourceServarrConnection({path: {id}, body: connection});
   if (data) {
     return data;
   }
@@ -101,8 +101,8 @@ export async function testSourceAppConnection(
  */
 function throwConnectionError(
   error:
-    | api.TestServarrConnectionError
-    | api.TestServarrSourceConnectionError
+    | api.TestNewSourceServarrConnectionError
+    | api.TestSavedSourceServarrConnectionError
     | api.UnexpectedError,
 ): never {
   if (error instanceof api.UnexpectedError) {

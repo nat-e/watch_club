@@ -2,33 +2,34 @@
 //! server; the others are a Radarr, Sonarr or Sportarr app, which downloads the Content its Source
 //! requests. Only the Instance Administrator manages them.
 //!
-//! This module and its `store`, which saves the Sources in the database, list, create and delete
-//! every Source Type's Sources. Each type's module, `filesystem` or `servarr`, validates its Source
-//! Configurations and updates its Sources. `servarr` also tests the connection to Radarr, Sonarr
-//! and Sportarr apps.
+//! This module lists, finds and deletes the Sources of every Source Type. Each type's module,
+//! `filesystem` or `servarr`, creates and updates its own. `servarr` also tests the connection to
+//! Radarr, Sonarr and Sportarr apps. The `sources` table has a column for each Source
+//! Configuration's setting: each Source Type fills its own, which the table's constraints check.
 
 mod filesystem;
 mod servarr;
-mod store;
 
 use std::fmt::{self, Display, Formatter};
 
+use anyhow::Context;
 use serde::{Deserialize, Serialize};
+use sqlx_otel::QueryAnnotateExt;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
 pub use self::{
-    filesystem::{FilesystemConfiguration, FilesystemConfigurationInput, update_filesystem_source},
+    filesystem::{FilesystemConfiguration, create_filesystem_source, update_filesystem_source},
     servarr::{
         ConnectionError, QualityProfile, ServarrApp, ServarrChoices, ServarrConfiguration,
-        ServarrConfigurationError, ServarrConfigurationInput, ServarrConfigurationUpdate,
-        test_servarr_connection, update_servarr_source,
+        ServarrConfigurationUpdate, create_servarr_source, test_servarr_connection,
+        update_servarr_source,
     },
 };
 use crate::{
     db::Pool,
     domain::{InternalError, contents::MediaType},
-    utils::filesystem::FolderError,
+    utils::{encryption::EncryptedSecret, filesystem::AbsoluteFolder},
 };
 
 /// The unique ID of a Source.
@@ -107,45 +108,6 @@ impl SourceConfiguration {
             Self::Servarr(configuration) => configuration.app.media_type(),
         }
     }
-
-    /// Returns the configuration to save, once its type's module validated it.
-    async fn validate(configuration: ConfigurationInput) -> Result<Self, ConfigurationError> {
-        match configuration {
-            ConfigurationInput::Filesystem(configuration) => Ok(Self::Filesystem(
-                FilesystemConfiguration::validate(configuration).await?,
-            )),
-            ConfigurationInput::Servarr(configuration) => Ok(Self::Servarr(
-                ServarrConfiguration::validate(configuration).await?,
-            )),
-        }
-    }
-}
-
-/// The Source Configuration the Instance Administrator enters, which `create` validates.
-#[derive(Debug)]
-pub enum ConfigurationInput {
-    Filesystem(FilesystemConfigurationInput),
-    Servarr(ServarrConfigurationInput),
-}
-
-/// The error WatchClub found in the Source Configuration the Instance Administrator entered, which
-/// depends on the Source Type.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, thiserror::Error)]
-pub enum ConfigurationError {
-    /// A Filesystem Source's folder
-    #[error("the folder: {0}")]
-    Filesystem(#[from] FolderError),
-    #[error(transparent)]
-    Servarr(#[from] ServarrConfigurationError),
-}
-
-/// The reason a Source wasn't created.
-#[derive(Debug, thiserror::Error)]
-pub enum CreateError {
-    #[error("the configuration is invalid")]
-    InvalidConfiguration(ConfigurationError),
-    #[error(transparent)]
-    Internal(#[from] anyhow::Error),
 }
 
 /// The reason a Source wasn't updated.
@@ -170,32 +132,102 @@ pub enum DeleteError {
 /// Returns every Source, oldest first.
 #[tracing::instrument(skip_all)]
 pub async fn list(db: &Pool) -> Result<Vec<Source>, InternalError> {
-    Ok(store::list(db).await?)
+    let rows = sqlx::query_as!(
+        SourceRow,
+        r#"
+        SELECT id, source_type, media_type, path, url, api_key_encrypted,
+            quality_profile_id, quality_profile_name, root_folder_path, local_root_folder_path
+        FROM sources
+        ORDER BY inserted_at, id
+        "#
+    )
+    .with_operation("SELECT", "sources")
+    .fetch_all(db)
+    .await
+    .context("failed to list the Sources")?;
+
+    Ok(rows.into_iter().map(SourceRow::into_source).collect())
 }
 
 /// Returns the Source with this ID, or None when there's none.
 #[tracing::instrument(skip_all, fields(source.id = %id))]
 pub async fn get(db: &Pool, id: SourceId) -> Result<Option<Source>, InternalError> {
-    Ok(store::get_by_id(db, id).await?)
-}
+    let row = sqlx::query_as!(
+        SourceRow,
+        r#"
+        SELECT id, source_type, media_type, path, url, api_key_encrypted,
+            quality_profile_id, quality_profile_name, root_folder_path, local_root_folder_path
+        FROM sources
+        WHERE id = $1
+        "#,
+        id as SourceId,
+    )
+    .with_operation("SELECT", "sources")
+    .fetch_optional(db)
+    .await
+    .context("failed to find the Source")?;
 
-/// Validates the configuration, then creates a Source with it.
-#[tracing::instrument(skip_all)]
-pub async fn create(db: &Pool, configuration: ConfigurationInput) -> Result<Source, CreateError> {
-    let configuration = SourceConfiguration::validate(configuration)
-        .await
-        .map_err(CreateError::InvalidConfiguration)?;
-
-    Ok(store::insert(db, configuration).await?)
+    Ok(row.map(SourceRow::into_source))
 }
 
 /// Deletes the Source. Its files stay on disk.
 #[tracing::instrument(skip_all, fields(source.id = %id))]
 pub async fn delete(db: &Pool, id: SourceId) -> Result<(), DeleteError> {
-    let was_there = store::delete(db, id).await?;
+    let deleted = sqlx::query!("DELETE FROM sources WHERE id = $1", id as SourceId)
+        .with_operation("DELETE", "sources")
+        .execute(db)
+        .await
+        .context("failed to delete the Source")?;
 
-    if !was_there {
+    if deleted.rows_affected() == 0 {
         return Err(DeleteError::SourceNotFound);
     }
     Ok(())
+}
+
+/// A row of the `sources` table, where each Source Type fills its own columns.
+struct SourceRow {
+    id: SourceId,
+    source_type: SourceType,
+    media_type: MediaType,
+    path: Option<AbsoluteFolder>,
+    url: Option<String>,
+    api_key_encrypted: Option<EncryptedSecret>,
+    quality_profile_id: Option<i32>,
+    quality_profile_name: Option<String>,
+    root_folder_path: Option<String>,
+    local_root_folder_path: Option<AbsoluteFolder>,
+}
+
+impl SourceRow {
+    /// Returns the Source the row stores, whose Source Type's columns the constraints filled.
+    fn into_source(self) -> Source {
+        const FILLED: &str = "the Source Type's constraint fills it";
+
+        let configuration = match self.source_type.app() {
+            None => SourceConfiguration::Filesystem(FilesystemConfiguration {
+                media_type: self.media_type,
+                path: self.path.expect(FILLED),
+            }),
+            Some(app) => SourceConfiguration::Servarr(ServarrConfiguration {
+                app,
+                url: self
+                    .url
+                    .expect(FILLED)
+                    .parse()
+                    .expect("the sources table has only URLs that `ApiUrl` parsed"),
+                api_key: self.api_key_encrypted.expect(FILLED),
+                quality_profile: QualityProfile {
+                    id: self.quality_profile_id.expect(FILLED),
+                    name: self.quality_profile_name.expect(FILLED),
+                },
+                root_folder_path: self.root_folder_path.expect(FILLED),
+                local_root_folder_path: self.local_root_folder_path,
+            }),
+        };
+        Source {
+            id: self.id,
+            configuration,
+        }
+    }
 }
