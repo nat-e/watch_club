@@ -21,7 +21,7 @@ use watch_club::{
             preferences::{AudioLanguage, Locale, TrackLanguage, UserPreferences},
             users::{self, CurrentUser, UserId},
         },
-        contents::MetadataProviders,
+        contents::metadata::MetadataProviders,
     },
     jobs::JobContext,
     utils::encryption::{EncryptedSecret, EncryptionKey},

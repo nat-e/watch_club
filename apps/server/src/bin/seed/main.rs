@@ -20,7 +20,7 @@ use watch_club::{
             preferences::Locale,
             users::{Password, Username},
         },
-        contents::{self, Hardcover, MetadataProviders, Sportarr, Tmdb},
+        contents::{self, metadata::MetadataProviders},
         sources::{self, ServarrConfiguration, SourceType},
     },
     utils::filesystem::AbsoluteFolder,
@@ -63,11 +63,11 @@ async fn seed_instance_administrator(db: &Pool) -> anyhow::Result<()> {
 /// Saves the dev catalog's Contents that aren't saved yet, from their Metadata Providers. Fails on
 /// the first that can't be saved, such as without the internet.
 async fn seed_catalog(db: &Pool, config: &Config, http_client: &HttpClient) -> anyhow::Result<()> {
-    let metadata_providers = MetadataProviders {
-        tmdb: Tmdb::new(http_client, &config.tmdb_api_token)?,
-        sportarr: Sportarr::new(http_client),
-        hardcover: Hardcover::new(http_client, &config.hardcover_api_token)?,
-    };
+    let metadata_providers = MetadataProviders::new(
+        http_client,
+        &config.tmdb_api_token,
+        &config.hardcover_api_token,
+    )?;
 
     let external_content_ids = catalog::external_content_ids();
     for external_content_id in &external_content_ids {
@@ -78,7 +78,12 @@ async fn seed_catalog(db: &Pool, config: &Config, http_client: &HttpClient) -> a
             Locale::EnUs,
         )
         .await
-        .with_context(|| format!("failed to save the dev catalog's {external_content_id:?}"))?;
+        .with_context(|| format!("failed to save the dev catalog's {external_content_id:?}"))?
+        .with_context(|| {
+            format!(
+                "the Metadata Provider of the dev catalog's {external_content_id:?} doesn't know it"
+            )
+        })?;
     }
     println!(
         "The database has the dev catalog's {} Contents",

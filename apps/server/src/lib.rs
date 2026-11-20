@@ -27,7 +27,7 @@ pub struct ApiContext {
     /// The name Users see for the Instance, which `GET /api/instance` gives the apps
     pub instance_name: Arc<str>,
     pub apps_sentry: AppsSentry,
-    pub metadata_providers: domain::contents::MetadataProviders,
+    pub metadata_providers: domain::contents::metadata::MetadataProviders,
     pub encryption_key: utils::encryption::EncryptionKey,
     /// The connections that the calls to Sources' apps share
     pub http_client: api_client::HttpClient,

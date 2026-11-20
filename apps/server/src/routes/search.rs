@@ -11,7 +11,7 @@ use crate::{
     ApiContext,
     domain::{
         accounts::users::CurrentUser,
-        contents::{self, MetadataProviders, SearchResults, SearchScope},
+        contents::{self, SearchResults, SearchScope, metadata::MetadataProviders},
     },
     error::ApiError,
     routes::{Json, Query},

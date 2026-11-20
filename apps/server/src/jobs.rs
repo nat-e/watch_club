@@ -30,7 +30,7 @@ pub use self::{
     kinds::{delete_expired_sessions::DeleteExpiredSessions, refresh_content::RefreshContent},
     runner::{run, run_available},
 };
-use crate::{db::Pool, domain::contents::MetadataProviders};
+use crate::{db::Pool, domain::contents::metadata::MetadataProviders};
 
 /// Work that runs in the background: a struct with the job's arguments, which also sets its
 /// settings.

@@ -15,8 +15,8 @@ use crate::{
     domain::{
         accounts::users::CurrentUser,
         contents::{
-            self, Content, ContentId, ContentType, ExternalContentId, LookUpContentError, Media,
-            MetadataProviders,
+            self, Content, ContentId, ContentType, ExternalContentId, Media,
+            metadata::MetadataProviders,
         },
     },
     error::{self, ApiError, ErrorBody},
@@ -57,7 +57,9 @@ async fn get_content_by_external_id(
 
     let locale = current_user.preferences.locale;
     let content =
-        contents::get_by_external_id(&db, &metadata_providers, external_content_id, locale).await?;
+        contents::get_by_external_id(&db, &metadata_providers, external_content_id, locale)
+            .await?
+            .ok_or(GetContentRequestError::NotFound)?;
     Ok(Json(content))
 }
 
@@ -89,15 +91,6 @@ enum GetContentRequestError {
     #[error(transparent)]
     #[serde(skip)]
     Internal(#[from] anyhow::Error),
-}
-
-impl From<LookUpContentError> for GetContentRequestError {
-    fn from(error: LookUpContentError) -> Self {
-        match error {
-            LookUpContentError::NotFound => Self::NotFound,
-            LookUpContentError::Internal(error) => Self::Internal(error),
-        }
-    }
 }
 
 impl IntoResponse for GetContentRequestError {

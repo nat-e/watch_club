@@ -11,7 +11,8 @@ use sqlx::types::Json;
 use sqlx_otel::QueryAnnotateExt;
 
 use super::{
-    Content, ContentId, ContentMetadata, ContentType, Credit, ExternalContentId, Media, MediaType,
+    Content, ContentId, ContentType, Credit, ExternalContentId, Media, MediaType,
+    metadata::ContentMetadata,
 };
 use crate::{
     db::{Pool, Transaction},

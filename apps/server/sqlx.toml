@@ -10,7 +10,7 @@
 'job_state' = "::watch_club::jobs::JobState"
 'locale' = "::watch_club::domain::accounts::preferences::Locale"
 'content_type' = "::watch_club::domain::contents::ContentType"
-'metadata_provider' = "::watch_club::domain::contents::MetadataProvider"
+'metadata_provider' = "::watch_club::domain::contents::metadata::MetadataProvider"
 'media_type' = "::watch_club::domain::contents::MediaType"
 'credit_kind' = "::watch_club::domain::contents::CreditKind"
 'genre' = "::watch_club::domain::contents::Genre"
@@ -39,7 +39,7 @@
 'id' = "::watch_club::domain::contents::ContentId"
 'genres' = "Vec<::watch_club::domain::contents::Genre>"
 'backdrop' = "::sqlx::types::Json<::watch_club::domain::contents::Image>"
-'external_ids' = "::sqlx::types::Json<::watch_club::domain::contents::ExternalIds>"
+'external_ids' = "::sqlx::types::Json<::watch_club::domain::contents::metadata::ExternalIds>"
 
 [macros.table-overrides.'content_localizations']
 'content_id' = "::watch_club::domain::contents::ContentId"
@@ -48,7 +48,7 @@
 [macros.table-overrides.'content_credits']
 'content_id' = "::watch_club::domain::contents::ContentId"
 'photo' = "::sqlx::types::Json<::watch_club::domain::contents::Image>"
-'external_ids' = "::sqlx::types::Json<::watch_club::domain::contents::ExternalIds>"
+'external_ids' = "::sqlx::types::Json<::watch_club::domain::contents::metadata::ExternalIds>"
 
 [macros.table-overrides.'media']
 'id' = "::watch_club::domain::contents::MediaId"

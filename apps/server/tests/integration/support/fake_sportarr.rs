@@ -4,7 +4,7 @@
 use std::{fs, path::Path};
 
 use serde_json::Value;
-use watch_club::domain::contents::{MetadataProviders, Sportarr};
+use watch_club::domain::contents::metadata::{MetadataProviders, Sportarr};
 use wiremock::{
     Mock, MockServer, ResponseTemplate,
     matchers::{method, path},

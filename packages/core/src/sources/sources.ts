@@ -114,6 +114,8 @@ function throwConnectionError(
       throw new ConnectionRefusedError(error);
     case 'not_found':
     case 'invalid_request':
+    case 'payload_too_large':
+    case 'unsupported_media_type':
     case 'unauthorized':
     case 'forbidden':
     case 'internal_error':

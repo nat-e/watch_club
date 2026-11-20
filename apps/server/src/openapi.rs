@@ -41,9 +41,10 @@ fn add_security_schemes(document: &mut openapi::OpenApi) {
 
 /// Adds the responses of `ApiError` to the endpoints that can send them.
 ///
-/// A 400 goes to those that take a body or parameters, a 401 to those that need a session, a 403
-/// to those that need the `instance_administrator` role, and a 500 to all of them, so that each
-/// `#[utoipa::path]` lists only the failures specific to its endpoint.
+/// A 400 goes to those that take a body or parameters, a 413 and a 415 to those that take a body, a
+/// 401 to those that need a session, a 403 to those that need the `instance_administrator` role,
+/// and a 500 to all of them, so that each `#[utoipa::path]` lists only the failures specific to its
+/// endpoint. The 404 of unknown paths and the 405 of other methods belong to no endpoint.
 fn add_error_responses(document: &mut openapi::OpenApi) {
     let instance_administrator =
         SecurityRequirement::new("session_cookie", ["instance_administrator"]);
@@ -54,11 +55,14 @@ fn add_error_responses(document: &mut openapi::OpenApi) {
             let needs_session =
                 !requirements.is_empty() && !requirements.contains(&SecurityRequirement::default());
             let needs_instance_administrator = requirements.contains(&instance_administrator);
+            let takes_body = operation.request_body.is_some();
             let kinds = [
                 (
-                    operation.request_body.is_some() || operation.parameters.is_some(),
+                    takes_body || operation.parameters.is_some(),
                     ApiErrorKind::InvalidRequest,
                 ),
+                (takes_body, ApiErrorKind::PayloadTooLarge),
+                (takes_body, ApiErrorKind::UnsupportedMediaType),
                 (needs_session, ApiErrorKind::Unauthorized),
                 (needs_instance_administrator, ApiErrorKind::Forbidden),
                 (true, ApiErrorKind::Internal),
@@ -82,6 +86,10 @@ fn error_response(kind: ApiErrorKind) -> openapi::Response {
         ApiErrorKind::InvalidRequest => "The request was malformed or invalid.",
         ApiErrorKind::Unauthorized => "The request was not authorized.",
         ApiErrorKind::Forbidden => "Only the Instance Administrator can do this.",
+        ApiErrorKind::UnknownEndpoint => "No endpoint has this path.",
+        ApiErrorKind::MethodNotAllowed => "The endpoint doesn't take this method.",
+        ApiErrorKind::PayloadTooLarge => "The body is too large.",
+        ApiErrorKind::UnsupportedMediaType => "The body isn't JSON.",
         ApiErrorKind::Internal => "Something went wrong. Try again later.",
     };
     let message = ObjectBuilder::new()

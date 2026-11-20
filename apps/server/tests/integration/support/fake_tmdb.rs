@@ -7,7 +7,7 @@ use secrecy::SecretString;
 use serde_json::Value;
 use watch_club::domain::{
     accounts::preferences::Locale,
-    contents::{MetadataProviders, Tmdb},
+    contents::metadata::{MetadataProviders, Tmdb},
 };
 use wiremock::{
     Mock, MockServer, ResponseTemplate,

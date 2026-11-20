@@ -15,9 +15,9 @@ use serde_json::json;
 use crate::{
     api_client::{ApiClient, ApiCredentials, ApiUrl, HttpClient},
     domain::contents::{
-        ContentMetadata, ContentTranslations, CreditKind, CreditMetadata, ExternalContentId,
-        ExternalIds, Image, ImageSource, LookUpContentError, SearchResult, SearchResults,
-        Translations,
+        ContentTranslations, CreditKind, ExternalContentId, Image, ImageSource, SearchResult,
+        SearchResults, Translations,
+        metadata::{ContentMetadata, CreditMetadata, ExternalIds},
     },
 };
 
@@ -129,9 +129,9 @@ impl Hardcover {
         Ok(SearchResults { results, next_page })
     }
 
-    /// Returns the Book with this ID. Hardcover doesn't say which language its texts are in, so
-    /// they're its original ones. A Book has no Media yet.
-    pub async fn fetch_book(&self, id: HardcoverId) -> Result<ContentMetadata, LookUpContentError> {
+    /// Returns the Book with this ID, or None when Hardcover doesn't know it. Hardcover doesn't say
+    /// which language its texts are in, so they're its original ones. A Book has no Media yet.
+    pub async fn fetch_book(&self, id: HardcoverId) -> anyhow::Result<Option<ContentMetadata>> {
         let data: BookData = self
             .query(
                 r"
@@ -162,9 +162,11 @@ impl Hardcover {
                 json!({"id": id}),
             )
             .await?;
-        let book = data.books_by_pk.ok_or(LookUpContentError::NotFound)?;
+        let Some(book) = data.books_by_pk else {
+            return Ok(None);
+        };
 
-        Ok(ContentMetadata {
+        Ok(Some(ContentMetadata {
             id: ExternalContentId::Book(id),
             external_ids: ExternalIds::default(),
             original_title: book.title,
@@ -181,7 +183,7 @@ impl Hardcover {
             },
             credits: credits(book.contributions),
             media: Vec::new(),
-        })
+        }))
     }
 
     /// Sends a GraphQL query with these variables, and returns the data it answers.

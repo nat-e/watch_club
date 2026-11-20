@@ -43,6 +43,7 @@ mod routes {
         mod get;
         mod list_media;
     }
+    mod errors;
     mod me {
         mod change_password;
         mod get;

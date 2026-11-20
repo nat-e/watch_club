@@ -3,7 +3,10 @@
 use serde::Deserialize;
 
 use super::{optional_text, profile};
-use crate::domain::contents::{CreditKind, CreditMetadata, ExternalIds};
+use crate::domain::contents::{
+    CreditKind,
+    metadata::{CreditMetadata, ExternalIds},
+};
 
 /// The number of actors a Content's credits keep, after its director
 const MAX_ACTORS: usize = 17;

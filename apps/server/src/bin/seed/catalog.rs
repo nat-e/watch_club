@@ -3,7 +3,10 @@
 //! catalog's files instead of its Contents once Sources import Media Files.
 
 use watch_club::domain::{
-    contents::{ExternalContentId, SportarrId, TmdbId},
+    contents::{
+        ExternalContentId,
+        metadata::{SportarrId, TmdbId},
+    },
     sources::ServarrApp,
 };
 

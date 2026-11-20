@@ -16,9 +16,9 @@ use serde::{Deserialize, Deserializer};
 use crate::{
     api_client::{ApiClient, ApiCredentials, ApiUrl, HttpClient},
     domain::contents::{
-        ContentMetadata, ContentTranslations, CreditKind, CreditMetadata, ExternalContentId,
-        ExternalIds, Image, ImageSource, LookUpContentError, MediaMetadata, MediaTranslations,
+        ContentTranslations, CreditKind, ExternalContentId, Image, ImageSource, MediaTranslations,
         MediaType, SearchResult, SearchResults, Translations,
+        metadata::{ContentMetadata, CreditMetadata, ExternalIds, MediaMetadata},
     },
 };
 
@@ -98,24 +98,22 @@ impl Sportarr {
         })
     }
 
-    /// Returns the Sports Event with this ID, with its one Media. sportarr.net doesn't say which
-    /// language its texts are in, so they're its original ones.
+    /// Returns the Sports Event with this ID, with its one Media, or None when sportarr.net doesn't
+    /// know it. sportarr.net doesn't say which language its texts are in, so they're its original
+    /// ones.
     pub async fn fetch_sports_event(
         &self,
         id: &SportarrId,
-    ) -> Result<ContentMetadata, LookUpContentError> {
-        let found: LookUpEventAnswer = self
+    ) -> anyhow::Result<Option<ContentMetadata>> {
+        let found: Option<LookUpEventAnswer> = self
             .api
             .get("/lookup/event/{id}", &[&id.0], &[])
             .await
-            .context("failed to fetch a Sports Event from sportarr.net")?
-            .ok_or(LookUpContentError::NotFound)?;
+            .context("failed to fetch a Sports Event from sportarr.net")?;
         // sportarr.net answers an ID it doesn't know with no event, rather than with a 404
-        let event = found
-            .data
-            .into_iter()
-            .next()
-            .ok_or(LookUpContentError::NotFound)?;
+        let Some(event) = found.and_then(|found| found.data.into_iter().next()) else {
+            return Ok(None);
+        };
 
         let credits = event.league.map(|league| CreditMetadata {
             kind: CreditKind::League,
@@ -133,7 +131,7 @@ impl Sportarr {
             image: None,
             texts: MediaTranslations::default(),
         };
-        Ok(ContentMetadata {
+        Ok(Some(ContentMetadata {
             id: ExternalContentId::SportsEvent(id.clone()),
             external_ids: ExternalIds::default(),
             original_title: event.title,
@@ -150,7 +148,7 @@ impl Sportarr {
             },
             credits: credits.into_iter().collect(),
             media: vec![media],
-        })
+        }))
     }
 }
 

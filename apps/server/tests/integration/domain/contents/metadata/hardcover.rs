@@ -4,8 +4,8 @@ use jiff::civil::date;
 use secrecy::SecretString;
 use serde_json::{Value, json};
 use watch_club::domain::contents::{
-    CreditKind, ExternalContentId, Hardcover, HardcoverId, Image, ImageSource, LookUpContentError,
-    SearchResult,
+    CreditKind, ExternalContentId, Image, ImageSource, SearchResult,
+    metadata::{Hardcover, HardcoverId},
 };
 use wiremock::{
     Mock, ResponseTemplate,
@@ -240,6 +240,7 @@ async fn fetch_book_returns_it_with_its_authors_and_no_media() {
         .client()
         .fetch_book(HardcoverId::new(442_623))
         .await
+        .unwrap()
         .unwrap();
 
     assert_eq!(book.id, ExternalContentId::Book(HardcoverId::new(442_623)));
@@ -292,6 +293,7 @@ async fn fetch_book_credits_each_person_once_per_role_and_leaves_out_translators
         .client()
         .fetch_book(HardcoverId::new(442_623))
         .await
+        .unwrap()
         .unwrap();
 
     let credits: Vec<_> = book
@@ -309,17 +311,17 @@ async fn fetch_book_credits_each_person_once_per_role_and_leaves_out_translators
 }
 
 #[tokio::test]
-async fn look_up_book_fails_with_not_found_when_hardcover_has_no_book_with_the_id() {
+async fn fetch_book_is_none_when_hardcover_has_no_book_with_the_id() {
     let hardcover = FakeHardcover::start().await;
     hardcover
         .answer("Book", json!({"data": {"books_by_pk": null}}))
         .await;
 
-    let error = hardcover
+    let found = hardcover
         .client()
         .fetch_book(HardcoverId::new(999_999_999))
         .await
-        .unwrap_err();
+        .unwrap();
 
-    assert!(matches!(error, LookUpContentError::NotFound), "{error:?}");
+    assert_eq!(found, None);
 }

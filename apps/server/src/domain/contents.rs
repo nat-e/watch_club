@@ -7,7 +7,7 @@
 
 mod image;
 mod localizations;
-mod metadata_providers;
+pub mod metadata;
 mod store;
 
 use std::{
@@ -24,13 +24,10 @@ use utoipa::{
 };
 use uuid::Uuid;
 
+use self::metadata::{HardcoverId, MetadataProvider, MetadataProviders, SportarrId, TmdbId};
 pub use self::{
     image::{Image, ImageSource},
     localizations::{ContentTranslations, Language, MediaTranslations, Translations},
-    metadata_providers::{
-        ContentMetadata, CreditMetadata, ExternalIds, Hardcover, HardcoverId, MediaMetadata,
-        MetadataProviders, Sportarr, SportarrId, Tmdb, TmdbId,
-    },
     store::list_media,
 };
 use super::accounts::preferences::Locale;
@@ -79,15 +76,6 @@ impl ContentType {
             Self::Book => MetadataProvider::Hardcover,
         }
     }
-}
-
-/// A catalog that Content metadata comes from.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, sqlx::Type)]
-#[sqlx(type_name = "metadata_provider", rename_all = "snake_case")]
-pub enum MetadataProvider {
-    Tmdb,
-    Sportarr,
-    Hardcover,
 }
 
 /// The kind of a Media, which tells the Content Type it belongs to.
@@ -332,16 +320,6 @@ pub struct SearchResults {
     pub next_page: Option<NonZeroU32>,
 }
 
-/// The failures of finding a Content by its External ID.
-#[derive(Debug, thiserror::Error)]
-pub enum LookUpContentError {
-    /// Its Metadata Provider has no such Content
-    #[error("no such Content")]
-    NotFound,
-    #[error(transparent)]
-    Internal(#[from] anyhow::Error),
-}
-
 /// Returns a page of the Content of the scope that matches the query, in their Metadata Provider's
 /// order, with their texts in the Locale's language when it has them. A blank query matches nothing.
 #[tracing::instrument(skip_all, fields(search.scope = ?scope, search.page = page))]
@@ -364,9 +342,9 @@ pub async fn search(
     }
 }
 
-/// Returns the Content in the Locale. The first time someone opens it, it's saved from its
-/// Metadata Provider first. When it was saved over a day ago, it's returned at once, and a job
-/// saves it again for the next views.
+/// Returns the Content in the Locale, or None when its Metadata Provider doesn't know it. The first
+/// time someone opens it, it's saved from its Metadata Provider first. When it was saved over a day
+/// ago, it's returned at once, and a job saves it again for the next views.
 #[tracing::instrument(
     skip_all,
     fields(
@@ -379,21 +357,23 @@ pub async fn get_by_external_id(
     metadata_providers: &MetadataProviders,
     external_content_id: ExternalContentId,
     locale: Locale,
-) -> Result<Content, LookUpContentError> {
+) -> anyhow::Result<Option<Content>> {
     if let Some(saved) = store::find_by_external_id(db, &external_content_id, locale).await? {
         if saved.refreshed_at < Timestamp::now() - REFRESH_AFTER {
             let content_id = saved.content.id;
             jobs::enqueue(db, RefreshContent { content_id }).await?;
         }
-        return Ok(saved.content);
+        return Ok(Some(saved.content));
     }
 
-    let metadata = metadata_providers.fetch(&external_content_id).await?;
+    let Some(metadata) = metadata_providers.fetch(&external_content_id).await? else {
+        return Ok(None);
+    };
     store::save(db, &metadata).await?;
     let saved = store::find_by_external_id(db, &external_content_id, locale)
         .await?
         .ok_or_else(|| anyhow::anyhow!("the Content just saved is missing"))?;
-    Ok(saved.content)
+    Ok(Some(saved.content))
 }
 
 /// Saves the Content again, as its Metadata Provider has it now. When its Metadata Provider no
@@ -409,20 +389,16 @@ pub async fn refresh(
         return Ok(());
     };
 
-    match metadata_providers.fetch(&external_content_id).await {
-        Ok(metadata) => {
-            store::save(db, &metadata).await?;
-        }
-        Err(LookUpContentError::NotFound) => {
-            tracing::event!(
-                name: "contents.refresh.not_found",
-                Level::WARN,
-                content.type = ?external_content_id.content_type(),
-                content.external_id = %external_content_id.external_id(),
-                "its Metadata Provider no longer knows the Content, which stays as it is",
-            );
-        }
-        Err(LookUpContentError::Internal(error)) => return Err(error),
-    }
+    let Some(metadata) = metadata_providers.fetch(&external_content_id).await? else {
+        tracing::event!(
+            name: "contents.refresh.not_found",
+            Level::WARN,
+            content.type = ?external_content_id.content_type(),
+            content.external_id = %external_content_id.external_id(),
+            "its Metadata Provider no longer knows the Content, which stays as it is",
+        );
+        return Ok(());
+    };
+    store::save(db, &metadata).await?;
     Ok(())
 }

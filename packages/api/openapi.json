@@ -61,6 +61,58 @@
               }
             }
           },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Wrong username or password",
             "content": {
@@ -139,6 +191,58 @@
                       "type": "string",
                       "enum": [
                         "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
                       ]
                     },
                     "message": {
@@ -629,6 +733,58 @@
               }
             }
           },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "The username or password breaks the rules",
             "content": {
@@ -878,6 +1034,58 @@
               }
             }
           },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "500": {
             "description": "Something went wrong. Try again later.",
             "content": {
@@ -959,6 +1167,58 @@
                       "type": "string",
                       "enum": [
                         "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
                       ]
                     },
                     "message": {
@@ -1358,6 +1618,58 @@
               }
             }
           },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "The Invitation has created more Users than the Max Uses already",
             "content": {
@@ -1556,6 +1868,58 @@
               }
             }
           },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "The current password is wrong, or the new one breaks the rules",
             "content": {
@@ -1668,6 +2032,58 @@
                       "type": "string",
                       "enum": [
                         "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
                       ]
                     },
                     "message": {
@@ -1827,6 +2243,58 @@
                       "type": "string",
                       "enum": [
                         "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
                       ]
                     },
                     "message": {
@@ -2221,6 +2689,58 @@
               }
             }
           },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "The configuration is invalid, such as a folder WatchClub can't read",
             "content": {
@@ -2363,6 +2883,58 @@
                       "type": "string",
                       "enum": [
                         "forbidden"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
                       ]
                     },
                     "message": {
@@ -2544,6 +3116,58 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorBody_UpdateSourceRequestError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
                 }
               }
             }
@@ -2864,6 +3488,58 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorBody_TestSavedSourceServarrConnectionRequestError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
                 }
               }
             }

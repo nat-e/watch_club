@@ -3,8 +3,8 @@ use std::num::NonZeroU32;
 use jiff::civil::date;
 use serde_json::{Value, json};
 use watch_club::domain::contents::{
-    CreditKind, ExternalContentId, Image, ImageSource, LookUpContentError, MediaType, SearchResult,
-    SportarrId,
+    CreditKind, ExternalContentId, Image, ImageSource, MediaType, SearchResult,
+    metadata::SportarrId,
 };
 use wiremock::{
     Mock, ResponseTemplate,
@@ -158,6 +158,7 @@ async fn fetch_sports_event_returns_it_with_its_one_media() {
         .client()
         .fetch_sports_event(&SportarrId::new("ev-575969"))
         .await
+        .unwrap()
         .unwrap();
 
     assert_eq!(
@@ -189,17 +190,17 @@ async fn fetch_sports_event_returns_it_with_its_one_media() {
 }
 
 #[tokio::test]
-async fn look_up_fails_with_not_found_when_sportarr_doesnt_know_the_id() {
+async fn fetch_sports_event_is_none_when_sportarr_doesnt_know_the_id() {
     let sportarr = FakeSportarr::start().await;
     sportarr
         .answer("/lookup/event/ev-0", json!({"data": []}))
         .await;
 
-    let error = sportarr
+    let found = sportarr
         .client()
         .fetch_sports_event(&SportarrId::new("ev-0"))
         .await
-        .unwrap_err();
+        .unwrap();
 
-    assert!(matches!(error, LookUpContentError::NotFound), "{error:?}");
+    assert_eq!(found, None);
 }
