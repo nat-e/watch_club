@@ -243,7 +243,7 @@ pub async fn test_servarr_connection(
     let url: ApiUrl = url.parse()?;
     let client = ServarrClient::new(http_client, app, &url, api_key)?;
 
-    let app_name = client.fetch_app_name().await?;
+    let app_name = client.fetch_app_name().await.map_err(report_failed_call)?;
     if app_name != app.name() {
         tracing::event!(
             name: "servarr.app.unexpected",
@@ -256,11 +256,35 @@ pub async fn test_servarr_connection(
     }
 
     let (quality_profiles, root_folders) =
-        tokio::try_join!(client.list_quality_profiles(), client.list_root_folders())?;
+        tokio::try_join!(client.list_quality_profiles(), client.list_root_folders())
+            .map_err(report_failed_call)?;
     Ok(ServarrChoices {
         quality_profiles,
         root_folders,
     })
+}
+
+/// Logs why a call to a Source's app failed, which the Instance Administrator doesn't see, and
+/// returns the setting the failure shows is wrong: the API key when the app rejects it with a 401,
+/// or else the URL.
+fn report_failed_call(error: reqwest::Error) -> ConnectionError {
+    let api_key_rejected = error.status() == Some(StatusCode::UNAUTHORIZED);
+    // With the causes, such as `connection refused`, which only `anyhow` prints
+    let error = anyhow::Error::from(error);
+    tracing::event!(
+        name: "servarr.call.failed",
+        Level::WARN,
+        exception.message = %format_args!("{error:#}"),
+        "failed to call a Source's app",
+    );
+
+    if api_key_rejected {
+        ConnectionError::InvalidApiKey
+    } else {
+        // Nothing answered, or not as the app's API does, such as a web page, an error or a 404 at
+        // the app's API path
+        ConnectionError::InvalidServarrUrl
+    }
 }
 
 /// Blames the URL when it isn't one WatchClub can call the app's API under, such as `radarr:7878`
@@ -275,25 +299,5 @@ impl From<ApiUrlError> for ConnectionError {
 impl From<ApiCredentialsError> for ConnectionError {
     fn from(_: ApiCredentialsError) -> Self {
         Self::InvalidApiKey
-    }
-}
-
-/// Tells which setting a failed call shows is wrong: the API key when the app rejects it with a
-/// 401, or else the URL. Logs the cause, which the Instance Administrator doesn't see.
-impl From<reqwest::Error> for ConnectionError {
-    fn from(error: reqwest::Error) -> Self {
-        tracing::event!(
-            name: "servarr.call.failed",
-            Level::WARN,
-            exception.message = %format_args!("{error:#}"),
-            "failed to call a Source's app",
-        );
-        if error.status() == Some(StatusCode::UNAUTHORIZED) {
-            Self::InvalidApiKey
-        } else {
-            // Nothing answered, or not as the app's API does, such as a web page, an error or a
-            // 404 at the app's API path
-            Self::InvalidServarrUrl
-        }
     }
 }
