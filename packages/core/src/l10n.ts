@@ -75,6 +75,30 @@ export function createI18n(locale: Locale, namespace: string, messages: Messages
   return instance;
 }
 
+/** The units of a relative time, from the largest, with their length in seconds. */
+const RELATIVE_TIME_UNITS: ReadonlyArray<[Intl.RelativeTimeFormatUnit, number]> = [
+  ['year', 365 * 24 * 60 * 60],
+  ['month', 30 * 24 * 60 * 60],
+  ['day', 24 * 60 * 60],
+  ['hour', 60 * 60],
+  ['minute', 60],
+  ['second', 1],
+];
+
+/**
+ * Returns how long ago a time was, or how soon it comes, in the language, in the largest unit it
+ * spans: "3 months ago", "in 7 days".
+ */
+export function formatRelativeTime(time: string, language: string, now = Date.now()): string {
+  const seconds = (Date.parse(time) - now) / 1000;
+  const [unit, length] = RELATIVE_TIME_UNITS.find(([, each]) => Math.abs(seconds) >= each) ?? [
+    'second',
+    1,
+  ];
+  const format = new Intl.RelativeTimeFormat(language, {numeric: 'auto'});
+  return format.format(Math.round(seconds / length), unit);
+}
+
 /** Returns the name of each Locale in the app's language, for Users to pick theirs. */
 export function useLocaleNames(): Record<Locale, string> {
   const {t} = useTranslation('core');

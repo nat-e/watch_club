@@ -28,6 +28,18 @@ _Avoid_: Server name, site name
 The single user who administers the WatchClub instance.
 _Avoid_: Administrator, admin, owner
 
+**Invitation**:
+A link the **Instance Administrator** shares so that new people can create their account.
+_Avoid_: Invite, invitation code
+
+**Max Uses**:
+The most **Users** an **Invitation** can create. Unlimited when unset.
+_Avoid_: Use limit, seats, quota
+
+**Redeem Invitation**:
+A new person creates their **User** through an **Invitation**, which counts one use against its **Max Uses**.
+_Avoid_: Accept invitation, sign up
+
 **Locale**:
 A language and country preference.
 _Avoid_: Language, region
@@ -150,6 +162,12 @@ _Avoid_: Discover
 - **User Preferences** include the user’s **Preferred Audio Language**, **Preferred Subtitle Language** and **Languages Without Subtitles**
 - A new **User** gets subtitles in the language of their **Locale**, except when the audio is already in it
 - Every **User** can see every other **User**
+- An **Invitation** is the only way a new person joins WatchClub
+- Only the **Instance Administrator** creates, changes and deletes **Invitations**
+- An **Invitation** can be redeemed for 7 days after its creation, until it reaches its **Max Uses**
+- Only new people **Redeem Invitations**: a signed-in **User** never does
+- Deleting an **Invitation** keeps the **Users** it created
+- The **Instance Administrator** can delete any other **User**, and can't be deleted
 
 ### Conversations
 
