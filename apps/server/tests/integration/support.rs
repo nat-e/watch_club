@@ -4,6 +4,7 @@
 mod client;
 mod database;
 pub mod fake_hardcover;
+pub mod fake_servarr;
 pub mod fake_sportarr;
 pub mod fake_tmdb;
 
@@ -11,6 +12,7 @@ use std::process::Command;
 
 use sqlx::postgres::PgBindIterExt;
 use watch_club::{
+    api_client::HttpClient,
     db::Pool,
     domain::{
         accounts::{
@@ -20,15 +22,19 @@ use watch_club::{
         contents::MetadataProviders,
     },
     jobs::JobContext,
+    utils::encryption::{EncryptedSecret, EncryptionKey},
 };
 
 pub use self::{
     client::Client, database::TestDatabase, fake_hardcover::FakeHardcover,
-    fake_sportarr::FakeSportarr, fake_tmdb::FakeTmdb,
+    fake_servarr::FakeServarr, fake_sportarr::FakeSportarr, fake_tmdb::FakeTmdb,
 };
 
 /// Every test User's password
 pub const PASSWORD: &str = "passw0rd";
+
+/// The key the test apps encrypt the secrets they store with
+pub const ENCRYPTION_KEY: &str = "q5OMH0wWDIQnaWrTU+zAPahOTWVdTpqo8uUpKzVZ1Ag=";
 
 /// A database URL nothing listens on, so a server that gets past its settings fails fast
 pub const UNREACHABLE_DATABASE_URL: &str = "postgres://localhost:1/watch_club";
@@ -43,6 +49,34 @@ pub fn server_startup_error(vars: &[(&str, &str)]) -> String {
         .unwrap();
     assert!(!output.status.success());
     String::from_utf8(output.stderr).unwrap()
+}
+
+/// Returns the key the test apps encrypt the secrets they store with, `ENCRYPTION_KEY`.
+pub fn encryption_key() -> EncryptionKey {
+    EncryptionKey::from_base64(ENCRYPTION_KEY).unwrap()
+}
+
+/// Returns a key other than `ENCRYPTION_KEY`, as when the host changed it: it can't decrypt the
+/// secrets that the test apps stored.
+pub fn another_encryption_key() -> EncryptionKey {
+    EncryptionKey::from_base64("fRBMVNwYcSGHtIBQQ9gNFrz7cnWZsvMBYFxufHx2N+k=").unwrap()
+}
+
+/// Returns the connections that the test apps call other services through. Each test gets its own,
+/// as connections don't outlive the test's runtime.
+pub fn http_client() -> HttpClient {
+    HttpClient::new().unwrap()
+}
+
+/// Returns the API key that the Source with this ID saved, as the table stores it.
+pub async fn saved_api_key(db: &Pool, source_id: &str) -> EncryptedSecret {
+    sqlx::query_scalar!(
+        r#"SELECT api_key_encrypted AS "api_key!" FROM sources WHERE id = $1::text::uuid"#,
+        source_id,
+    )
+    .fetch_one(db)
+    .await
+    .unwrap()
 }
 
 /// Returns the context jobs run with: this database, and Metadata Providers that nothing answers.
@@ -70,6 +104,14 @@ pub async fn create_user(db: &Pool, username: &str) -> CurrentUser {
 /// Creates the Instance Administrator, who signs in with `PASSWORD`.
 pub async fn create_instance_administrator(db: &Pool) -> CurrentUser {
     insert_user(db, "admin", true).await
+}
+
+/// Creates the Instance Administrator, and returns a client signed in as them.
+pub async fn admin_browser(db: &Pool) -> Client {
+    let admin = create_instance_administrator(db).await;
+    let mut browser = Client::new(db);
+    browser.sign_in(&admin).await;
+    browser
 }
 
 async fn insert_user(db: &Pool, username: &str, is_instance_administrator: bool) -> CurrentUser {

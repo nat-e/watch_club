@@ -1733,6 +1733,914 @@
         ]
       }
     },
+    "/api/sources": {
+      "get": {
+        "summary": "Returns every Source, oldest first.",
+        "operationId": "list_sources",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Source"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request was not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the Instance Administrator can do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "forbidden"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session_cookie": [
+              "instance_administrator"
+            ]
+          },
+          {
+            "session_token": [
+              "instance_administrator"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "summary": "Validates the configuration, then creates a Source with it.",
+        "operationId": "create_source",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceConfiguration"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Source"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request was not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the Instance Administrator can do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "forbidden"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "WatchClub can't read the folders or call the app with this configuration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_CreateSourceRequestError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session_cookie": [
+              "instance_administrator"
+            ]
+          },
+          {
+            "session_token": [
+              "instance_administrator"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/sources/check": {
+      "post": {
+        "summary": "Returns the quality profiles and root folders of a Radarr, Sonarr or Sportarr app, for a new\nSource, once it checked that the app is at the URL and takes the API key.",
+        "operationId": "check_new_source",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServarrConnection"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceCheck"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request was not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the Instance Administrator can do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "forbidden"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "WatchClub can't call the app with this URL and API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_ConnectionError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session_cookie": [
+              "instance_administrator"
+            ]
+          },
+          {
+            "session_token": [
+              "instance_administrator"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/sources/{id}": {
+      "put": {
+        "summary": "Validates the configuration, then gives it to the Source, which keeps its type and Media Type,\nand its API key unless the configuration has another one.",
+        "operationId": "update_source",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The Source's ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/SourceId"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceConfiguration"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Source"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request was not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the Instance Administrator can do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "forbidden"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "There's no such Source",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_UpdateSourceRequestError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "WatchClub can't read the folders or call the app with this configuration, or it's for another type or Media Type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_UpdateSourceRequestError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session_cookie": [
+              "instance_administrator"
+            ]
+          },
+          {
+            "session_token": [
+              "instance_administrator"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Deletes the Source.",
+        "operationId": "delete_source",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The Source's ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/SourceId"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "400": {
+            "description": "The request was malformed or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request was not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the Instance Administrator can do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "forbidden"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "There's no such Source",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_DeleteSourceRequestError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session_cookie": [
+              "instance_administrator"
+            ]
+          },
+          {
+            "session_token": [
+              "instance_administrator"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/sources/{id}/check": {
+      "post": {
+        "summary": "Returns the quality profiles and root folders of a Radarr, Sonarr or Sportarr Source's app, once\nit checked that the app is at the URL and takes the API key: the one in the request, or else the\nSource's saved one.",
+        "operationId": "check_existing_source",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The Source's ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/SourceId"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceConnection"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceCheck"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request was not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the Instance Administrator can do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "forbidden"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "There's no such Radarr, Sonarr or Sportarr Source",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_CheckExistingSourceRequestError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "WatchClub can't call the app with this URL and API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_ConnectionError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session_cookie": [
+              "instance_administrator"
+            ]
+          },
+          {
+            "session_token": [
+              "instance_administrator"
+            ]
+          }
+        ]
+      }
+    },
     "/api/users": {
       "get": {
         "summary": "Returns every User, the first to join first.",
@@ -2030,6 +2938,58 @@
           "fr"
         ]
       },
+      "CheckExistingSourceRequestError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "not_found"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "The failures of a request to check a Source's app."
+      },
+      "ConnectionError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_servarr_url"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_api_key"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "The reason WatchClub can't use a Source's app: which of its URL and API key the Instance\nAdministrator has to change. The logs say why."
+      },
       "Content": {
         "allOf": [
           {
@@ -2221,6 +3181,47 @@
         ],
         "description": "The failures of a request to create the Instance Administrator."
       },
+      "CreateSourceRequestError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "error",
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_filesystem_configuration"
+                ]
+              },
+              "error": {
+                "$ref": "#/components/schemas/FolderError"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "error",
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_servarr_configuration"
+                ]
+              },
+              "error": {
+                "$ref": "#/components/schemas/ServarrConfigurationError"
+              }
+            }
+          }
+        ],
+        "description": "The failures of a request to create a Source."
+      },
       "Credentials": {
         "type": "object",
         "description": "A username and password to sign in with.",
@@ -2328,6 +3329,25 @@
         ],
         "description": "The failures of a request to delete an Invitation."
       },
+      "DeleteSourceRequestError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "not_found"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "The failures of a request to delete a Source."
+      },
       "DeleteUserRequestError": {
         "oneOf": [
           {
@@ -2360,6 +3380,92 @@
           }
         ],
         "description": "The failures of a request to delete a User."
+      },
+      "ErrorBody_CheckExistingSourceRequestError": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "not_found"
+                    ]
+                  }
+                }
+              }
+            ],
+            "description": "The failures of a request to check a Source's app."
+          },
+          {
+            "type": "object",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The failure in English, for developers rather than users"
+              }
+            }
+          }
+        ],
+        "description": "The body of every error response: the error's `code` and details, and a message."
+      },
+      "ErrorBody_ConnectionError": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "invalid_servarr_url"
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "invalid_api_key"
+                    ]
+                  }
+                }
+              }
+            ],
+            "description": "The reason WatchClub can't use a Source's app: which of its URL and API key the Instance\nAdministrator has to change. The logs say why."
+          },
+          {
+            "type": "object",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The failure in English, for developers rather than users"
+              }
+            }
+          }
+        ],
+        "description": "The body of every error response: the error's `code` and details, and a message."
       },
       "ErrorBody_CreateInstanceAdministratorRequestError": {
         "allOf": [
@@ -2433,6 +3539,64 @@
         ],
         "description": "The body of every error response: the error's `code` and details, and a message."
       },
+      "ErrorBody_CreateSourceRequestError": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "error",
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "invalid_filesystem_configuration"
+                    ]
+                  },
+                  "error": {
+                    "$ref": "#/components/schemas/FolderError"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "error",
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "invalid_servarr_configuration"
+                    ]
+                  },
+                  "error": {
+                    "$ref": "#/components/schemas/ServarrConfigurationError"
+                  }
+                }
+              }
+            ],
+            "description": "The failures of a request to create a Source."
+          },
+          {
+            "type": "object",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The failure in English, for developers rather than users"
+              }
+            }
+          }
+        ],
+        "description": "The body of every error response: the error's `code` and details, and a message."
+      },
       "ErrorBody_DeleteInvitationRequestError": {
         "allOf": [
           {
@@ -2453,6 +3617,42 @@
               }
             ],
             "description": "The failures of a request to delete an Invitation."
+          },
+          {
+            "type": "object",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The failure in English, for developers rather than users"
+              }
+            }
+          }
+        ],
+        "description": "The body of every error response: the error's `code` and details, and a message."
+      },
+      "ErrorBody_DeleteSourceRequestError": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "not_found"
+                    ]
+                  }
+                }
+              }
+            ],
+            "description": "The failures of a request to delete a Source."
           },
           {
             "type": "object",
@@ -2729,6 +3929,92 @@
         ],
         "description": "The body of every error response: the error's `code` and details, and a message."
       },
+      "ErrorBody_UpdateSourceRequestError": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "error",
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "invalid_filesystem_configuration"
+                    ]
+                  },
+                  "error": {
+                    "$ref": "#/components/schemas/FolderError"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "error",
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "invalid_servarr_configuration"
+                    ]
+                  },
+                  "error": {
+                    "$ref": "#/components/schemas/ServarrConfigurationError"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "type_changed"
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "not_found"
+                    ]
+                  }
+                }
+              }
+            ],
+            "description": "The failures of a request to update a Source."
+          },
+          {
+            "type": "object",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The failure in English, for developers rather than users"
+              }
+            }
+          }
+        ],
+        "description": "The body of every error response: the error's `code` and details, and a message."
+      },
       "ExternalContentId": {
         "type": "object",
         "description": "An External Content ID as the API sends it: the Content's type, and its External ID at the\nMetadata Provider of its type, as text whatever the Metadata Provider.",
@@ -2745,6 +4031,39 @@
             "description": "The Content's ID at the Metadata Provider of its type, such as its TMDB ID"
           }
         }
+      },
+      "FolderError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "not_absolute"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "not_found"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "The reasons WatchClub can't read a folder."
       },
       "Genre": {
         "type": "string",
@@ -3079,6 +4398,15 @@
         "format": "uuid",
         "description": "The unique ID of a Media."
       },
+      "MediaType": {
+        "type": "string",
+        "description": "The kind of a Media, which tells the Content Type it belongs to.",
+        "enum": [
+          "movie",
+          "tv_show_episode",
+          "sports_event"
+        ]
+      },
       "NewInstanceAdministrator": {
         "type": "object",
         "description": "The Instance Administrator that Setup creates.",
@@ -3137,6 +4465,24 @@
           }
         ],
         "description": "Potential errors when parsing Passwords"
+      },
+      "QualityProfile": {
+        "type": "object",
+        "description": "A quality profile of an app: the quality it downloads requested Content in.",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The app's ID of the profile"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
       },
       "RedeemInvitationRequestError": {
         "oneOf": [
@@ -3297,6 +4643,428 @@
           "books"
         ]
       },
+      "ServarrApp": {
+        "type": "string",
+        "description": "One of the apps that a Source can be.",
+        "enum": [
+          "radarr",
+          "sonarr",
+          "sportarr"
+        ]
+      },
+      "ServarrConfiguration": {
+        "type": "object",
+        "description": "The Source Configuration the Instance Administrator enters for a Radarr, Sonarr or Sportarr\nSource.",
+        "required": [
+          "url",
+          "quality_profile_id",
+          "root_folder_path",
+          "local_root_folder_path"
+        ],
+        "properties": {
+          "api_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The app's API key. A new Source needs one; leaving it out keeps a Source's saved one"
+          },
+          "local_root_folder_path": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The root folder, as WatchClub sees it when that's another path, such as in Docker, or null"
+          },
+          "quality_profile_id": {
+            "type": "integer",
+            "format": "int32",
+            "description": "One of the app's quality profiles, which `POST /sources/check` lists"
+          },
+          "root_folder_path": {
+            "type": "string",
+            "description": "One of the app's root folders, which `POST /sources/check` lists"
+          },
+          "url": {
+            "type": "string",
+            "description": "The address WatchClub calls the app at"
+          }
+        }
+      },
+      "ServarrConfigurationError": {
+        "oneOf": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConnectionError",
+                "description": "The app's URL or API key"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "part"
+                ],
+                "properties": {
+                  "part": {
+                    "type": "string",
+                    "enum": [
+                      "connection"
+                    ]
+                  }
+                }
+              }
+            ],
+            "description": "The app's URL or API key"
+          },
+          {
+            "type": "object",
+            "description": "The app has no quality profile with the ID, such as one deleted in the app since the form\nlisted it",
+            "required": [
+              "part"
+            ],
+            "properties": {
+              "part": {
+                "type": "string",
+                "enum": [
+                  "quality_profile"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "The app has no root folder at the path, such as one deleted in the app since the form listed\nit",
+            "required": [
+              "part"
+            ],
+            "properties": {
+              "part": {
+                "type": "string",
+                "enum": [
+                  "root_folder"
+                ]
+              }
+            }
+          },
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FolderError"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "part"
+                ],
+                "properties": {
+                  "part": {
+                    "type": "string",
+                    "enum": [
+                      "local_root_folder"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "description": "The first error WatchClub found in the Source Configuration the Instance Administrator entered\nfor a Radarr, Sonarr or Sportarr Source: the part to change, and why."
+      },
+      "ServarrConnection": {
+        "type": "object",
+        "description": "A Radarr, Sonarr or Sportarr app to check, for a new Source.",
+        "required": [
+          "type",
+          "url",
+          "api_key"
+        ],
+        "properties": {
+          "api_key": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ServarrApp"
+          },
+          "url": {
+            "type": "string",
+            "description": "The address WatchClub calls the app at"
+          }
+        }
+      },
+      "ServarrSource": {
+        "type": "object",
+        "description": "A Radarr, Sonarr or Sportarr Source, with its Source Configuration.",
+        "required": [
+          "id",
+          "media_type",
+          "url",
+          "quality_profile",
+          "root_folder_path",
+          "local_root_folder_path"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/SourceId"
+          },
+          "local_root_folder_path": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The root folder, as WatchClub sees it when that's another path, such as in Docker"
+          },
+          "media_type": {
+            "$ref": "#/components/schemas/MediaType",
+            "description": "The Media Type of the files the app downloads"
+          },
+          "quality_profile": {
+            "$ref": "#/components/schemas/QualityProfile",
+            "description": "The quality the app downloads requested Content in"
+          },
+          "root_folder_path": {
+            "type": "string",
+            "description": "The folder the app downloads requested Content to, as the app sees it"
+          },
+          "url": {
+            "type": "string",
+            "description": "The address WatchClub calls the app at"
+          }
+        }
+      },
+      "Source": {
+        "oneOf": [
+          {
+            "type": "object",
+            "description": "A folder on the server, whose files and subfolders' files have the Media Type",
+            "required": [
+              "id",
+              "media_type",
+              "path",
+              "type"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/SourceId"
+              },
+              "media_type": {
+                "$ref": "#/components/schemas/MediaType"
+              },
+              "path": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "filesystem"
+                ]
+              }
+            }
+          },
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServarrSource"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "radarr"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServarrSource"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "sonarr"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServarrSource"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "sportarr"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "description": "A Source, with its Source Configuration, which depends on its type."
+      },
+      "SourceCheck": {
+        "type": "object",
+        "description": "The quality profiles and root folders of the app that a check called, which the Instance\nAdministrator chooses the Source's from.",
+        "required": [
+          "quality_profiles",
+          "root_folders"
+        ],
+        "properties": {
+          "quality_profiles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QualityProfile"
+            }
+          },
+          "root_folders": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The paths of its root folders, as it sees them, such as `/movies`"
+          }
+        }
+      },
+      "SourceConfiguration": {
+        "oneOf": [
+          {
+            "type": "object",
+            "description": "A folder on the server, whose files and subfolders' files have the Media Type",
+            "required": [
+              "media_type",
+              "path",
+              "type"
+            ],
+            "properties": {
+              "media_type": {
+                "$ref": "#/components/schemas/MediaType"
+              },
+              "path": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "filesystem"
+                ]
+              }
+            }
+          },
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServarrConfiguration"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "radarr"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServarrConfiguration"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "sonarr"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServarrConfiguration"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "sportarr"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "description": "The Source Configuration the Instance Administrator enters, which depends on the Source's type."
+      },
+      "SourceConnection": {
+        "type": "object",
+        "description": "The address of a Source's app to check, and the API key, unless it's the Source's saved one.",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "api_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Another API key, or none to use the Source's saved one"
+          },
+          "url": {
+            "type": "string",
+            "description": "The address WatchClub calls the app at"
+          }
+        }
+      },
+      "SourceId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "The unique ID of a Source."
+      },
       "TrackLanguage": {
         "type": "string",
         "description": "A language a User can choose for audio and subtitles, as its ISO 639-1 code.",
@@ -3338,6 +5106,75 @@
           }
         ],
         "description": "The failures of a request to change an Invitation."
+      },
+      "UpdateSourceRequestError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "error",
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_filesystem_configuration"
+                ]
+              },
+              "error": {
+                "$ref": "#/components/schemas/FolderError"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "error",
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_servarr_configuration"
+                ]
+              },
+              "error": {
+                "$ref": "#/components/schemas/ServarrConfigurationError"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "type_changed"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "not_found"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "The failures of a request to update a Source."
       },
       "User": {
         "type": "object",

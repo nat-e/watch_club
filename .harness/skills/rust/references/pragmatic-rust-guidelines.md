@@ -1,15 +1,6 @@
-<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT license. -->
-
 # Pragmatic Rust Guidelines
 
-This file contains all guidelines concatenated for easy reference.
-
----
-
-
 # AI Guidelines
-
-
 
 ## Design with AI use in mind (M-DESIGN-FOR-AI) { #M-DESIGN-FOR-AI }
 
@@ -23,8 +14,7 @@ counterbalanced by comprehensive compiler checks, which Rust provides in abundan
 
 With that said, there are a few guidelines which are particularly important to help make AI coding in Rust more effective:
 
-* **Create Idiomatic Rust API Patterns**. The more your APIs, whether public or internal, look and feel like the majority of
-Rust code in the world, the better it is for AI. Follow the [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/checklist.html)
+* **Create Idiomatic Rust API Patterns**. The more your APIs, whether public or internal, look and feel like the majority of Rust code in the world, the better it is for AI. Follow the [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/checklist.html)
 along with the guidelines from [Library / UX](../libs/ux).
 
 * **Provide Thorough Docs**. Agents love good detailed docs. Include docs for all of your modules and public items in your crate.
@@ -51,8 +41,6 @@ correctly.
 
 * **Ensure Test Coverage**. Your own code should have good test coverage over observable behavior.
 This enables agents to work in a mostly hands-off mode when refactoring.
-
-
 
 ## Avoid meta design documentation (M-NO-META-DESIGN-DOCUMENTATION) { #M-NO-META-DESIGN-DOCUMENTATION }
 

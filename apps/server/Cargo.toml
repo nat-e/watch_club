@@ -37,6 +37,7 @@ name = "seed"
 required-features = ["dev-seed"]
 
 [dependencies]
+aes-gcm = "0.11.1"
 anyhow = "1.0.104"
 axum = { version = "0.8.9", features = ["macros"] }
 axum-extra = { version = "0.12.6", features = ["cookie", "typed-header"] }
@@ -75,7 +76,7 @@ sqlx-otel = { version = "0.6.0", features = ["postgres", "runtime-tokio"] }
 thiserror = "2.0.21"
 # The `Duration` cookies take
 time = { version = "0.3.55", default-features = false }
-tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread", "sync", "net", "signal", "time"] }
+tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread", "sync", "net", "fs", "signal", "time"] }
 tokio-util = "0.7.20"
 # `catch-panic` answers a panicking handler with a 500, as any internal error
 tower-http = { version = "0.7.1", features = ["catch-panic", "trace"] }

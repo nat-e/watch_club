@@ -46,7 +46,8 @@ impl Tmdb {
             let found: MultiSearchPage = self
                 .api
                 .get("/search/multi", &[], &params)
-                .await?
+                .await
+                .map_err(anyhow::Error::from)?
                 .context("TMDB answered GET /search/multi with 404 Not Found")?;
 
             let next_page = found.next_page();

@@ -2,9 +2,9 @@
 
 Install [mise](https://mise.jdx.dev) and Docker, then run the app:
 
-1. Copy `.env.example` to `.env`, then install the tools and dependencies: `mise trust && mise install && pnpm install`
+1. Copy `.env.example` to `.env` and fill it in, then install the tools and dependencies: `mise trust && mise install && pnpm install`
 2. Start Postgres in Docker: `pnpm dev:shared`
-3. Create the database, and seed it with the `admin` user and the [dev catalog](#dev-catalog)'s Contents: `sqlx database setup --source apps/server/migrations && pnpm --filter server seed`
+3. Create the database, and seed it with the `admin` user and the [dev catalog](#dev-catalog)'s Contents, and its Sources when it runs: `sqlx database setup --source apps/server/migrations && pnpm --filter server seed`
 4. Run the server and the web app, and see them: `wt dev`. See [Dev processes](#dev-processes)
 
 Sign in as `admin`, with the password `passw0rd`.
@@ -41,4 +41,4 @@ The repo comes with an optional catalog of free-licensed clips to try the app wi
 
 The worktrees share the catalog, so a change made in one worktree shows in all of them. `pnpm catalog:reset` undoes every change.
 
-The three apps start from a snapshot, which for now comes from the Phoenix app's `mix dev.catalog.seed`. WatchClub's seed, `pnpm --filter server seed`, saves the catalog's Contents from TMDB and sportarr.net, until WatchClub imports its files.
+The three apps start from a snapshot, which for now comes from the Phoenix app's `mix dev.catalog.seed`. WatchClub's seed, `pnpm --filter server seed`, adds the three apps as Sources, and saves the catalog's Contents from TMDB and sportarr.net, until WatchClub imports its files.

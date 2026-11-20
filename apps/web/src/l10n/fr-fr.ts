@@ -46,9 +46,6 @@ export default {
   mediaBrowser: {
     title: 'Explorateur de médias',
   },
-  mediaSources: {
-    title: 'Sources de médias',
-  },
   newAccount: {
     choosePassword: 'Choisis un mot de passe',
     chooseUsername: "Choisis un nom d'utilisateur",
@@ -91,6 +88,117 @@ export default {
     description: 'La navigation principale et ton menu.',
     title: 'Barre latérale',
     toggle: 'Afficher ou masquer la barre latérale',
+  },
+  sources: {
+    actions: 'Actions pour {{source}}',
+    add: 'Ajouter une source {{type}}',
+    configured: 'Source configurée',
+    connectionErrors: {
+      invalidApiKey:
+        'Cette clé API ne fonctionne pas avec {{app}}. Tu trouveras la tienne dans {{app}}, sous Paramètres > Général.',
+      invalidServarrUrl: 'Impossible de se connecter à {{app}} à cette URL.',
+    },
+    delete: 'Supprimer…',
+    deleted: 'Source supprimée',
+    deleteDialog: {
+      confirm: 'Supprimer la source',
+      consequence:
+        'Ses médias seront aussi retirés de WatchClub. Leurs fichiers restent sur le disque.',
+      deleting: 'Suppression…',
+      intro: 'Cela supprimera cette source :',
+      title: 'Supprimer la source',
+    },
+    description:
+      "Les sources sont l'endroit où WatchClub trouve ses vidéos, et où il envoie les demandes de tes amis.",
+    edit: 'Modifier',
+    filesystemForm: {
+      create: 'Créer la source',
+      createDescription: "Choisis ce qu'il faut importer depuis ton système de fichiers.",
+      createTitle: 'Configurer la source',
+      directory: 'Dossier',
+      directoryHint:
+        'WatchClub cherche les fichiers de ce type dans le dossier et tous ses sous-dossiers.',
+      editTitle: 'Modifier la source',
+      enterPath: 'Saisis un chemin',
+      mediaType: 'Type de média',
+      mediaTypeLocked: 'Tu ne pourras plus changer le type de média ensuite.',
+      save: 'Enregistrer les modifications',
+    },
+    folderErrors: {
+      notAbsolute: 'Saisis le chemin complet du dossier, par exemple /media/movies.',
+      notFound: 'On ne trouve pas ce dossier sur le serveur de WatchClub. Vérifie le chemin.',
+    },
+    mediaTypes: {
+      movie: 'Film',
+      sportsEvent: 'Événement sportif',
+      tvShowEpisode: 'Épisode de série',
+    },
+    none: 'Aucune source {{type}} pour le moment',
+    qualityProfileErrors: {
+      noneInApp:
+        '{{app}} ne propose aucun profil de qualité. Ajoute-en un dans {{app}}, puis relance la connexion.',
+      notFound: '{{app}} ne propose plus ce profil de qualité. Choisis-en un autre.',
+    },
+    rootFolderErrors: {
+      noneInApp:
+        '{{app}} ne propose aucun dossier racine. Ajoute-en un dans {{app}}, puis relance la connexion.',
+      notFound: "{{app}} n'a plus ce dossier racine. Choisis-en un autre.",
+    },
+    servarrForm: {
+      add: 'Ajouter la source',
+      apiKey: 'Clé API',
+      apiKeyHint: 'Ta clé API {{app}}. Tu la trouveras dans {{app}}, sous Paramètres > Général.',
+      apiKeyKeepHint:
+        'Laisse ce champ vide pour garder la clé actuelle, ou saisis-en une nouvelle depuis Paramètres > Général dans {{app}}.',
+      configureDescription:
+        'Choisis le profil de qualité et le dossier racine que WatchClub utilise pour les demandes de tes amis.',
+      configureTitle: 'Configurer la source',
+      connect: 'Connecter',
+      connectDescription: 'Saisis les identifiants de connexion à ton serveur {{app}}.',
+      connecting: 'Connexion…',
+      connectTitle: 'Connecter le serveur {{app}}',
+      enterApiKey: 'Saisis la clé API',
+      enterUrl: "Saisis l'URL",
+      localRootFolder: 'Chemin dans WatchClub (facultatif)',
+      localRootFolderHint:
+        "WatchClub doit accéder à ce dossier pour lire ses fichiers. S'il le voit à un autre chemin, par exemple avec Docker, saisis ce chemin.",
+      qualityProfile: 'Profil de qualité',
+      qualityProfileHint: 'La qualité utilisée pour les demandes envoyées à cette source.',
+      rootFolder: 'Dossier racine',
+      rootFolderHint: "Là où vont les fichiers demandés, et d'où WatchClub les importe.",
+      save: 'Enregistrer les modifications',
+      url: 'URL de {{app}}',
+      urlHint: "L'adresse à laquelle WatchClub joint {{app}}.",
+    },
+    title: 'Sources',
+    types: {
+      filesystem: {
+        description:
+          "Importe des médias depuis un dossier de ton disque dur ou d'un système de fichiers distant.",
+        empty: 'Configure une source Système de fichiers pour chercher des médias dans un dossier.',
+        name: 'Système de fichiers',
+      },
+      radarr: {
+        description: 'Importe des films depuis Radarr et envoie-lui les demandes de films.',
+        empty:
+          'Connecte un serveur Radarr pour importer des films et traiter les demandes de films.',
+        name: 'Radarr',
+      },
+      sonarr: {
+        description: 'Importe des séries depuis Sonarr et envoie-lui les demandes de séries.',
+        empty:
+          'Connecte un serveur Sonarr pour importer des séries et traiter les demandes de séries.',
+        name: 'Sonarr',
+      },
+      sportarr: {
+        description:
+          "Importe des événements sportifs depuis Sportarr et envoie-lui les demandes d'événements sportifs.",
+        empty:
+          "Connecte un serveur Sportarr pour importer des événements sportifs et traiter les demandes d'événements sportifs.",
+        name: 'Sportarr',
+      },
+    },
+    updated: 'Source mise à jour',
   },
   toaster: {
     closeNotification: 'Fermer la notification',

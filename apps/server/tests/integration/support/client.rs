@@ -20,7 +20,7 @@ use watch_club::{
     domain::{accounts::CurrentUser, contents::MetadataProviders},
 };
 
-use super::{PASSWORD, unreachable_metadata_providers};
+use super::{PASSWORD, encryption_key, http_client, unreachable_metadata_providers};
 
 /// A browser or app calling the API. Like a browser, it keeps the cookies the API sets; like an
 /// app, it can send a session token instead. A clone sends the same cookies and token, as if
@@ -33,7 +33,7 @@ pub struct Client {
 }
 
 /// Returns the context of an app with the default settings, whose calls to the Metadata Providers
-/// fail.
+/// fail, and which encrypts with the tests' `ENCRYPTION_KEY`.
 fn default_context(db: &Pool) -> ApiContext {
     ApiContext {
         db: db.clone(),
@@ -44,6 +44,8 @@ fn default_context(db: &Pool) -> ApiContext {
             environment: "production".into(),
         },
         metadata_providers: unreachable_metadata_providers(),
+        encryption_key: encryption_key(),
+        http_client: http_client(),
     }
 }
 

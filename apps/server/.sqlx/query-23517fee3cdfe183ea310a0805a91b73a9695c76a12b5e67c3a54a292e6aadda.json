@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE sources\n                SET url = $2,\n                    api_key_encrypted = $3,\n                    quality_profile_id = $4,\n                    quality_profile_name = $5,\n                    root_folder_path = $6,\n                    local_root_folder_path = $7\n                WHERE id = $1\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Bytea",
+        "Int4",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "23517fee3cdfe183ea310a0805a91b73a9695c76a12b5e67c3a54a292e6aadda"
+}

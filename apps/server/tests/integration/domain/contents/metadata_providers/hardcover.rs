@@ -13,7 +13,7 @@ use wiremock::{
 };
 
 use crate::support::{
-    FakeHardcover,
+    self, FakeHardcover,
     fake_hardcover::{TOKEN, fixture},
 };
 
@@ -101,7 +101,12 @@ async fn search_signs_in_with_the_token_as_hardcover_shows_it() {
         .mount(&hardcover.server)
         .await;
     let token = SecretString::from(format!("Bearer {TOKEN}"));
-    let client = Hardcover::with_base_url(&token, &hardcover.server.uri()).unwrap();
+    let client = Hardcover::with_base_url(
+        &support::http_client(),
+        &token,
+        hardcover.server.uri().parse().unwrap(),
+    )
+    .unwrap();
 
     client.search("asterix", NonZeroU32::MIN).await.unwrap();
 }

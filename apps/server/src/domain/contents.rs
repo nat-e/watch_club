@@ -91,7 +91,8 @@ pub enum MetadataProvider {
 }
 
 /// The kind of a Media, which tells the Content Type it belongs to.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, sqlx::Type)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, sqlx::Type, ToSchema)]
+#[serde(rename_all = "snake_case")]
 #[sqlx(type_name = "media_type", rename_all = "snake_case")]
 pub enum MediaType {
     Movie,

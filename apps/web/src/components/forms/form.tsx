@@ -2,7 +2,7 @@
  * The web app's forms, built with TanStack Form, with the same components as the mobile app's.
  */
 import {createFormHook, type FieldWithValue, getFormHookHelpers} from '@tanstack/react-form';
-import type {ComponentProps} from 'react';
+import type {ComponentProps, ReactNode} from 'react';
 import {TextField} from '@/components/forms/text-field';
 import {Button} from '@/components/ui/button';
 import {FieldError} from '@/components/ui/field';
@@ -57,12 +57,23 @@ function FormError() {
   );
 }
 
-/** The button that submits the form, disabled while the form submits. */
-function SubmitButton(props: Omit<ComponentProps<typeof Button>, 'type' | 'disabled'>) {
+/**
+ * The button that submits the form, disabled while the form submits, when it shows `pending` instead
+ * of its label if given.
+ */
+function SubmitButton({
+  pending,
+  children,
+  ...props
+}: {pending?: ReactNode} & Omit<ComponentProps<typeof Button>, 'type' | 'disabled'>) {
   const form = useFormContext();
   return (
     <form.Subscribe selector={state => state.isSubmitting}>
-      {isSubmitting => <Button {...props} type="submit" disabled={isSubmitting} />}
+      {isSubmitting => (
+        <Button {...props} type="submit" disabled={isSubmitting}>
+          {isSubmitting && pending !== undefined ? pending : children}
+        </Button>
+      )}
     </form.Subscribe>
   );
 }

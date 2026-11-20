@@ -8,12 +8,13 @@ use std::{
 
 use anyhow::{Context, bail};
 use jiff::civil::Date;
+use reqwest::Url;
 use secrecy::{ExposeSecret, SecretString};
 use serde::{Deserialize, Deserializer, Serialize, de::DeserializeOwned};
 use serde_json::json;
 
 use crate::{
-    api_client::ApiClient,
+    api_client::{ApiClient, ApiCredentials, HttpClient, Retries},
     domain::{
         InternalError,
         contents::{
@@ -72,17 +73,25 @@ pub struct Hardcover {
 
 impl Hardcover {
     /// Returns Hardcover, signed in with `token`, the API token of the instance's Hardcover account.
-    pub fn new(token: &SecretString) -> anyhow::Result<Self> {
-        Self::with_base_url(token, BASE_URL)
+    pub fn new(http_client: &HttpClient, token: &SecretString) -> anyhow::Result<Self> {
+        let base_url = Url::parse(BASE_URL).expect("BASE_URL is a URL");
+        Self::with_base_url(http_client, token, base_url)
     }
 
     /// Returns a Hardcover at another address, such as a fake one in tests.
-    pub fn with_base_url(token: &SecretString, base_url: &str) -> anyhow::Result<Self> {
+    pub fn with_base_url(
+        http_client: &HttpClient,
+        token: &SecretString,
+        base_url: Url,
+    ) -> anyhow::Result<Self> {
         // Hardcover shows the token after `Bearer `, so hosts may copy both
         let token = token.expose_secret();
         let token = token.strip_prefix("Bearer ").unwrap_or(token).trim();
+        let credentials = ApiCredentials::bearer_token(&SecretString::from(token))
+            .context("Hardcover's API token is invalid")?;
+
         Ok(Self {
-            api: ApiClient::new(base_url, Some(&SecretString::from(token)))?,
+            api: ApiClient::new(http_client, base_url, credentials, Retries::Twice),
         })
     }
 
