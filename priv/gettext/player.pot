@@ -29,6 +29,7 @@ msgid "Back home"
 msgstr ""
 
 #: lib/watch_club_web/live/player/player_components.ex
+#: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Quality"
 msgstr ""
@@ -50,7 +51,7 @@ msgstr ""
 msgid "Skip recap"
 msgstr ""
 
-#: lib/watch_club_web/live/player/report_problem_live.ex
+#: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "Details (optional)"
 msgstr ""
@@ -70,18 +71,20 @@ msgstr ""
 msgid "Player not working"
 msgstr ""
 
+#: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #: lib/watch_club_web/live/player/player_components.ex
-#: lib/watch_club_web/live/player/report_problem_live.ex
+#: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Report a problem"
 msgstr ""
 
-#: lib/watch_club_web/live/player/report_problem_live.ex
+#: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "Send report"
 msgstr ""
 
 #: lib/watch_club_web/live/player/player_components.ex
+#: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr ""
@@ -91,12 +94,12 @@ msgstr ""
 msgid "Slow or buffering"
 msgstr ""
 
-#: lib/watch_club_web/live/player/report_problem_live.ex
+#: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "What happened?"
 msgstr ""
 
-#: lib/watch_club_web/live/player/report_problem_live.ex
+#: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "What's wrong?"
 msgstr ""
@@ -104,11 +107,6 @@ msgstr ""
 #: lib/watch_club_web/components/playbacks/problem_category.ex
 #, elixir-autogen, elixir-format
 msgid "Wrong video"
-msgstr ""
-
-#: lib/watch_club_web/live/remote_page.ex
-#, elixir-autogen, elixir-format
-msgid "Audio & subtitles"
 msgstr ""
 
 #: lib/watch_club_web/components/playbacks/tv_controls_live.ex
@@ -244,11 +242,6 @@ msgstr ""
 
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
-msgid "This video has no other audio or subtitles."
-msgstr ""
-
-#: lib/watch_club_web/live/remote_page.ex
-#, elixir-autogen, elixir-format
 msgid "Remote sections"
 msgstr ""
 
@@ -272,12 +265,13 @@ msgstr ""
 msgid "Report the problem so %{admin} can look into it."
 msgstr ""
 
-#: lib/watch_club_web/live/player/report_problem_live.ex
+#: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "Tell %{admin} what's wrong with this video."
 msgstr ""
 
 #: lib/watch_club_web/live/player_page.ex
+#: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Thanks! We sent your report to %{admin}."
 msgstr ""
@@ -305,4 +299,9 @@ msgstr ""
 #: lib/watch_club/playbacks/calculations/text_track_choices.ex
 #, elixir-autogen, elixir-format
 msgid "%{language} (forced)"
+msgstr ""
+
+#: lib/watch_club_web/live/remote_page.ex
+#, elixir-autogen, elixir-format
+msgid "Auto"
 msgstr ""

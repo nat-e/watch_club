@@ -1,14 +1,17 @@
 defmodule WatchClubWeb.RemotePage do
   @moduledoc """
   The Remote: controls the User's Playback Session while it plays on a TV, from any device.
-  Compact controls, then Up next and Audio & subtitles, as tabs on phones and side by side on
-  desktop. `WatchClubWeb.Hooks.PlaybackSession` keeps `@playback_session` up to date.
+  Compact controls, then Up next and Settings, the audio, subtitles and Quality, as tabs on phones
+  and side by side on desktop. `WatchClubWeb.Hooks.PlaybackSession` keeps `@playback_session` up
+  to date.
+
+  Its Problem Reports describe what the TV plays, and record the TV's browser.
   """
   use WatchClubWeb, :live_view
 
   import WatchClubWeb.Components.Contents.TmdbPoster
 
-  alias WatchClubWeb.Components.Playbacks.TvControlsLive
+  alias WatchClubWeb.Components.Playbacks.{ReportProblemLive, TvControlsLive}
 
   @impl true
   def render(assigns) do
@@ -112,17 +115,31 @@ defmodule WatchClubWeb.RemotePage do
               current_user={@current_user}
               layout="remote"
             />
-            <.button
-              id="remote-stop"
-              variant="secondary"
-              size="sm"
-              phx-click="stop_casting"
-              aria-label={dgettext("player", "Stop casting to %{tv}", tv: @playback_session.tv_name)}
-              class="self-center pointer-coarse:min-h-touch-target"
-            >
-              <:icon><Lucideicons.circle_stop /></:icon>
-              {dgettext("player", "Stop casting")}
-            </.button>
+            <div class="flex flex-wrap items-center justify-center gap-related">
+              <.button
+                id="remote-stop"
+                variant="secondary"
+                size="sm"
+                phx-click="stop_casting"
+                aria-label={
+                  dgettext("player", "Stop casting to %{tv}", tv: @playback_session.tv_name)
+                }
+                class="pointer-coarse:min-h-touch-target"
+              >
+                <:icon><Lucideicons.circle_stop /></:icon>
+                {dgettext("player", "Stop casting")}
+              </.button>
+              <.button
+                id="remote-report-problem"
+                variant="secondary"
+                size="sm"
+                phx-click="report_problem"
+                class="pointer-coarse:min-h-touch-target"
+              >
+                <:icon><Lucideicons.flag /></:icon>
+                {dgettext("player", "Report a problem")}
+              </.button>
+            </div>
           </section>
 
           <section
@@ -144,12 +161,12 @@ defmodule WatchClubWeb.RemotePage do
                 {dgettext("player", "Up next")}
               </.pill>
               <.pill
-                id="remote-tab-tracks"
-                current={@tab == "tracks"}
-                patch={~p"/remote?tab=tracks"}
+                id="remote-tab-settings"
+                current={@tab == "settings"}
+                patch={~p"/remote?tab=settings"}
                 replace
               >
-                {dgettext("player", "Audio & subtitles")}
+                {dgettext("player", "Settings")}
               </.pill>
             </nav>
             <.remote_section
@@ -192,14 +209,15 @@ defmodule WatchClubWeb.RemotePage do
               </ul>
             </.remote_section>
             <.remote_section
-              id="remote-tracks"
-              title={dgettext("player", "Audio & subtitles")}
-              class={@up_next != [] && @tab != "tracks" && "@max-3xl:hidden"}
+              id="remote-settings"
+              title={dgettext("player", "Settings")}
+              class={@up_next != [] && @tab != "settings" && "@max-3xl:hidden"}
               tabbed?={@up_next != []}
             >
+              <%!-- A single choice shows picked, so the User knows what plays --%>
               <div class="flex flex-col gap-cluster">
-                <.track_chips
-                  :if={length(@video.audio_tracks) > 1}
+                <.choice_chips
+                  :if={@video.audio_tracks != []}
                   id="remote-audio"
                   label={dgettext("player", "Audio")}
                   event="pick_audio"
@@ -207,8 +225,7 @@ defmodule WatchClubWeb.RemotePage do
                   choices={Enum.map(@video.audio_tracks, &{&1.id, &1.display_label})}
                   selected={@playback_session.current_playback.audio_track_id}
                 />
-                <.track_chips
-                  :if={@playback_session.current_playback.text_track_choices.choices != []}
+                <.choice_chips
                   id="remote-subtitles"
                   label={dgettext("player", "Subtitles")}
                   event="pick_subtitles"
@@ -222,30 +239,56 @@ defmodule WatchClubWeb.RemotePage do
                   ]}
                   selected={@playback_session.current_playback.text_track_id || "off"}
                 />
-                <p
-                  :if={
-                    length(@video.audio_tracks) < 2 and
-                      @playback_session.current_playback.text_track_choices.choices == []
+                <.choice_chips
+                  id="remote-quality"
+                  label={dgettext("player", "Quality")}
+                  event="pick_quality"
+                  choices={
+                    case Enum.map(
+                           @playback_session.current_playback.quality_choices.choices,
+                           &{&1.label, &1.label}
+                         ) do
+                      [only] -> [only]
+                      labels -> [{"auto", dgettext("player", "Auto")} | labels]
+                    end
                   }
-                  class="text-sm text-text-muted"
-                >
-                  {dgettext("player", "This video has no other audio or subtitles.")}
-                </p>
+                  selected={tv_quality(@playback_session.current_playback.quality_choices) || "auto"}
+                />
               </div>
             </.remote_section>
           </section>
         </div>
       </div>
     </Layouts.app>
+
+    <.live_component
+      :if={@problem_details}
+      module={ReportProblemLive}
+      id="report-problem"
+      details={@problem_details}
+      category={nil}
+      current_user={@current_user}
+      administrator={@administrator}
+      on_close={JS.push("close_problem_report")}
+    />
     """
   end
 
   @impl true
-  def mount(_params, _session, socket), do: {:ok, assign_up_next!(socket)}
+  def mount(_params, _session, socket) do
+    {:ok,
+     socket
+     |> assign_up_next!()
+     |> assign(
+       problem_details: nil,
+       administrator: Accounts.get_instance_administrator!(actor: socket.assigns.current_user)
+     )}
+  end
 
   @impl true
   def handle_params(params, _uri, socket) do
-    {:noreply, assign(socket, :tab, Url.parse_url_param(params["tab"], ~w(next tracks), "next"))}
+    {:noreply,
+     assign(socket, :tab, Url.parse_url_param(params["tab"], ~w(next settings), "next"))}
   end
 
   @impl true
@@ -274,6 +317,40 @@ defmodule WatchClubWeb.RemotePage do
     {:noreply, pick_tracks(socket, playback_id, playback.audio_track_id, text_track_id)}
   end
 
+  # Fails once the Playback Session ended, which its notification tells
+  def handle_event("pick_quality", %{"id" => quality}, socket) do
+    %{playback_session: session, current_user: user} = socket.assigns
+    quality = if quality == "auto", do: nil, else: quality
+
+    case Playbacks.pick_quality(session, quality, actor: user) do
+      {:ok, _session} ->
+        {:noreply, socket}
+
+      {:error, %Ash.Error.Invalid{errors: [%Ash.Error.Changes.StaleRecord{}]}} ->
+        {:noreply, socket}
+    end
+  end
+
+  # What the TV plays, as the Player sends what it shows
+  def handle_event("report_problem", _params, socket) do
+    %{playback_session: %{current_playback: playback} = session, video: video} = socket.assigns
+    audio_track = Enum.find(video.audio_tracks, &(&1.id == playback.audio_track_id))
+
+    details = %{
+      "playback_id" => playback.id,
+      "position_seconds" => NowPlaying.position_now(session),
+      "audio" => audio_track && audio_track.display_label,
+      "subtitles" => playback.text_track_choices.names[playback.text_track_id],
+      "quality" => tv_quality(playback.quality_choices) || dgettext("player", "Auto"),
+      "user_agent" => session.tv_user_agent
+    }
+
+    {:noreply, assign(socket, :problem_details, details)}
+  end
+
+  def handle_event("close_problem_report", _params, socket),
+    do: {:noreply, assign(socket, :problem_details, nil)}
+
   # Plays on the TV, even if it just left: it plays there once it's back
   def handle_event("play", %{"media_id" => media_id}, socket) do
     %{playback_session: session, current_user: user} = socket.assigns
@@ -287,6 +364,18 @@ defmodule WatchClubWeb.RemotePage do
       when action != :heartbeat,
       do: {:noreply, assign_up_next!(socket)}
 
+  def handle_info({ReportProblemLive, :reported}, socket) do
+    {:noreply,
+     socket
+     |> put_flash(
+       :info,
+       dgettext("player", "Thanks! We sent your report to %{admin}.",
+         admin: socket.assigns.administrator.username
+       )
+     )
+     |> assign(:problem_details, nil)}
+  end
+
   def handle_info(_message, socket), do: {:noreply, socket}
 
   # Fails for a Playback that's no longer current: the next one started meanwhile
@@ -298,6 +387,10 @@ defmodule WatchClubWeb.RemotePage do
       {:error, %Ash.Error.Invalid{errors: [%Ash.Error.Changes.StaleRecord{}]}} -> socket
     end
   end
+
+  # The label of the Quality the TV plays, nil for Auto, which a Video with a single one plays
+  defp tv_quality(%{choices: [only]}), do: only.label
+  defp tv_quality(%{picked: picked}), do: picked && picked.label
 
   # The playing Video and the Videos after it, a list intentionally small: at most 10
   defp assign_up_next!(%{assigns: %{playback_session: %Session{} = session}} = socket) do
@@ -335,12 +428,12 @@ defmodule WatchClubWeb.RemotePage do
   attr :id, :string, required: true
   attr :label, :string, required: true
   attr :event, :string, required: true
-  attr :playback_id, :string, required: true
-  attr :choices, :list, required: true, doc: "the id and the label of each track"
+  attr :playback_id, :string, default: nil, doc: "the Playback of the tracks"
+  attr :choices, :list, required: true, doc: "the id and the label of each choice"
   attr :selected, :string, default: nil
 
-  # Main's filter chips: one tap, the picked one in pink
-  defp track_chips(assigns) do
+  # Main's filter chips: one tap, the picked one in pink, which a tap leaves as it is
+  defp choice_chips(assigns) do
     ~H"""
     <div class="flex flex-col gap-related">
       <h3 id={"#{@id}-label"}><.text_label text={@label} /></h3>
@@ -350,7 +443,7 @@ defmodule WatchClubWeb.RemotePage do
           id={"#{@id}-#{id}"}
           on={id == @selected}
           radio
-          phx-click={@event}
+          phx-click={id != @selected && @event}
           phx-value-playback_id={@playback_id}
           phx-value-id={id}
         >

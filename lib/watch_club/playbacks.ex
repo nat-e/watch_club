@@ -16,7 +16,12 @@ defmodule WatchClub.Playbacks do
         action: :pick_tracks,
         args: [:playback_id, :audio_track_id, :text_track_id]
 
-      define :cast, action: :cast, args: [:screen_id, :tv_name, :from_screen_id]
+      define :pick_quality, action: :pick_quality, args: [:quality]
+
+      define :cast,
+        action: :cast,
+        args: [:screen_id, :tv_name, :from_screen_id, :tv_user_agent]
+
       define :leave_screen, action: :leave, args: [:screen_id]
       define :control_tv, action: :control, args: [:command]
       define :stop_casting, action: :end

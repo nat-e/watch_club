@@ -16,8 +16,11 @@ defmodule WatchClubWeb.Helpers.PlaybackPaths do
 
   @salt "playback"
 
-  def master_playlist(%Playback{id: id} = playback),
-    do: ~p"/player/hls/#{id}/master.m3u8?#{[token: token(playback)]}"
+  @doc "With the id of a Quality's variant, the master playlist lists only that Quality, as for a TV."
+  def master_playlist(%Playback{id: id} = playback, quality_id \\ nil) do
+    query = [token: token(playback)] ++ if(quality_id, do: [quality: quality_id], else: [])
+    ~p"/player/hls/#{id}/master.m3u8?#{query}"
+  end
 
   def subtitles(%Playback{id: id} = playback, %TextTrack{id: track_id}),
     do:

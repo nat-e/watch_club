@@ -22,6 +22,9 @@ const loadVideojs = (src) => {
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
+// The id of a Quality, which the master playlist puts in the path of its playlist
+const qualityId = (rendition) => rendition.src.match(/\/video\/([^/]+)\//)?.[1];
+
 // Limits how far ahead hls.js buffers, because the server transcodes segments on demand
 const hlsConfig = {
 	backBufferLength: 120,
@@ -82,6 +85,8 @@ const Player = {
 			(event) => {
 				if (event.target.matches("[data-subtitles-menu]"))
 					this.pickSubtitles(event.detail.value);
+				if (event.target.matches("media-quality-radio-group"))
+					this.reportQuality(event.detail.value);
 			},
 			{ signal: this.abortController.signal },
 		);
@@ -221,6 +226,7 @@ const Player = {
 			this.media.addEventListener(type, listener, { signal });
 
 		on("loadedmetadata", () => {
+			this.playQuality();
 			// The browser has picked subtitles on its own by now
 			this.showSubtitles();
 
@@ -285,6 +291,23 @@ const Player = {
 			"watch-club:player-muted",
 			String(this.media.muted),
 		);
+	},
+
+	// The Quality of the Playback Session, when the video has it, else Auto
+	playQuality() {
+		const renditions = this.media.videoRenditions;
+		const index = [...(renditions ?? [])].findIndex(
+			(rendition) => qualityId(rendition) === this.el.dataset.quality,
+		);
+		if (index !== -1) renditions.selectedIndex = index;
+	},
+
+	// The User picked a Quality, or Auto, in a quality menu: the next videos play it too
+	reportQuality(value) {
+		const rendition = this.media.videoRenditions.getRenditionById(value);
+		this.pushEvent("quality_picked", {
+			quality: rendition && qualityId(rendition),
+		});
 	},
 
 	// The subtitles menus offer the server's Text Track Choices, from their <template>, and Off.

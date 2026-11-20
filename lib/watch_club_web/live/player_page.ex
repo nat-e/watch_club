@@ -10,12 +10,13 @@ defmodule WatchClubWeb.PlayerPage do
 
   import WatchClubWeb.Live.Player.PlayerComponents
 
-  alias WatchClubWeb.Live.Player.ReportProblemLive
+  alias WatchClubWeb.Components.Playbacks.ReportProblemLive
   alias WatchClubWeb.TvSocket
 
   @playback_session_fields [
     current_playback: [
       :text_track_choices,
+      :quality_choices,
       media: [
         video: [
           :markers,
@@ -41,6 +42,10 @@ defmodule WatchClubWeb.PlayerPage do
         data-thumbnails-src={PlaybackPaths.thumbnails(@session.current_playback)}
         data-start-position={@start_at || @session.position_seconds}
         data-audio-track-id={@session.current_playback.audio_track_id}
+        data-quality={
+          @session.current_playback.quality_choices.picked &&
+            @session.current_playback.quality_choices.picked.id
+        }
         data-subtitles={subtitles(@session.current_playback)}
         data-cast-app-id={Application.fetch_env!(:watch_club, :cast_app_id)}
         data-cast-emulator={cast_emulator()}
@@ -215,6 +220,21 @@ defmodule WatchClubWeb.PlayerPage do
     case Playbacks.pick_tracks(socket.assigns.session, playback_id, audio_track_id, text_track_id,
            actor: socket.assigns.current_user
          ) do
+      {:ok, _session} ->
+        {:noreply, socket}
+
+      {:error, %Ash.Error.Invalid{errors: [%Ash.Error.Changes.StaleRecord{}]}} ->
+        {:noreply, socket}
+    end
+  end
+
+  # The Player names a Quality by the id in its playlist's path. Fails once the Playback Session
+  # ended, which its notification tells.
+  def handle_event("quality_picked", %{"quality" => quality_id}, socket) do
+    %{session: session, current_user: user} = socket.assigns
+    quality = Enum.find(session.current_playback.quality_choices.choices, &(&1.id == quality_id))
+
+    case Playbacks.pick_quality(session, quality && quality.label, actor: user) do
       {:ok, _session} ->
         {:noreply, socket}
 

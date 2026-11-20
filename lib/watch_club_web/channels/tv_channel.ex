@@ -20,11 +20,11 @@ defmodule WatchClubWeb.TvChannel do
 
   @impl true
   def join("tv", _params, socket) do
-    %{cast: cast, user: user} = socket.assigns
+    %{cast: cast, user: user, user_agent: user_agent} = socket.assigns
 
     with {:ok, before} <- Playbacks.get_session_by_id(cast.session_id, actor: user),
          {:ok, session} <-
-           Playbacks.cast(before, cast.screen_id, cast.tv_name, cast.from_screen_id,
+           Playbacks.cast(before, cast.screen_id, cast.tv_name, cast.from_screen_id, user_agent,
              load: NowPlaying.fields(),
              actor: user
            ) do
@@ -142,17 +142,19 @@ defmodule WatchClubWeb.TvChannel do
     end
   end
 
-  # What the TV plays. It finds the audio tracks by their order, which is the master playlist's,
-  # and loads the subtitles from their files. While no Text Track Choice is picked, it shows the
-  # Forced Text Track of the audio, if any.
+  # What the TV plays. Its master playlist lists only the Quality picked, if any: the TV plays it
+  # again from where it is when it changes. It finds the audio tracks by their order, which is the
+  # master playlist's, and loads the subtitles from their files. While no Text Track Choice is
+  # picked, it shows the Forced Text Track of the audio, if any.
   defp state(%Session{current_playback: %Playback{media: %{video: video}} = playback} = session) do
     choices = playback.text_track_choices
     forced = choices.forced[playback.audio_track_id]
+    quality = playback.quality_choices.picked
 
     %{
       playback: %{
         id: playback.id,
-        path: PlaybackPaths.master_playlist(playback),
+        path: PlaybackPaths.master_playlist(playback, quality && quality.id),
         title: NowPlaying.title(video),
         subtitle: NowPlaying.subtitle(video),
         image: image_url(NowPlaying.still_path(video)),

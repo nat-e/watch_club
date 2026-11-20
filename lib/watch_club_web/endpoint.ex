@@ -17,7 +17,9 @@ defmodule WatchClubWeb.Endpoint do
 
   # A TV playing a Playback Session. Its page comes from elsewhere and it connects with a
   # token rather than a cookie, so any origin can connect.
-  socket "/tv", WatchClubWeb.TvSocket, websocket: [check_origin: false], longpoll: false
+  socket "/tv", WatchClubWeb.TvSocket,
+    websocket: [check_origin: false, connect_info: [:user_agent]],
+    longpoll: false
 
   # Serve at "/" the static files from "priv/static" directory.
   #

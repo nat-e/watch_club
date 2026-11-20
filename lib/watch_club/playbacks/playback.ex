@@ -22,7 +22,7 @@ defmodule WatchClub.Playbacks.Playback do
   use Gettext, backend: WatchClubWeb.Gettext
 
   alias WatchClub.MediaCatalog.{AudioTrack, Media, TextTrack}
-  alias WatchClub.Playbacks.Calculations.TextTrackChoices
+  alias WatchClub.Playbacks.Calculations.{QualityChoices, TextTrackChoices}
   alias WatchClub.Playbacks.Playback.Changes.ChooseStartTracks
   alias WatchClub.Playbacks.Session
 
@@ -125,6 +125,12 @@ defmodule WatchClub.Playbacks.Playback do
     calculate :text_track_choices, :struct, TextTrackChoices do
       description "Its Text Track Choices, and the Forced Text Track that plays with each Audio Track while none is picked."
       constraints instance_of: TextTrackChoices
+      public? true
+    end
+
+    calculate :quality_choices, :struct, QualityChoices do
+      description "The Qualities of its Video, and the one it plays: its Playback Session's, or Auto when its Video has none with that label."
+      constraints instance_of: QualityChoices
       public? true
     end
   end

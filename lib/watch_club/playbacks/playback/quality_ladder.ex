@@ -8,6 +8,9 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
   its width, height, video bitrate, H.264 level, codecs, and the bandwidth values exposed in the
   master playlist. The codecs tell a Screen whether it can decode the rung.
 
+  A rung's label is the name of its Quality, as the Player's menu shows it, such as 1080p for a
+  1920×800 Original. A Playback Session's Quality matches it from one Video to the next.
+
   A copy's bandwidth values are the peak and average bit rates of its segments, as RFC 8216
   defines them, measured from the bytes of the file's video in each segment. Every rung's
   include the MPEG-TS overhead and the audio.
@@ -79,6 +82,9 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
     %{id: "360p", label: "360p", height: 360, video_bitrate: 800_000}
   ]
 
+  # The heights Video.js names a rendition wider than 16:9 by, from its width
+  @standard_heights [4320, 2160, 1440, 1080, 720, 480, 360, 240]
+
   # The peak and average bit rates of the audio segments, 160 kbit/s AAC in MPEG-TS, as measured
   @audio_peak_bit_rate 250_000
   @audio_average_bit_rate 245_000
@@ -91,15 +97,35 @@ defmodule WatchClub.Playbacks.Playback.QualityLadder do
   `start_time`, `end_time`, `duration` and `video_bytes`.
   """
   @spec build(Video.t(), [map()]) :: [Quality.t()]
-  def build(%Video{default_video_track: %VideoTrack{} = track} = video, segments) do
+  def build(%Video{default_video_track: %VideoTrack{} = track} = video, segments),
+    do: [original(video, segments) | Enum.map(encoded_rungs(track), &encoded(&1, track))]
+
+  @doc """
+  The id and the label of each rung, best first, without measuring its bit rates. Needs the
+  Video's `default_video_track` loaded.
+  """
+  @spec labels(Video.t()) :: [%{id: String.t(), label: String.t()}]
+  def labels(%Video{default_video_track: %VideoTrack{} = track}) do
     [
-      original(video, segments)
-      | for(rung <- @encoded_rungs, rung.height < track.height, do: encoded(rung, track))
+      %{id: "original", label: original_label(track)}
+      | Enum.map(encoded_rungs(track), &Map.take(&1, [:id, :label]))
     ]
   end
 
+  defp encoded_rungs(track), do: Enum.filter(@encoded_rungs, &(&1.height < track.height))
+
+  # Named as Video.js names it, by the standard height of its width when it's wider than 16:9: a
+  # 1920×800 Original is 1080p. Otherwise by its height, which is over every encoded rung's.
+  defp original_label(%VideoTrack{width: width, height: height}) do
+    widescreen_height = round(width * 9 / 16)
+
+    if width * 9 > height * 16 and widescreen_height in @standard_heights,
+      do: "#{widescreen_height}p",
+      else: "#{height}p"
+  end
+
   defp original(%Video{default_video_track: track} = video, segments) do
-    label = "Original (#{track.height}p)"
+    label = original_label(track)
 
     case track do
       %VideoTrack{codec: "h264", profile: profile, level: level}

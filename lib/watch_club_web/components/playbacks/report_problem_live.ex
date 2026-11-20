@@ -1,7 +1,7 @@
-defmodule WatchClubWeb.Live.Player.ReportProblemLive do
+defmodule WatchClubWeb.Components.Playbacks.ReportProblemLive do
   @moduledoc """
-  The form to Report a Problem, over the Player. Once the Problem Report is saved, it sends
-  `{ReportProblemLive, :reported}` to its LiveView.
+  The form to Report a Problem, over the Player or the Remote. Once the Problem Report is saved,
+  it sends `{ReportProblemLive, :reported}` to its LiveView.
   """
   use WatchClubWeb, :live_component
 
@@ -14,7 +14,7 @@ defmodule WatchClubWeb.Live.Player.ReportProblemLive do
   attr :details, :map,
     required: true,
     doc:
-      "`playback_id`, `user_agent` and what the Player showed, string-keyed, for the Problem Report"
+      "`playback_id`, `user_agent` and what the Screen showed, string-keyed, for the Problem Report"
 
   attr :category, :atom, default: nil, doc: "the category picked when the form opens"
   attr :current_user, User, required: true

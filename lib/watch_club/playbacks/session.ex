@@ -5,7 +5,8 @@ defmodule WatchClub.Playbacks.Session do
 
   It plays on one Screen at a time, a Player or a TV, which reports where it's at. A Screen is a
   live connection, never stored: `screen_id` only names the one holding the Playback Session, and
-  `tv_name` is set while it's a TV. A Screen that no longer holds it gets a stale record error.
+  `tv_name` and `tv_user_agent` are set while it's a TV. A Screen that no longer holds it gets a
+  stale record error.
 
   A Screen's reports name the Playback they're about, so a late one about an earlier Playback
   fails too.
@@ -123,12 +124,20 @@ defmodule WatchClub.Playbacks.Session do
       change Changes.PickTracks
     end
 
+    update :pick_quality do
+      description "Every Screen plays this Quality, or Auto when nil, from now on and in the next Playbacks. A Video without it plays Auto."
+
+      accept [:quality]
+      change filter(expr(is_nil(ended_at)))
+    end
+
     update :cast do
       description "The TV becomes the Screen, unless another Screen took the Playback Session since the Player cast it."
 
       argument :screen_id, :string, allow_nil?: false, description: "The TV"
       argument :tv_name, :string, allow_nil?: false
       argument :from_screen_id, :string, allow_nil?: false, description: "The Player that cast"
+      argument :tv_user_agent, :string, description: "The TV's browser"
 
       change filter(
                expr(
@@ -139,6 +148,7 @@ defmodule WatchClub.Playbacks.Session do
 
       change set_attribute(:screen_id, arg(:screen_id))
       change set_attribute(:tv_name, arg(:tv_name))
+      change set_attribute(:tv_user_agent, arg(:tv_user_agent))
       change set_attribute(:last_heartbeat_at, &DateTime.utc_now/0)
     end
 
@@ -150,6 +160,7 @@ defmodule WatchClub.Playbacks.Session do
       change filter(expr(is_nil(ended_at) and screen_id == ^arg(:screen_id)))
       change set_attribute(:screen_id, nil)
       change set_attribute(:tv_name, nil)
+      change set_attribute(:tv_user_agent, nil)
     end
 
     update :control do
@@ -305,6 +316,16 @@ defmodule WatchClub.Playbacks.Session do
 
     attribute :tv_name, :string do
       description "The TV it plays on, nil while it plays in a Player."
+      public? true
+    end
+
+    attribute :tv_user_agent, :string do
+      description "The browser of the TV it plays on, for the Problem Reports sent from the Remote."
+      public? true
+    end
+
+    attribute :quality, :string do
+      description "The label of the Quality its Screens play, such as 720p, or nil for Auto."
       public? true
     end
 
