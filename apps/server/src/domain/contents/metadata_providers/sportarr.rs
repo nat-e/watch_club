@@ -9,12 +9,11 @@ use std::{
     num::NonZeroU32,
 };
 
-use anyhow::Context;
 use jiff::civil::Date;
 use serde::{Deserialize, Deserializer};
 
 use crate::{
-    api_client::ApiClient,
+    api_client::{ApiClient, ApiCredentials, ApiUrl, HttpClient},
     domain::{
         InternalError,
         contents::{
@@ -65,15 +64,17 @@ pub struct Sportarr {
 }
 
 impl Sportarr {
-    pub fn new() -> anyhow::Result<Self> {
-        Self::with_base_url(BASE_URL)
+    /// Returns sportarr.net.
+    pub fn new(http_client: &HttpClient) -> Self {
+        let base_url = BASE_URL.parse().expect("BASE_URL is an API's URL");
+        Self::with_base_url(http_client, base_url)
     }
 
     /// Returns a sportarr.net at another address, such as a fake one in tests.
-    pub fn with_base_url(base_url: &str) -> anyhow::Result<Self> {
-        Ok(Self {
-            api: ApiClient::new(base_url, None)?,
-        })
+    pub fn with_base_url(http_client: &HttpClient, base_url: ApiUrl) -> Self {
+        Self {
+            api: ApiClient::new(http_client, base_url, ApiCredentials::anonymous()),
+        }
     }
 
     /// Returns the Sports Events whose title has the query's words in order, ignoring case and
@@ -92,9 +93,9 @@ impl Sportarr {
 
         let found: SearchEventsAnswer = self
             .api
-            .get("/search/event/{pattern}", &[&title_pattern(query)], &[])
-            .await?
-            .context("sportarr.net answered GET /search/event/{pattern} with 404 Not Found")?;
+            .get_required("/search/event/{pattern}", &[&title_pattern(query)], &[])
+            .await
+            .map_err(anyhow::Error::from)?;
 
         let results = found.data.search.into_iter().map(search_result).collect();
         Ok(SearchResults {
@@ -112,7 +113,8 @@ impl Sportarr {
         let found: LookUpEventAnswer = self
             .api
             .get("/lookup/event/{id}", &[&id.0], &[])
-            .await?
+            .await
+            .map_err(anyhow::Error::from)?
             .ok_or(LookUpError::NotFound)?;
         // sportarr.net answers an ID it doesn't know with no event, rather than with a 404
         let event = found.data.into_iter().next().ok_or(LookUpError::NotFound)?;

@@ -34,7 +34,7 @@ impl FakeSportarr {
 
     /// Returns a client of this sportarr.net.
     pub fn client(&self) -> Sportarr {
-        Sportarr::with_base_url(&self.server.uri()).unwrap()
+        Sportarr::with_base_url(&super::http_client(), self.server.uri().parse().unwrap())
     }
 
     /// Returns the Metadata Providers of an instance that finds Sports Events in this sportarr.net,
@@ -49,7 +49,7 @@ impl FakeSportarr {
 
 /// Returns a client of a sportarr.net that nothing answers, for the tests that don't call it.
 pub fn unreachable() -> Sportarr {
-    Sportarr::with_base_url("http://127.0.0.1:1").unwrap()
+    Sportarr::with_base_url(&super::http_client(), "http://127.0.0.1:1".parse().unwrap())
 }
 
 /// Returns a real answer of sportarr.net, from `fixtures/sportarr/{name}.json`.

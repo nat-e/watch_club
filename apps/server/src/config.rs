@@ -9,6 +9,8 @@ use secrecy::SecretString;
 use sentry::types::Dsn;
 use tracing_subscriber::EnvFilter;
 
+use crate::utils::encryption::EncryptionKey;
+
 /// The server's settings.
 #[derive(Debug)]
 pub struct Config {
@@ -22,6 +24,9 @@ pub struct Config {
     pub tmdb_api_token: SecretString,
     /// The API token the server calls Hardcover with, from `HARDCOVER_API_TOKEN`
     pub hardcover_api_token: SecretString,
+    /// The key the server encrypts the secrets it stores with, from `ENCRYPTION_KEY`: the one built
+    /// into WatchClub when it's unset
+    pub encryption_key: EncryptionKey,
     /// The settings of the server's logs, telemetry and error reports
     pub observability: ObservabilityConfig,
 }
@@ -94,6 +99,7 @@ impl Config {
             instance_name: instance_name()?,
             tmdb_api_token: required_var("TMDB_API_TOKEN")?.into(),
             hardcover_api_token: required_var("HARDCOVER_API_TOKEN")?.into(),
+            encryption_key: encryption_key()?,
             observability: ObservabilityConfig::from_env()?,
         })
     }
@@ -165,6 +171,15 @@ fn instance_name() -> anyhow::Result<String> {
 /// database, which shouldn't need the server's other settings.
 pub fn database_url() -> anyhow::Result<SecretString> {
     required_var("DATABASE_URL").map(SecretString::from)
+}
+
+/// Reads the key the server encrypts the secrets it stores with from `ENCRYPTION_KEY`, or returns
+/// the one built into WatchClub when it's unset.
+fn encryption_key() -> anyhow::Result<EncryptionKey> {
+    match optional_var("ENCRYPTION_KEY") {
+        Some(key) => EncryptionKey::from_base64(&key).context("ENCRYPTION_KEY isn't a key"),
+        None => Ok(EncryptionKey::built_in()),
+    }
 }
 
 /// Returns whether `OTEL_{signal}_EXPORTER` turns the signal on.

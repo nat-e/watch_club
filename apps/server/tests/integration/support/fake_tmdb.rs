@@ -71,7 +71,12 @@ impl FakeTmdb {
 
     /// Returns a client of this TMDB.
     pub fn client(&self) -> Tmdb {
-        Tmdb::with_base_url(&SecretString::from(TOKEN), &self.server.uri()).unwrap()
+        Tmdb::with_base_url(
+            &super::http_client(),
+            &SecretString::from(TOKEN),
+            self.server.uri().parse().unwrap(),
+        )
+        .unwrap()
     }
 
     /// Returns the Metadata Providers of an instance that finds Movies and TV Shows in this TMDB,
@@ -86,7 +91,12 @@ impl FakeTmdb {
 
 /// Returns a client of a TMDB that nothing answers, for the tests that don't call it.
 pub fn unreachable() -> Tmdb {
-    Tmdb::with_base_url(&SecretString::from(TOKEN), "http://127.0.0.1:1").unwrap()
+    Tmdb::with_base_url(
+        &super::http_client(),
+        &SecretString::from(TOKEN),
+        "http://127.0.0.1:1".parse().unwrap(),
+    )
+    .unwrap()
 }
 
 /// Returns a real answer of TMDB, from `fixtures/tmdb/{name}.json`.

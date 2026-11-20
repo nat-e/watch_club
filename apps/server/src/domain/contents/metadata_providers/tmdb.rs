@@ -15,12 +15,13 @@ use std::{
     str::FromStr,
 };
 
+use anyhow::Context;
 use jiff::civil::Date;
 use secrecy::SecretString;
 use serde::{Deserialize, Deserializer};
 
 use crate::{
-    api_client::ApiClient,
+    api_client::{ApiClient, ApiCredentials, ApiUrl, HttpClient},
     domain::contents::{Image, ImageSource},
 };
 
@@ -75,14 +76,21 @@ pub struct Tmdb {
 
 impl Tmdb {
     /// Returns TMDB, signed in with `token`, the instance's API Read Access Token.
-    pub fn new(token: &SecretString) -> anyhow::Result<Self> {
-        Self::with_base_url(token, BASE_URL)
+    pub fn new(http_client: &HttpClient, token: &SecretString) -> anyhow::Result<Self> {
+        let base_url = BASE_URL.parse().expect("BASE_URL is an API's URL");
+        Self::with_base_url(http_client, token, base_url)
     }
 
     /// Returns a TMDB at another address, such as a fake one in tests.
-    pub fn with_base_url(token: &SecretString, base_url: &str) -> anyhow::Result<Self> {
+    pub fn with_base_url(
+        http_client: &HttpClient,
+        token: &SecretString,
+        base_url: ApiUrl,
+    ) -> anyhow::Result<Self> {
+        let credentials = ApiCredentials::bearer_token(token)
+            .context("TMDB's API Read Access Token is invalid")?;
         Ok(Self {
-            api: ApiClient::new(base_url, Some(token))?,
+            api: ApiClient::new(http_client, base_url, credentials),
         })
     }
 }

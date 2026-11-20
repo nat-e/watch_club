@@ -8,6 +8,7 @@ mod instance;
 mod invitations;
 mod me;
 mod search;
+mod sources;
 mod users;
 
 use axum::{
@@ -37,6 +38,7 @@ pub(crate) fn routes() -> OpenApiRouter<ApiContext> {
         .merge(invitations::routes())
         .merge(search::routes())
         .merge(contents::routes())
+        .merge(sources::routes())
         // Unknown API paths aren't found, rather than showing the web app
         .fallback(StatusCode::NOT_FOUND);
     let app = OpenApiRouter::new()

@@ -59,8 +59,20 @@ fn fails_without_a_hardcover_token() {
 }
 
 #[test]
+fn fails_when_the_encryption_key_is_not_32_bytes_in_base64() {
+    let errors = startup_error_with(&[("ENCRYPTION_KEY", "c2hvcnQ=")]);
+
+    assert!(errors.contains("ENCRYPTION_KEY isn't a key"), "{errors}");
+    assert!(errors.contains("openssl rand -base64 32"), "{errors}");
+}
+
+#[test]
 fn starts_without_the_optional_settings() {
-    let errors = startup_error_with(&[("SENTRY_DSN", ""), ("OTEL_TRACES_EXPORTER", "")]);
+    let errors = startup_error_with(&[
+        ("SENTRY_DSN", ""),
+        ("OTEL_TRACES_EXPORTER", ""),
+        ("ENCRYPTION_KEY", ""),
+    ]);
 
     assert!(
         errors.contains("failed to connect to the database"),

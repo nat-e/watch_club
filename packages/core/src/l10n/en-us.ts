@@ -43,6 +43,7 @@ export default {
     tvShow: 'TV show',
   },
   controls: {
+    back: 'Back',
     cancel: 'Cancel',
     close: 'Close',
     tryAgain: 'Try again',

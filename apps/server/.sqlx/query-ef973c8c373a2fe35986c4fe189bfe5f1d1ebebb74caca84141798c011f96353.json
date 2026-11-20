@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE sources\n        SET path = $2\n        WHERE id = $1 AND source_type = 'filesystem'\n        RETURNING media_type\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "media_type",
+        "type_info": {
+          "Custom": {
+            "name": "media_type",
+            "kind": {
+              "Enum": [
+                "movie",
+                "tv_show_episode",
+                "sports_event"
+              ]
+            }
+          }
+        },
+        "origin": {
+          "Table": {
+            "table": "sources",
+            "name": "media_type"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "ef973c8c373a2fe35986c4fe189bfe5f1d1ebebb74caca84141798c011f96353"
+}

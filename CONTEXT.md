@@ -152,6 +152,32 @@ _Avoid_: Catalog, available content, server content
 The WatchClub interface where a **User** looks through the **Library**.
 _Avoid_: Discover
 
+### Media
+
+**Media**:
+A playable part of a **Content**, such as a **Movie**, a **TV Show Episode** or an audiobook.
+_Avoid_: Content, Media File, Media Version, media item
+
+**Media Type**:
+The kind of **Media**: movie, TV show episode or sports event. It decides the **Content Type** that the **Media** belongs to.
+_Avoid_: Content Type, file type
+
+**Media File**:
+A video, ebook or audiobook file that WatchClub imports from a **Source**, for everyone on the **Instance**.
+_Avoid_: Media, media item
+
+**Source**:
+Where WatchClub imports **Media Files** from: a folder on the server, or a Radarr, Sonarr or Sportarr app, which also downloads the **Content** WatchClub asks it for.
+_Avoid_: Media Source, media library, media provider, automation service
+
+**Source Type**:
+The kind of **Source**: Filesystem, Radarr, Sonarr or Sportarr.
+_Avoid_: Media Source Type, source kind, provider type
+
+**Source Configuration**:
+What the **Instance Administrator** sets up for a **Source**: its folder on the server, or its app's address, API key, download quality and download folder.
+_Avoid_: Source settings, source options
+
 ## Relationships
 
 ### Accounts
@@ -194,6 +220,12 @@ _Avoid_: Discover
 - A **Content** has a **Content Localization** in every **Locale**: each text in the Locale's language when its **Metadata Provider** has it, else in English, else in its original language
 - A **Media** can exist without a **Media File**, such as a **TV Show Episode** that isn't out yet
 - A **Book** has no **Media** yet
+
+### Media
+
+- Only the **Instance Administrator** manages **Sources**
+- A **Source** has exactly one **Source Type** and one **Media Type**, which never change. A Filesystem **Source**'s **Media Type** is the one it was created with; Radarr brings movies, Sonarr TV show episodes and Sportarr sports events
+- Deleting a **Source** removes its **Media Files** from WatchClub, but leaves them on disk
 
 ## Flagged ambiguities
 

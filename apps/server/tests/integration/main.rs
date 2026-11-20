@@ -1,9 +1,10 @@
-//! The server's tests, in one crate so they compile and link once: the domain through its public
-//! functions, the API through requests to the app's router, and the settings through the server's
-//! binary.
+//! The server's tests, in one crate so they compile and link once: the domain and the helpers
+//! through their public functions, the API through requests to the app's router, and the settings
+//! through the server's binary.
 
 #![expect(clippy::unwrap_used, reason = "a failed unwrap fails the test")]
 
+mod api_client;
 mod config;
 mod domain {
     mod accounts {
@@ -12,6 +13,7 @@ mod domain {
         mod user;
     }
     mod contents;
+    mod sources;
 }
 mod jobs;
 mod routes {
@@ -46,10 +48,21 @@ mod routes {
     mod search {
         mod get;
     }
+    mod sources {
+        mod create;
+        mod delete;
+        mod list;
+        mod test_servarr_connection;
+        mod update;
+    }
     mod users {
         mod delete;
         mod list;
     }
 }
 mod support;
+mod utils {
+    mod encryption;
+    mod filesystem;
+}
 mod web;

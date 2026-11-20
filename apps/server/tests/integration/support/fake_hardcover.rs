@@ -40,7 +40,12 @@ impl FakeHardcover {
 
     /// Returns a client of this Hardcover.
     pub fn client(&self) -> Hardcover {
-        Hardcover::with_base_url(&SecretString::from(TOKEN), &self.server.uri()).unwrap()
+        Hardcover::with_base_url(
+            &super::http_client(),
+            &SecretString::from(TOKEN),
+            self.server.uri().parse().unwrap(),
+        )
+        .unwrap()
     }
 
     /// Returns the Metadata Providers of an instance that finds Books in this Hardcover, and calls
@@ -55,7 +60,12 @@ impl FakeHardcover {
 
 /// Returns a client of a Hardcover that nothing answers, for the tests that don't call it.
 pub fn unreachable() -> Hardcover {
-    Hardcover::with_base_url(&SecretString::from(TOKEN), "http://127.0.0.1:1").unwrap()
+    Hardcover::with_base_url(
+        &super::http_client(),
+        &SecretString::from(TOKEN),
+        "http://127.0.0.1:1".parse().unwrap(),
+    )
+    .unwrap()
 }
 
 /// Returns a real answer of Hardcover, from `fixtures/hardcover/{name}.json`.

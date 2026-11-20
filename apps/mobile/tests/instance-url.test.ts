@@ -45,19 +45,19 @@ describe('checkInstance', () => {
   });
 
   it("rejects what isn't an address", async () => {
-    expect(await checkInstance('my watchclub')).toEqual({problem: 'invalidAddress'});
+    expect(await checkInstance('my watchclub')).toEqual({error: 'invalidAddress'});
   });
 
   it('rejects an address where no WatchClub answers', async () => {
     serve('https://watchclub.example.com', SET_UP);
-    expect(await checkInstance('other.example.com')).toEqual({problem: 'unreachable'});
+    expect(await checkInstance('other.example.com')).toEqual({error: 'unreachable'});
     serve('https://other.example.com', {name: 'another app'});
-    expect(await checkInstance('other.example.com')).toEqual({problem: 'unreachable'});
+    expect(await checkInstance('other.example.com')).toEqual({error: 'unreachable'});
   });
 
   it("rejects a WatchClub that isn't set up yet", async () => {
     // biome-ignore lint/style/useNamingConvention: the API uses snake_case field names
     serve('https://watchclub.example.com', {version: '1.0.0', needs_setup: true});
-    expect(await checkInstance('watchclub.example.com')).toEqual({problem: 'needsSetup'});
+    expect(await checkInstance('watchclub.example.com')).toEqual({error: 'needsSetup'});
   });
 });

@@ -6,10 +6,10 @@ import {getInstance, type Instance} from '@watchclub/api';
 const ADDRESS = /^(https?:\/\/)?([^\s/?#:]+(?::\d+)?)(\/[^\s?#]*)?$/i;
 
 /** The reason the app can't use the Instance at an address. */
-export type InstanceProblem = 'invalidAddress' | 'unreachable' | 'needsSetup';
+export type InstanceError = 'invalidAddress' | 'unreachable' | 'needsSetup';
 
 /** The base URL of the Instance at an address, or the reason the app can't use it. */
-type InstanceCheck = {url: string} | {problem: InstanceProblem};
+type InstanceCheck = {url: string} | {error: InstanceError};
 
 /**
  * Returns the base URL of the Instance at the address the User typed, such as
@@ -32,14 +32,14 @@ export function instanceUrl(address: string): string | null {
 export async function checkInstance(address: string): Promise<InstanceCheck> {
   const url = instanceUrl(address);
   if (url === null) {
-    return {problem: 'invalidAddress'};
+    return {error: 'invalidAddress'};
   }
   const {data} = await getInstance({baseUrl: url});
   // Nothing when the request fails, and something else when another app answers it
   if (!isInstance(data)) {
-    return {problem: 'unreachable'};
+    return {error: 'unreachable'};
   }
-  return data.needs_setup ? {problem: 'needsSetup'} : {url};
+  return data.needs_setup ? {error: 'needsSetup'} : {url};
 }
 
 function isInstance(data: unknown): data is Instance {

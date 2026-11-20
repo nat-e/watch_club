@@ -277,7 +277,7 @@ async fn search_stops_at_the_last_page_tmdb_serves() {
 }
 
 #[tokio::test]
-async fn search_fails_with_what_tmdb_says_went_wrong() {
+async fn search_fails_with_the_status_tmdb_answers() {
     let tmdb = FakeTmdb::start().await;
     Mock::given(method("GET"))
         .and(path("/search/multi"))
@@ -297,11 +297,7 @@ async fn search_fails_with_what_tmdb_says_went_wrong() {
 
     let error = format!("{error:#}");
     assert!(
-        error.starts_with("127.0.0.1 answered GET /search/multi with 401 Unauthorized: {"),
-        "{error}"
-    );
-    assert!(
-        error.contains("Invalid API key: You must be granted a valid key."),
+        error.starts_with("HTTP status client error (401 Unauthorized) for url"),
         "{error}"
     );
 }
@@ -317,41 +313,20 @@ async fn search_fails_when_tmdb_has_no_search() {
         .await
         .unwrap_err();
 
-    assert_eq!(
-        format!("{error:#}"),
-        "TMDB answered GET /search/multi with 404 Not Found"
+    let error = format!("{error:#}");
+    assert!(
+        error.starts_with("HTTP status client error (404 Not Found) for url"),
+        "{error}"
     );
 }
 
 #[tokio::test]
-async fn search_tries_again_when_tmdb_is_briefly_unavailable() {
+async fn search_fails_without_trying_again_when_tmdb_is_unavailable() {
     let tmdb = FakeTmdb::start().await;
     Mock::given(method("GET"))
         .and(path("/search/multi"))
         .respond_with(ResponseTemplate::new(503))
-        .up_to_n_times(1)
         .expect(1)
-        .with_priority(1)
-        .mount(&tmdb.server)
-        .await;
-    tmdb.answer("/search/multi", fixture("search_multi")).await;
-
-    let found = tmdb
-        .client()
-        .search("amelie", NonZeroU32::MIN, Locale::EnUs)
-        .await
-        .unwrap();
-
-    assert_eq!(found.results.len(), 5);
-}
-
-#[tokio::test]
-async fn search_gives_up_after_two_more_tries() {
-    let tmdb = FakeTmdb::start().await;
-    Mock::given(method("GET"))
-        .and(path("/search/multi"))
-        .respond_with(ResponseTemplate::new(503))
-        .expect(3)
         .mount(&tmdb.server)
         .await;
 
