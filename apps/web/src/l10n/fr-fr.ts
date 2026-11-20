@@ -93,6 +93,7 @@ export default {
     toggle: 'Afficher ou masquer la barre latérale',
   },
   toaster: {
+    closeNotification: 'Fermer la notification',
     notifications: 'Notifications',
   },
   users: {

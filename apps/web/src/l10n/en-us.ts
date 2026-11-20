@@ -93,6 +93,7 @@ export default {
     toggle: 'Show or hide the sidebar',
   },
   toaster: {
+    closeNotification: 'Close notification',
     notifications: 'Notifications',
   },
   users: {

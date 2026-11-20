@@ -27,7 +27,7 @@ export function DeleteDialog({
 }: {
   /** The dialog's title, which its button repeats, such as "Delete user" */
   title: string;
-  /** What deleting does, before the User confirms */
+  /** The consequences of deleting, which the User reads before confirming */
   description: string;
   /** The toast once deleted, such as "User deleted" */
   deletedMessage: string;
