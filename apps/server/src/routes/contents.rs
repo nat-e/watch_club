@@ -95,9 +95,10 @@ enum GetContentRequestError {
 
 impl IntoResponse for GetContentRequestError {
     fn into_response(self) -> Response {
-        match self {
-            Self::NotFound => error::response(StatusCode::NOT_FOUND, &self),
-            Self::Internal(error) => ApiError::from(error).into_response(),
-        }
+        let status = match self {
+            Self::NotFound => StatusCode::NOT_FOUND,
+            Self::Internal(error) => return ApiError::from(error).into_response(),
+        };
+        error::response(status, &self)
     }
 }

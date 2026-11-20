@@ -126,12 +126,11 @@ impl From<ChangePasswordError> for ChangePasswordRequestError {
 
 impl IntoResponse for ChangePasswordRequestError {
     fn into_response(self) -> Response {
-        match self {
-            Self::WrongPassword | Self::InvalidPassword { .. } => {
-                error::response(StatusCode::UNPROCESSABLE_ENTITY, &self)
-            }
-            Self::Internal(error) => ApiError::from(error).into_response(),
-        }
+        let status = match self {
+            Self::WrongPassword | Self::InvalidPassword { .. } => StatusCode::UNPROCESSABLE_ENTITY,
+            Self::Internal(error) => return ApiError::from(error).into_response(),
+        };
+        error::response(status, &self)
     }
 }
 

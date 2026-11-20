@@ -112,11 +112,12 @@ impl From<ResetPasswordError> for ResetPasswordRequestError {
 
 impl IntoResponse for ResetPasswordRequestError {
     fn into_response(self) -> Response {
-        match self {
+        let status = match self {
             Self::InvalidPassword { .. } | Self::LinkNoLongerWorks => {
-                error::response(StatusCode::UNPROCESSABLE_ENTITY, &self)
+                StatusCode::UNPROCESSABLE_ENTITY
             }
-            Self::Internal(error) => ApiError::from(error).into_response(),
-        }
+            Self::Internal(error) => return ApiError::from(error).into_response(),
+        };
+        error::response(status, &self)
     }
 }

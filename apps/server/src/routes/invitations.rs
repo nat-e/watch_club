@@ -184,10 +184,11 @@ impl From<DeleteInvitationError> for DeleteInvitationRequestError {
 
 impl IntoResponse for DeleteInvitationRequestError {
     fn into_response(self) -> Response {
-        match self {
-            Self::NotFound => error::response(StatusCode::NOT_FOUND, &self),
-            Self::Internal(error) => ApiError::from(error).into_response(),
-        }
+        let status = match self {
+            Self::NotFound => StatusCode::NOT_FOUND,
+            Self::Internal(error) => return ApiError::from(error).into_response(),
+        };
+        error::response(status, &self)
     }
 }
 
@@ -299,14 +300,13 @@ impl From<RedeemInvitationError> for RedeemInvitationRequestError {
 
 impl IntoResponse for RedeemInvitationRequestError {
     fn into_response(self) -> Response {
-        match self {
+        let status = match self {
             Self::InvalidUsername { .. }
             | Self::InvalidPassword { .. }
             | Self::UsernameTaken
-            | Self::InvitationNotRedeemable => {
-                error::response(StatusCode::UNPROCESSABLE_ENTITY, &self)
-            }
-            Self::Internal(error) => ApiError::from(error).into_response(),
-        }
+            | Self::InvitationNotRedeemable => StatusCode::UNPROCESSABLE_ENTITY,
+            Self::Internal(error) => return ApiError::from(error).into_response(),
+        };
+        error::response(status, &self)
     }
 }

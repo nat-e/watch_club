@@ -516,11 +516,12 @@ enum TestSavedSourceServarrConnectionRequestError {
 
 impl IntoResponse for TestSavedSourceServarrConnectionRequestError {
     fn into_response(self) -> Response {
-        match self {
-            Self::NotFound => error::response(StatusCode::NOT_FOUND, &self),
-            Self::Connection(error) => error.into_response(),
-            Self::Internal(error) => ApiError::from(error).into_response(),
-        }
+        let status = match self {
+            Self::NotFound => StatusCode::NOT_FOUND,
+            Self::Connection(error) => return error.into_response(),
+            Self::Internal(error) => return ApiError::from(error).into_response(),
+        };
+        error::response(status, &self)
     }
 }
 
@@ -557,13 +558,12 @@ enum CreateSourceRequestError {
 
 impl IntoResponse for CreateSourceRequestError {
     fn into_response(self) -> Response {
-        match self {
+        let status = match self {
             Self::InvalidFilesystemConfiguration { .. }
-            | Self::InvalidServarrConfiguration { .. } => {
-                error::response(StatusCode::UNPROCESSABLE_ENTITY, &self)
-            }
-            Self::Internal(error) => ApiError::from(error).into_response(),
-        }
+            | Self::InvalidServarrConfiguration { .. } => StatusCode::UNPROCESSABLE_ENTITY,
+            Self::Internal(error) => return ApiError::from(error).into_response(),
+        };
+        error::response(status, &self)
     }
 }
 
@@ -634,9 +634,10 @@ impl From<DeleteSourceError> for DeleteSourceRequestError {
 
 impl IntoResponse for DeleteSourceRequestError {
     fn into_response(self) -> Response {
-        match self {
-            Self::NotFound => error::response(StatusCode::NOT_FOUND, &self),
-            Self::Internal(error) => ApiError::from(error).into_response(),
-        }
+        let status = match self {
+            Self::NotFound => StatusCode::NOT_FOUND,
+            Self::Internal(error) => return ApiError::from(error).into_response(),
+        };
+        error::response(status, &self)
     }
 }
