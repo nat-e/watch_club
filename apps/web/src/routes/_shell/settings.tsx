@@ -2,6 +2,10 @@ import {useMutation} from '@tanstack/react-query';
 import {createFileRoute} from '@tanstack/react-router';
 import {useCurrentUser} from '@watchclub/core/accounts/current-user';
 import {
+  PASSWORD_MIN_LENGTH,
+  useChangePasswordFormOptions,
+} from '@watchclub/core/accounts/passwords';
+import {
   savePreferencesMutation,
   useTrackLanguageOptions,
 } from '@watchclub/core/accounts/preferences';
@@ -17,7 +21,7 @@ import {SelectField} from '@/components/forms/select-field';
 import {Page} from '@/components/layouts/page';
 import {Card, CardContent, CardDescription, CardHeader} from '@/components/ui/card';
 
-/** Settings, where Users choose their User Preferences. */
+/** Settings, where Users choose their User Preferences and change their password. */
 export const Route = createFileRoute('/_shell/settings')({component: Settings});
 
 function Settings() {
@@ -29,6 +33,7 @@ function Settings() {
       </p>
       <LanguageSection />
       <AudioAndSubtitlesSection />
+      <SecuritySection />
       <AboutSection />
     </Page>
   );
@@ -151,6 +156,63 @@ function AudioAndSubtitlesSection() {
           <form.FormError />
           <form.SubmitButton className="w-full sm:w-auto">
             {t($ => $.core.settings.save)}
+          </form.SubmitButton>
+        </form.Form>
+      </form.AppForm>
+    </SettingsSection>
+  );
+}
+
+/** The User's password, which they change with their current one. */
+function SecuritySection() {
+  const {t} = useTranslation('core');
+  const user = useCurrentUser();
+  const form = useAppForm(
+    useChangePasswordFormOptions(() => {
+      toast.success(t($ => $.core.settings.passwordUpdated));
+    }),
+  );
+
+  return (
+    <SettingsSection
+      title={t($ => $.core.settings.security)}
+      description={t($ => $.core.settings.securityDescription)}
+    >
+      <form.AppForm>
+        <form.Form className="flex flex-col items-start gap-6 sm:max-w-sm">
+          {/* For password managers, which save the new password under the username */}
+          <input type="text" autoComplete="username" value={user.username} readOnly hidden />
+          <form.Field name="currentPassword">
+            {field => (
+              <field.TextField
+                label={t($ => $.core.password.currentPassword)}
+                type="password"
+                autoComplete="current-password"
+              />
+            )}
+          </form.Field>
+          <form.Field name="newPassword">
+            {field => (
+              <field.TextField
+                label={t($ => $.core.password.newPassword)}
+                hint={t($ => $.core.password.hint, {min: PASSWORD_MIN_LENGTH})}
+                type="password"
+                autoComplete="new-password"
+              />
+            )}
+          </form.Field>
+          <form.Field name="passwordConfirmation">
+            {field => (
+              <field.TextField
+                label={t($ => $.core.password.confirmPassword)}
+                type="password"
+                autoComplete="new-password"
+              />
+            )}
+          </form.Field>
+          <form.FormError />
+          <form.SubmitButton className="w-full sm:w-auto">
+            {t($ => $.core.settings.updatePassword)}
           </form.SubmitButton>
         </form.Form>
       </form.AppForm>

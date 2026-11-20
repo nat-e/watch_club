@@ -5,10 +5,12 @@ export default {
   contents: {
     back: 'Back',
   },
+  copyLink: {
+    failed: "We couldn't copy the link. Select it below to copy it yourself.",
+  },
   invitations: {
     actions: 'Invitation actions',
     active: 'Active invitations',
-    copyFailed: "We couldn't copy the link. Select it below to copy it yourself.",
     copyLink: 'Copy invitation link',
     create: 'Create',
     created: 'Invitation created',
@@ -50,12 +52,7 @@ export default {
     title: 'Media sources',
   },
   newAccount: {
-    choosePassword: 'Choose a password',
     chooseUsername: 'Choose a username',
-    confirmPassword: 'Confirm password',
-    passwordHint: 'At least {{min}} characters.',
-    passwordsDiffer: 'Passwords do not match',
-    passwordTooShort: 'Password must be at least {{min}} characters',
     submit: 'Create account',
     usernameCharacters: 'Use only lowercase letters, numbers and _',
     usernameHint: 'Your friends will see it. Use lowercase letters, numbers and _.',
@@ -65,6 +62,14 @@ export default {
   },
   problemReports: {
     title: 'Problem reports',
+  },
+  resetPassword: {
+    askForNewLink: 'Reset links expire after 3 days. Ask the administrator for a new one.',
+    backToSignIn: 'Back to sign in',
+    noLongerWorks: 'This link no longer works',
+    saved: 'New password saved.',
+    submit: 'Save password',
+    title: 'Choose a new password',
   },
   search: {
     closeSearch: 'Close search',
@@ -104,6 +109,8 @@ export default {
     deleteUser: 'Delete user',
     description: 'Invite friends to {{name}} and manage who has access.',
     memberSince: 'Member since',
+    resetLinkCopied: 'Reset link copied. Send it to {{username}}: it works for 3 days.',
+    resetPassword: 'Reset password',
     title: 'Users',
     user: 'User',
     userDeleted: 'User deleted',

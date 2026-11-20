@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {Empty, EmptyHeader, EmptyMedia, EmptyTitle} from '@/components/ui/empty';
 import {Progress} from '@/components/ui/progress';
+import {useCopyLink} from '@/lib/copy-link';
 
 /** The time the copy button shows that it copied the link */
 const COPIED_DURATION_MS = 3000;
@@ -192,26 +193,15 @@ function InvitationCard({invitation}: {invitation: Invitation}) {
 function CopyLinkButton({code}: {code: string}) {
   const {t} = useTranslation('web');
   const router = useRouter();
+  const copyLink = useCopyLink();
   const [isCopied, setIsCopied] = useState(false);
 
-  async function copyLink() {
+  async function copyInvitationLink() {
     // Through the router, which quotes a code it would read back as a number, such as one of only
     // digits
     const {href} = router.buildLocation({to: '/join', search: {code}});
-    const link = new URL(href, window.location.origin).href;
-    try {
-      await navigator.clipboard.writeText(link);
-    } catch {
-      // Such as on an address without HTTPS, where browsers don't let pages copy. The User can
-      // still copy the link from the toast
-      toast.error(
-        t($ => $.web.invitations.copyFailed),
-        {
-          description: link,
-          duration: Number.POSITIVE_INFINITY,
-          closeButton: true,
-        },
-      );
+    const wasCopied = await copyLink(new URL(href, window.location.origin).href);
+    if (!wasCopied) {
       return;
     }
     toast.success(t($ => $.web.invitations.linkCopied));
@@ -227,7 +217,7 @@ function CopyLinkButton({code}: {code: string}) {
       size="icon-sm"
       aria-label={t($ => $.web.invitations.copyLink)}
       onClick={() => {
-        void copyLink();
+        void copyInvitationLink();
       }}
     >
       {isCopied ? <CheckIcon className="text-success" /> : <CopyIcon />}

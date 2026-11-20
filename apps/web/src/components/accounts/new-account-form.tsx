@@ -1,9 +1,7 @@
 import type {PasswordProblem, UsernameProblem} from '@watchclub/api';
+import {PASSWORD_MIN_LENGTH, usePasswordProblemMessage} from '@watchclub/core/accounts/passwords';
 import {useTranslation} from 'react-i18next';
 import {useAppForm} from '@/components/forms/form';
-
-/** The fewest characters a password has, which its hint says */
-const PASSWORD_MIN_LENGTH = 8;
 
 /** The username and password of a new account. */
 export interface NewAccount {
@@ -29,6 +27,7 @@ export function NewAccountForm({
   createAccount: (account: NewAccount) => Promise<NewAccountProblem | null>;
 }) {
   const {t} = useTranslation(['web', 'core']);
+  const passwordProblemMessage = usePasswordProblemMessage();
 
   function usernameMessage(problem: UsernameProblem): string {
     switch (problem.code) {
@@ -43,15 +42,6 @@ export function NewAccountForm({
     }
   }
 
-  function passwordMessage(problem: PasswordProblem): string {
-    switch (problem.code) {
-      case 'missing':
-        return t($ => $.web.newAccount.choosePassword);
-      case 'too_short':
-        return t($ => $.web.newAccount.passwordTooShort, {min: problem.min});
-    }
-  }
-
   const form = useAppForm({
     defaultValues: {username: '', password: '', passwordConfirmation: ''},
     validators: [
@@ -61,7 +51,7 @@ export function NewAccountForm({
         run: ({value, createErrorMap}) => {
           const errors = createErrorMap();
           if (value.passwordConfirmation !== value.password) {
-            errors.fields.passwordConfirmation = t($ => $.web.newAccount.passwordsDiffer);
+            errors.fields.passwordConfirmation = t($ => $.core.password.passwordsDiffer);
           }
           return errors;
         },
@@ -81,7 +71,9 @@ export function NewAccountForm({
         case 'invalid_username':
           return createValidationError({fields: {username: usernameMessage(problem.reason)}});
         case 'invalid_password':
-          return createValidationError({fields: {password: passwordMessage(problem.reason)}});
+          return createValidationError({
+            fields: {password: passwordProblemMessage(problem.reason)},
+          });
         case 'username_taken':
           return createValidationError({
             fields: {username: t($ => $.web.newAccount.usernameTaken)},
@@ -107,7 +99,7 @@ export function NewAccountForm({
           {field => (
             <field.TextField
               label={t($ => $.core.user.password)}
-              hint={t($ => $.web.newAccount.passwordHint, {min: PASSWORD_MIN_LENGTH})}
+              hint={t($ => $.core.password.hint, {min: PASSWORD_MIN_LENGTH})}
               type="password"
               autoComplete="new-password"
             />
@@ -116,7 +108,7 @@ export function NewAccountForm({
         <form.Field name="passwordConfirmation">
           {field => (
             <field.TextField
-              label={t($ => $.web.newAccount.confirmPassword)}
+              label={t($ => $.core.password.confirmPassword)}
               type="password"
               autoComplete="new-password"
             />

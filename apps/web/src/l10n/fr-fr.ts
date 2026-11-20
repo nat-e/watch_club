@@ -5,10 +5,12 @@ export default {
   contents: {
     back: 'Retour',
   },
+  copyLink: {
+    failed: "On n'a pas pu copier le lien. Sélectionne-le ci-dessous pour le copier toi-même.",
+  },
   invitations: {
     actions: "Actions de l'invitation",
     active: 'Invitations actives',
-    copyFailed: "On n'a pas pu copier le lien. Sélectionne-le ci-dessous pour le copier toi-même.",
     copyLink: "Copier le lien d'invitation",
     create: 'Créer',
     created: 'Invitation créée',
@@ -50,12 +52,7 @@ export default {
     title: 'Sources de médias',
   },
   newAccount: {
-    choosePassword: 'Choisis un mot de passe',
     chooseUsername: "Choisis un nom d'utilisateur",
-    confirmPassword: 'Confirmer le mot de passe',
-    passwordHint: 'Au moins {{min}} caractères.',
-    passwordsDiffer: 'Les mots de passe ne correspondent pas',
-    passwordTooShort: 'Le mot de passe doit contenir au moins {{min}} caractères',
     submit: 'Créer un compte',
     usernameCharacters: 'Utilise seulement des lettres minuscules, des chiffres et _',
     usernameHint: 'Tes amis le verront. Utilise des lettres minuscules, des chiffres et _.',
@@ -65,6 +62,15 @@ export default {
   },
   problemReports: {
     title: 'Signalements',
+  },
+  resetPassword: {
+    askForNewLink:
+      "Les liens de réinitialisation expirent au bout de 3 jours. Demande un nouveau lien à l'administrateur.",
+    backToSignIn: 'Retour à la connexion',
+    noLongerWorks: 'Ce lien ne marche plus',
+    saved: 'Nouveau mot de passe enregistré.',
+    submit: 'Enregistrer le mot de passe',
+    title: 'Choisis un nouveau mot de passe',
   },
   search: {
     closeSearch: 'Fermer la recherche',
@@ -104,6 +110,9 @@ export default {
     deleteUser: "Supprimer l'utilisateur",
     description: 'Invite tes amis sur {{name}} et gère qui y a accès.',
     memberSince: 'Membre depuis',
+    resetLinkCopied:
+      'Lien de réinitialisation copié. Envoie-le à {{username}} : il est valable 3 jours.',
+    resetPassword: 'Réinitialiser le mot de passe',
     title: 'Utilisateurs',
     user: 'Utilisateur',
     userDeleted: 'Utilisateur supprimé',
