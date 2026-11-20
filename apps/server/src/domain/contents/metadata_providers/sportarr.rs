@@ -9,7 +9,6 @@ use std::{
     num::NonZeroU32,
 };
 
-use anyhow::Context;
 use jiff::civil::Date;
 use serde::{Deserialize, Deserializer};
 
@@ -94,10 +93,9 @@ impl Sportarr {
 
         let found: SearchEventsAnswer = self
             .api
-            .get("/search/event/{pattern}", &[&title_pattern(query)], &[])
+            .get_required("/search/event/{pattern}", &[&title_pattern(query)], &[])
             .await
-            .map_err(anyhow::Error::from)?
-            .context("sportarr.net answered GET /search/event/{pattern} with 404 Not Found")?;
+            .map_err(anyhow::Error::from)?;
 
         let results = found.data.search.into_iter().map(search_result).collect();
         Ok(SearchResults {

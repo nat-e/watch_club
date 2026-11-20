@@ -9,7 +9,7 @@ mod catalog;
 use std::{path::PathBuf, process::Command};
 
 use anyhow::Context;
-use secrecy::ExposeSecret;
+use secrecy::{ExposeSecret, SecretString};
 use watch_club::{
     api_client::HttpClient,
     config::Config,
@@ -105,12 +105,11 @@ async fn seed_catalog_sources(
         }
 
         // Tests the connection first, as the form does, which also skips the apps that don't run
-        let api_key = config.encryption_key.encrypt(&source.api_key.into());
+        let api_key = SecretString::from(source.api_key);
         let choices = match sources::test_servarr_connection(
             source.app,
             source.url,
             &api_key,
-            &config.encryption_key,
             http_client,
         )
         .await
@@ -152,7 +151,7 @@ async fn seed_catalog_sources(
                 .url
                 .parse()
                 .with_context(|| format!("the dev catalog's {name} has an invalid URL"))?,
-            api_key,
+            api_key: config.encryption_key.encrypt(&api_key),
             quality_profile,
             root_folder_path: source.root_folder_path.to_owned(),
             local_root_folder_path: Some(local_root_folder),

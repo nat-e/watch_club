@@ -1,5 +1,5 @@
 //! Radarr, Sonarr and Sportarr Sources: creating and updating them, without calling the app, and
-//! the API key they keep. `connection` tests `test_servarr_connection`, which calls the apps.
+//! the API key they keep and decrypt. `connection` tests `test_servarr_connection`, which calls the apps.
 
 mod connection;
 
@@ -70,6 +70,31 @@ mod create {
             assert_eq!(request_count(&fake).await, 0);
         }
         assert_eq!(sources::list(&db).await.unwrap().len(), 3);
+    }
+}
+
+mod decrypt_api_key {
+    use watch_club::domain::sources::ConnectionError;
+
+    use super::*;
+    use crate::support::fake_servarr::API_KEY;
+
+    #[tokio::test]
+    async fn decrypts_the_api_key_with_the_key_that_encrypted_it() {
+        let configuration = FakeServarr::radarr().await.source_configuration();
+
+        let api_key = configuration.decrypt_api_key(&support::encryption_key());
+
+        assert_eq!(api_key.unwrap().expose_secret(), API_KEY);
+    }
+
+    #[tokio::test]
+    async fn blames_the_api_key_when_another_key_encrypted_it() {
+        let configuration = FakeServarr::radarr().await.source_configuration();
+
+        let api_key = configuration.decrypt_api_key(&support::another_encryption_key());
+
+        assert_eq!(api_key.err(), Some(ConnectionError::InvalidApiKey));
     }
 }
 

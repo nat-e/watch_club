@@ -10,22 +10,18 @@ use wiremock::{
     matchers::{method, path},
 };
 
-use super::request_count;
 use crate::support::{
     self, FakeServarr,
     fake_servarr::{API_KEY, ROOT_FOLDER},
 };
 
-/// Tests the connection to the app at `url` with this API key, encrypted with the tests' key.
+/// Tests the connection to the app at `url` with this API key.
 async fn test_connection(
     app: ServarrApp,
     url: &str,
     api_key: &str,
 ) -> Result<ServarrChoices, ConnectionError> {
-    let encryption_key = support::encryption_key();
-    let api_key = encryption_key.encrypt(&api_key.into());
-    sources::test_servarr_connection(app, url, &api_key, &encryption_key, &support::http_client())
-        .await
+    sources::test_servarr_connection(app, url, &api_key.into(), &support::http_client()).await
 }
 
 #[tokio::test]
@@ -135,24 +131,6 @@ async fn refuses_an_api_key_that_cant_go_in_a_request() {
     let result = test_connection(ServarrApp::Radarr, "http://radarr:7878", "line\nbreak").await;
 
     assert_eq!(result.err(), Some(ConnectionError::InvalidApiKey));
-}
-
-#[tokio::test]
-async fn refuses_an_api_key_it_cant_decrypt_without_calling_the_app() {
-    let radarr = FakeServarr::radarr().await;
-    let encrypted = support::another_encryption_key().encrypt(&API_KEY.into());
-
-    let result = sources::test_servarr_connection(
-        ServarrApp::Radarr,
-        &radarr.url(),
-        &encrypted,
-        &support::encryption_key(),
-        &support::http_client(),
-    )
-    .await;
-
-    assert_eq!(result.err(), Some(ConnectionError::InvalidApiKey));
-    assert_eq!(request_count(&radarr).await, 0);
 }
 
 #[tokio::test]

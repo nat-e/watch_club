@@ -7,6 +7,7 @@ mod client;
 
 use anyhow::Context;
 use reqwest::StatusCode;
+use secrecy::SecretString;
 use serde::{Deserialize, Serialize};
 use sqlx_otel::QueryAnnotateExt;
 use tracing::Level;
@@ -85,6 +86,25 @@ pub struct ServarrConfiguration {
     pub root_folder_path: String,
     /// The root folder, as WatchClub sees it when that's another path, such as in Docker
     pub local_root_folder_path: Option<AbsoluteFolder>,
+}
+
+impl ServarrConfiguration {
+    /// Returns the API key, decrypted to call the app. Refuses it when another key encrypted it,
+    /// such as before the host changed `ENCRYPTION_KEY`: the Instance Administrator enters it again.
+    pub fn decrypt_api_key(
+        &self,
+        encryption_key: &EncryptionKey,
+    ) -> Result<SecretString, ConnectionError> {
+        encryption_key.decrypt(&self.api_key).map_err(|error| {
+            tracing::event!(
+                name: "sources.api_key.unreadable",
+                Level::WARN,
+                exception.message = %error,
+                "failed to decrypt a Source's API key",
+            );
+            ConnectionError::InvalidApiKey
+        })
+    }
 }
 
 /// The new Source Configuration of a Radarr, Sonarr or Sportarr Source, which keeps its app.
@@ -212,30 +232,17 @@ pub async fn update_servarr_source(
     })
 }
 
-/// Checks that `app` answers at `url` and takes the API key, which it
-/// decrypts only to call the app, then returns the app's quality profiles and root folders. Refuses
-/// another app, such as Sonarr at a Radarr Source's URL. Doesn't call the app when it can't decrypt
-/// the API key.
+/// Checks that `app` answers at `url` and takes the API key, then returns the app's quality
+/// profiles and root folders. Refuses another app, such as Sonarr at a Radarr Source's URL.
 #[tracing::instrument(skip_all, fields(servarr.app = app.name()))]
 pub async fn test_servarr_connection(
     app: ServarrApp,
     url: &str,
-    api_key: &EncryptedSecret,
-    encryption_key: &EncryptionKey,
+    api_key: &SecretString,
     http_client: &HttpClient,
 ) -> Result<ServarrChoices, ConnectionError> {
-    let api_key = encryption_key.decrypt(api_key).map_err(|error| {
-        tracing::event!(
-            name: "sources.api_key.unreadable",
-            Level::WARN,
-            exception.message = %error,
-            "failed to decrypt a Source's API key",
-        );
-        // The Instance Administrator enters it again
-        ConnectionError::InvalidApiKey
-    })?;
     let url: ApiUrl = url.parse()?;
-    let client = ServarrClient::new(http_client, app, &url, &api_key)?;
+    let client = ServarrClient::new(http_client, app, &url, api_key)?;
 
     let app_name = client.fetch_app_name().await?;
     if app_name != app.name() {

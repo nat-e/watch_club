@@ -8,7 +8,7 @@ import {
   testAppConnection,
   testSourceAppConnection,
 } from '@watchclub/core/sources/sources';
-import * as icons from 'lucide-react';
+import {ArrowLeftIcon} from 'lucide-react';
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
@@ -368,7 +368,7 @@ function QualityProfileAndRootFolderStep({
           <form.FormError />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onBack}>
-              <icons.ArrowLeftIcon />
+              <ArrowLeftIcon />
               {t($ => $.core.controls.back)}
             </Button>
             <form.SubmitButton>

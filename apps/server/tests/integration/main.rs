@@ -62,6 +62,7 @@ mod routes {
 }
 mod support;
 mod utils {
+    mod encryption;
     mod filesystem;
 }
 mod web;

@@ -97,100 +97,36 @@ impl Debug for EncryptedSecret {
 
 #[cfg(test)]
 mod tests {
-    use secrecy::ExposeSecret;
-
     use super::*;
 
     const KEY: &str = "q5OMH0wWDIQnaWrTU+zAPahOTWVdTpqo8uUpKzVZ1Ag=";
-    const OTHER_KEY: &str = "fRBMVNwYcSGHtIBQQ9gNFrz7cnWZsvMBYFxufHx2N+k=";
     const API_KEY: &str = "radarr-api-key";
 
-    fn key(text: &str) -> EncryptionKey {
-        EncryptionKey::from_base64(text).unwrap()
-    }
-
-    fn contains(encrypted: &EncryptedSecret, text: &str) -> bool {
-        encrypted
-            .0
-            .windows(text.len())
-            .any(|window| window == text.as_bytes())
-    }
-
-    #[test]
-    fn decrypts_what_it_encrypted() {
-        let encrypted = key(KEY).encrypt(&API_KEY.into());
-
-        let decrypted = key(KEY).decrypt(&encrypted).unwrap();
-
-        assert_eq!(decrypted.expose_secret(), API_KEY);
+    fn key() -> EncryptionKey {
+        EncryptionKey::from_base64(KEY).unwrap()
     }
 
     #[test]
     fn hides_the_secret() {
-        let encrypted = key(KEY).encrypt(&API_KEY.into());
+        let encrypted = key().encrypt(&API_KEY.into());
 
-        assert!(!contains(&encrypted, "radarr"));
-    }
-
-    #[test]
-    fn encrypts_a_secret_differently_each_time() {
-        let secret = SecretString::from(API_KEY);
-
-        assert_ne!(key(KEY).encrypt(&secret), key(KEY).encrypt(&secret));
-    }
-
-    #[test]
-    fn fails_to_decrypt_with_another_key() {
-        let encrypted = key(KEY).encrypt(&API_KEY.into());
-
-        assert!(key(OTHER_KEY).decrypt(&encrypted).is_err());
+        let has_secret = encrypted
+            .0
+            .windows(API_KEY.len())
+            .any(|window| window == API_KEY.as_bytes());
+        assert!(!has_secret);
     }
 
     #[test]
     fn fails_to_decrypt_changed_or_cut_bytes() {
-        let encrypted = key(KEY).encrypt(&API_KEY.into());
+        let encrypted = key().encrypt(&API_KEY.into());
         let mut changed = encrypted.clone();
         *changed.0.last_mut().unwrap() ^= 1;
         let cut = EncryptedSecret(encrypted.0[..5].to_vec());
         let empty = EncryptedSecret(Vec::new());
 
-        assert!(key(KEY).decrypt(&changed).is_err());
-        assert!(key(KEY).decrypt(&cut).is_err());
-        assert!(key(KEY).decrypt(&empty).is_err());
-    }
-
-    #[test]
-    fn decrypts_with_the_built_in_key_what_it_encrypted() {
-        let encrypted = EncryptionKey::built_in().encrypt(&API_KEY.into());
-
-        let decrypted = EncryptionKey::built_in().decrypt(&encrypted).unwrap();
-
-        assert_eq!(decrypted.expose_secret(), API_KEY);
-    }
-
-    #[test]
-    fn reads_only_32_bytes_in_base64() {
-        let not_base64 = EncryptionKey::from_base64("not base64!");
-        let too_short = EncryptionKey::from_base64("c2hvcnQ=");
-
-        assert!(not_base64.is_err());
-        assert!(too_short.is_err());
-        assert!(
-            format!("{:#}", too_short.unwrap_err()).contains("openssl rand -base64 32"),
-            "the error tells the host how to make a key"
-        );
-    }
-
-    #[test]
-    fn reads_a_key_with_spaces_around_it() {
-        assert!(EncryptionKey::from_base64(&format!(" {KEY}\n")).is_ok());
-    }
-
-    #[test]
-    fn leaves_the_key_and_the_encrypted_bytes_out_of_debug_output() {
-        let encrypted = key(KEY).encrypt(&API_KEY.into());
-
-        assert_eq!(format!("{:?}", key(KEY)), "EncryptionKey(..)");
-        assert_eq!(format!("{encrypted:?}"), "EncryptedSecret(..)");
+        assert!(key().decrypt(&changed).is_err());
+        assert!(key().decrypt(&cut).is_err());
+        assert!(key().decrypt(&empty).is_err());
     }
 }

@@ -181,14 +181,12 @@ async fn delete_source(
     security(("session_cookie" = ["instance_administrator"]), ("session_token" = ["instance_administrator"])),
 )]
 async fn test_new_source_servarr_connection(
-    State(key): State<EncryptionKey>,
     State(http_client): State<HttpClient>,
     _: InstanceAdministrator,
     Json(request): Json<TestNewSourceServarrConnectionRequest>,
 ) -> Result<Json<ServarrChoices>, ConnectionError> {
-    let api_key = key.encrypt(&request.api_key);
     let choices =
-        sources::test_servarr_connection(request.app, &request.url, &api_key, &key, &http_client)
+        sources::test_servarr_connection(request.app, &request.url, &request.api_key, &http_client)
             .await?;
     Ok(Json(choices))
 }
@@ -225,17 +223,12 @@ async fn test_saved_source_servarr_connection(
 
     // No API key keeps the Source's saved one
     let api_key = match request.api_key {
-        Some(api_key) => key.encrypt(&api_key),
-        None => configuration.api_key,
+        Some(api_key) => api_key,
+        None => configuration.decrypt_api_key(&key)?,
     };
-    let choices = sources::test_servarr_connection(
-        configuration.app,
-        &request.url,
-        &api_key,
-        &key,
-        &http_client,
-    )
-    .await?;
+    let choices =
+        sources::test_servarr_connection(configuration.app, &request.url, &api_key, &http_client)
+            .await?;
     Ok(Json(choices))
 }
 

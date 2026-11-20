@@ -313,9 +313,10 @@ async fn search_fails_when_tmdb_has_no_search() {
         .await
         .unwrap_err();
 
-    assert_eq!(
-        format!("{error:#}"),
-        "TMDB answered GET /search/multi with 404 Not Found"
+    let error = format!("{error:#}");
+    assert!(
+        error.starts_with("HTTP status client error (404 Not Found) for url"),
+        "{error}"
     );
 }
 
