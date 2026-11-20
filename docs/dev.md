@@ -25,7 +25,7 @@ In each worktree, `pnpm dev` runs its own server and web app, on ports of their 
 
 ### Database
 
-Each worktree has its own database in the shared Postgres: a copy of the primary worktree's, with the branch's newer migrations. Only the primary worktree runs the seed, again after each merge, and it only adds what's missing. Data you add in a worktree stays in it, and removing the worktree deletes its database.
+Each worktree has its own database in the shared Postgres: a copy of the primary worktree's, with the branch's newer migrations. Only the primary worktree runs the seed: run it there again when the seed changes, and it adds what's missing. Data you add in a worktree stays in it, and removing the worktree deletes its database.
 
 ### Web app
 
