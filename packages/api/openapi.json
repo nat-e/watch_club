@@ -2119,25 +2119,24 @@
       "CreateInstanceAdministratorRequestError": {
         "oneOf": [
           {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/NewCredentialsProblems"
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_fields"
+                ]
               },
-              {
-                "type": "object",
-                "required": [
-                  "code"
-                ],
-                "properties": {
-                  "code": {
-                    "type": "string",
-                    "enum": [
-                      "invalid_fields"
-                    ]
-                  }
-                }
+              "password": {
+                "$ref": "#/components/schemas/PasswordProblem"
+              },
+              "username": {
+                "$ref": "#/components/schemas/UsernameProblem"
               }
-            ]
+            }
           },
           {
             "type": "object",
@@ -2268,25 +2267,24 @@
           {
             "oneOf": [
               {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/NewCredentialsProblems"
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "invalid_fields"
+                    ]
                   },
-                  {
-                    "type": "object",
-                    "required": [
-                      "code"
-                    ],
-                    "properties": {
-                      "code": {
-                        "type": "string",
-                        "enum": [
-                          "invalid_fields"
-                        ]
-                      }
-                    }
+                  "password": {
+                    "$ref": "#/components/schemas/PasswordProblem"
+                  },
+                  "username": {
+                    "$ref": "#/components/schemas/UsernameProblem"
                   }
-                ]
+                }
               },
               {
                 "type": "object",
@@ -2433,25 +2431,24 @@
           {
             "oneOf": [
               {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/NewCredentialsProblems"
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "invalid_fields"
+                    ]
                   },
-                  {
-                    "type": "object",
-                    "required": [
-                      "code"
-                    ],
-                    "properties": {
-                      "code": {
-                        "type": "string",
-                        "enum": [
-                          "invalid_fields"
-                        ]
-                      }
-                    }
+                  "password": {
+                    "$ref": "#/components/schemas/PasswordProblem"
+                  },
+                  "username": {
+                    "$ref": "#/components/schemas/UsernameProblem"
                   }
-                ]
+                }
               },
               {
                 "type": "object",
@@ -2901,18 +2898,6 @@
         "format": "uuid",
         "description": "The unique ID of a Media."
       },
-      "NewCredentialsProblems": {
-        "type": "object",
-        "description": "The problems with the username and password of a new User: at least one of them.",
-        "properties": {
-          "password": {
-            "$ref": "#/components/schemas/PasswordProblem"
-          },
-          "username": {
-            "$ref": "#/components/schemas/UsernameProblem"
-          }
-        }
-      },
       "NewInstanceAdministrator": {
         "type": "object",
         "description": "The Instance Administrator that Setup creates.",
@@ -2975,25 +2960,24 @@
       "RedeemInvitationRequestError": {
         "oneOf": [
           {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/NewCredentialsProblems"
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_fields"
+                ]
               },
-              {
-                "type": "object",
-                "required": [
-                  "code"
-                ],
-                "properties": {
-                  "code": {
-                    "type": "string",
-                    "enum": [
-                      "invalid_fields"
-                    ]
-                  }
-                }
+              "password": {
+                "$ref": "#/components/schemas/PasswordProblem"
+              },
+              "username": {
+                "$ref": "#/components/schemas/UsernameProblem"
               }
-            ]
+            }
           },
           {
             "type": "object",

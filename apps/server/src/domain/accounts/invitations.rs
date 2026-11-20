@@ -12,7 +12,7 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 
 use super::{
-    CurrentUser, Locale, NewCredentials, SessionToken,
+    CurrentUser, Locale, Password, SessionToken, Username,
     user::{CreateUserError, create_user},
 };
 use crate::{db::Pool, domain::InternalError};
@@ -231,10 +231,10 @@ impl From<InternalError> for RedeemInvitationError {
 pub async fn redeem_invitation(
     db: &Pool,
     code: &str,
-    credentials: NewCredentials,
+    username: Username,
+    password: Password,
     locale: Locale,
 ) -> Result<(CurrentUser, SessionToken), RedeemInvitationError> {
-    let NewCredentials { username, password } = credentials;
     let password_hash = password.hash().await;
 
     let mut transaction = db.begin().await.context("failed to start a transaction")?;

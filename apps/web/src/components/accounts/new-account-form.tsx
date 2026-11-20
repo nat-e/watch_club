@@ -1,4 +1,4 @@
-import type {NewCredentialsProblems, PasswordProblem, UsernameProblem} from '@watchclub/api';
+import type {PasswordProblem, UsernameProblem} from '@watchclub/api';
 import {useTranslation} from 'react-i18next';
 import {useAppForm} from '@/components/forms/form';
 
@@ -13,7 +13,7 @@ export interface NewAccount {
 
 /** The problems the API finds with a new account's username and password. */
 type NewAccountProblem =
-  | (NewCredentialsProblems & {code: 'invalid_fields'})
+  | {code: 'invalid_fields'; username?: UsernameProblem; password?: PasswordProblem}
   | {code: 'username_taken'};
 
 /**

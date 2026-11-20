@@ -169,39 +169,6 @@ pub enum PasswordError {
     TooShort { min: usize },
 }
 
-/// The username and password of a new User, which follow the rules.
-#[derive(Debug)]
-pub struct NewCredentials {
-    pub(super) username: Username,
-    pub(super) password: Password,
-}
-
-impl NewCredentials {
-    /// Checks the username and password, and reports the problems with both at once.
-    pub fn parse(username: &str, password: SecretString) -> Result<Self, NewCredentialsError> {
-        match (Username::parse(username), Password::parse(password)) {
-            (Ok(username), Ok(password)) => Ok(Self { username, password }),
-            (username, password) => Err(NewCredentialsError {
-                username: username.err(),
-                password: password.err(),
-            }),
-        }
-    }
-}
-
-/// The problems with the username and password of a new User: at least one of them.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema, thiserror::Error)]
-#[error("the username or password breaks the rules")]
-#[schema(as = NewCredentialsProblems)]
-pub struct NewCredentialsError {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[schema(nullable = false)]
-    pub username: Option<UsernameError>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[schema(nullable = false)]
-    pub password: Option<PasswordError>,
-}
-
 /// Returns `true` once Setup has created the Instance Administrator.
 #[tracing::instrument(skip_all)]
 pub async fn has_instance_administrator(db: &Pool) -> Result<bool, InternalError> {
@@ -235,10 +202,10 @@ impl From<InternalError> for CreateInstanceAdministratorError {
 #[tracing::instrument(skip_all)]
 pub async fn create_instance_administrator(
     db: &Pool,
-    credentials: NewCredentials,
+    username: Username,
+    password: Password,
     locale: Locale,
 ) -> Result<(CurrentUser, SessionToken), CreateInstanceAdministratorError> {
-    let NewCredentials { username, password } = credentials;
     let password_hash = password.hash().await;
 
     let mut transaction = db.begin().await.context("failed to start a transaction")?;

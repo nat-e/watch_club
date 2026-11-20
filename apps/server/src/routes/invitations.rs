@@ -21,8 +21,8 @@ use crate::{
     domain::{
         InternalError,
         accounts::{
-            self, ChangeMaxUsesError, Invitation, InvitationId, Locale, NewCredentials,
-            NewCredentialsError, RedeemInvitationError,
+            self, ChangeMaxUsesError, Invitation, InvitationId, Locale, Password, PasswordError,
+            RedeemInvitationError, Username, UsernameError,
         },
     },
     error::{self, ApiError, ErrorBody},
@@ -202,9 +202,14 @@ async fn redeem_invitation(
     cookie: SessionCookie,
     Json(request): Json<RedeemInvitationRequest>,
 ) -> Result<(StatusCode, CookieJar, Json<CurrentUserResponse>), RedeemInvitationRequestError> {
-    let credentials = NewCredentials::parse(&request.username, request.password)?;
-    let (user, token) =
-        accounts::redeem_invitation(&db, &request.code, credentials, request.locale).await?;
+    let RedeemInvitationRequest {
+        code,
+        username,
+        password,
+        locale,
+    } = request;
+    let (username, password) = parse_credentials(&username, password)?;
+    let (user, token) = accounts::redeem_invitation(&db, &code, username, password, locale).await?;
     Ok((StatusCode::CREATED, cookie.set(&token), Json(user.into())))
 }
 
@@ -221,12 +226,33 @@ struct RedeemInvitationRequest {
     locale: Locale,
 }
 
+/// Checks the username and password, and reports the problems with both at once.
+fn parse_credentials(
+    username: &str,
+    password: SecretString,
+) -> Result<(Username, Password), RedeemInvitationRequestError> {
+    match (Username::parse(username), Password::parse(password)) {
+        (Ok(username), Ok(password)) => Ok((username, password)),
+        (username, password) => Err(RedeemInvitationRequestError::InvalidFields {
+            username: username.err(),
+            password: password.err(),
+        }),
+    }
+}
+
 /// The failures of a request to redeem an Invitation.
 #[derive(Debug, Serialize, ToSchema, thiserror::Error)]
 #[serde(tag = "code", rename_all = "snake_case")]
 enum RedeemInvitationRequestError {
-    #[error(transparent)]
-    InvalidFields(#[from] NewCredentialsError),
+    #[error("the username or password breaks the rules")]
+    InvalidFields {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        #[schema(nullable = false)]
+        username: Option<UsernameError>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        #[schema(nullable = false)]
+        password: Option<PasswordError>,
+    },
     #[error("another User has the username")]
     UsernameTaken,
     /// No Invitation has the code, or it expired or created its Max Uses of Users
@@ -250,7 +276,7 @@ impl From<RedeemInvitationError> for RedeemInvitationRequestError {
 impl IntoResponse for RedeemInvitationRequestError {
     fn into_response(self) -> Response {
         match self {
-            Self::InvalidFields(_) | Self::UsernameTaken | Self::InvitationNotRedeemable => {
+            Self::InvalidFields { .. } | Self::UsernameTaken | Self::InvitationNotRedeemable => {
                 error::response(StatusCode::UNPROCESSABLE_ENTITY, &self)
             }
             Self::Internal(error) => ApiError::from(error).into_response(),
