@@ -3,7 +3,7 @@
 
 use std::fmt;
 
-use anyhow::{Context, anyhow};
+use anyhow::Context;
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, ExposeSecretMut, SecretBox, SecretString};
@@ -209,28 +209,27 @@ pub async fn create_instance_administrator(
     let password_hash = password.hash().await;
 
     let mut transaction = db.begin().await.context("failed to start a transaction")?;
-    let created = create_user(&mut transaction, &username, password_hash, locale, true).await;
-    let (admin, token) = match created {
-        Ok(created) => created,
-        Err(CreateUserError::NotUnique) => {
-            // Gives the connection back before the check below takes one from the pool
-            transaction
-                .rollback()
-                .await
-                .context("failed to roll back creating the Instance Administrator")?;
-            if has_instance_administrator(db).await? {
-                tracing::event!(
-                    name: "accounts.instance_administrator.refused",
-                    Level::WARN,
-                    user.name = username.0,
-                    "refused to create a second Instance Administrator",
-                );
-                return Err(CreateInstanceAdministratorError::AlreadyExists);
-            }
-            return Err(anyhow!("another User has the first User's username").into());
+    let inserted = insert_user(&mut transaction, &username, password_hash, locale, true).await;
+    let admin = match inserted {
+        Ok(admin) => admin,
+        // Users only exist once Setup created the Instance Administrator, so another one, or a
+        // User with the same username, means Setup already ran
+        Err(sqlx::Error::Database(error)) if error.is_unique_violation() => {
+            tracing::event!(
+                name: "accounts.instance_administrator.refused",
+                Level::WARN,
+                user.name = username.0,
+                "refused to create a second Instance Administrator",
+            );
+            return Err(CreateInstanceAdministratorError::AlreadyExists);
         }
-        Err(CreateUserError::Internal(error)) => return Err(error.into()),
+        Err(error) => {
+            let error =
+                anyhow::Error::new(error).context("failed to create the Instance Administrator");
+            return Err(error.into());
+        }
     };
+    let token = create_session(&mut transaction, admin.id).await?;
     transaction
         .commit()
         .await
@@ -245,29 +244,19 @@ pub async fn create_instance_administrator(
     Ok((admin, token))
 }
 
-/// The reason `create_user` didn't create the User.
-#[derive(Debug, thiserror::Error)]
-pub(super) enum CreateUserError {
-    /// Another User has the username, or the User would be a second Instance Administrator:
-    /// Postgres may report either constraint when Setup runs again with the same username
-    #[error("another User has the username or is the Instance Administrator")]
-    NotUnique,
-    #[error(transparent)]
-    Internal(#[from] InternalError),
-}
-
-/// Creates a User in the transaction, with a new User's preferences for their Locale, signs them in
-/// on a new device, and returns them as the current User. The caller hashes the password first,
+/// Inserts a User in the transaction, with a new User's preferences for their Locale, and returns
+/// them as the current User. Fails with a unique violation when another User has the username, or
+/// when the User would be a second Instance Administrator. The caller hashes the password first,
 /// which takes a moment, so the transaction doesn't hold its locks that long.
-pub(super) async fn create_user(
+pub(super) async fn insert_user(
     transaction: &mut Transaction,
     username: &Username,
     password_hash: String,
     locale: Locale,
     is_instance_administrator: bool,
-) -> Result<(CurrentUser, SessionToken), CreateUserError> {
+) -> Result<CurrentUser, sqlx::Error> {
     let preferences = UserPreferences::new(locale);
-    let created = sqlx::query_as!(
+    let row = sqlx::query_as!(
         UserRow,
         r#"
         INSERT INTO users (
@@ -288,20 +277,8 @@ pub(super) async fn create_user(
     )
     .with_operation("INSERT", "users")
     .fetch_one(&mut *transaction)
-    .await;
-    let user = match created {
-        Ok(row) => CurrentUser::from(row),
-        Err(sqlx::Error::Database(error)) if error.is_unique_violation() => {
-            return Err(CreateUserError::NotUnique);
-        }
-        Err(error) => {
-            let error = anyhow::Error::new(error).context("failed to create a User");
-            return Err(InternalError::from(error).into());
-        }
-    };
-
-    let token = create_session(&mut *transaction, user.id).await?;
-    Ok((user, token))
+    .await?;
+    Ok(CurrentUser::from(row))
 }
 
 /// Returns every User, the first to join first.
@@ -538,7 +515,7 @@ pub async fn delete_expired_sessions(db: &Pool) -> Result<u64, InternalError> {
 
 /// Creates a session that keeps the User signed in on a new device for `SESSION_LIFETIME`, and
 /// returns its token.
-async fn create_session(
+pub(super) async fn create_session(
     db: impl PgExecutor<'_>,
     user_id: UserId,
 ) -> Result<SessionToken, InternalError> {

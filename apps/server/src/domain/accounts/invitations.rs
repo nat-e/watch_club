@@ -13,7 +13,7 @@ use uuid::Uuid;
 
 use super::{
     CurrentUser, Locale, Password, SessionToken, Username,
-    user::{CreateUserError, create_user},
+    user::{create_session, insert_user},
 };
 use crate::{db::Pool, domain::InternalError};
 
@@ -271,12 +271,18 @@ pub async fn redeem_invitation(
         return Err(RedeemInvitationError::NotRedeemable);
     };
 
-    let (user, token) =
-        match create_user(&mut transaction, &username, password_hash, locale, false).await {
-            Ok(created) => created,
-            Err(CreateUserError::NotUnique) => return Err(RedeemInvitationError::UsernameTaken),
-            Err(CreateUserError::Internal(error)) => return Err(error.into()),
-        };
+    let inserted = insert_user(&mut transaction, &username, password_hash, locale, false).await;
+    let user = match inserted {
+        Ok(user) => user,
+        Err(sqlx::Error::Database(error)) if error.is_unique_violation() => {
+            return Err(RedeemInvitationError::UsernameTaken);
+        }
+        Err(error) => {
+            let error = anyhow::Error::new(error).context("failed to create a User");
+            return Err(error.into());
+        }
+    };
+    let token = create_session(&mut transaction, user.id).await?;
     transaction
         .commit()
         .await
