@@ -252,13 +252,7 @@ defmodule WatchClubWeb.RemotePage do
                       labels -> [{"auto", dgettext("player", "Auto")} | labels]
                     end
                   }
-                  selected={
-                    case @playback_session.current_playback.quality_choices do
-                      %{choices: [only]} -> only.label
-                      %{picked: nil} -> "auto"
-                      %{picked: picked} -> picked.label
-                    end
-                  }
+                  selected={tv_quality(@playback_session.current_playback.quality_choices) || "auto"}
                 />
               </div>
             </.remote_section>
@@ -347,11 +341,7 @@ defmodule WatchClubWeb.RemotePage do
       "position_seconds" => NowPlaying.position_now(session),
       "audio" => audio_track && audio_track.display_label,
       "subtitles" => playback.text_track_choices.names[playback.text_track_id],
-      "quality" =>
-        if(playback.quality_choices.picked,
-          do: playback.quality_choices.picked.label,
-          else: dgettext("player", "Auto")
-        ),
+      "quality" => tv_quality(playback.quality_choices) || dgettext("player", "Auto"),
       "user_agent" => session.tv_user_agent
     }
 
@@ -397,6 +387,10 @@ defmodule WatchClubWeb.RemotePage do
       {:error, %Ash.Error.Invalid{errors: [%Ash.Error.Changes.StaleRecord{}]}} -> socket
     end
   end
+
+  # The label of the Quality the TV plays, nil for Auto, which a Video with a single one plays
+  defp tv_quality(%{choices: [only]}), do: only.label
+  defp tv_quality(%{picked: picked}), do: picked && picked.label
 
   # The playing Video and the Videos after it, a list intentionally small: at most 10
   defp assign_up_next!(%{assigns: %{playback_session: %Session{} = session}} = socket) do
