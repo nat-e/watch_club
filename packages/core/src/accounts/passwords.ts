@@ -4,12 +4,14 @@
  * one.
  */
 import {formOptions} from '@tanstack/react-form';
-import {queryOptions, useQueryClient} from '@tanstack/react-query';
+import {mutationOptions, queryOptions, useMutation, useQueryClient} from '@tanstack/react-query';
 import {
+  type ChangePasswordError,
   changePassword,
   checkPasswordResetLinkOptions,
   hasCode,
   logout,
+  type PasswordChange,
   type PasswordProblem,
   resetPassword,
 } from '@watchclub/api';
@@ -32,6 +34,30 @@ export function usePasswordProblemMessage(): (problem: PasswordProblem) => strin
   };
 }
 
+/** The API's refusal of the passwords, which the form shows under their fields. */
+type PasswordChangeProblem = Extract<
+  ChangePasswordError,
+  {code: 'wrong_password' | 'invalid_password'}
+>;
+
+/**
+ * The mutation that changes the User's password. It resolves to the API's problem with the
+ * passwords, or null once the password changed, and fails otherwise, such as when the session
+ * ended, which the query client handles.
+ */
+const changePasswordMutation = mutationOptions({
+  mutationFn: async (change: PasswordChange): Promise<PasswordChangeProblem | null> => {
+    const {error} = await changePassword({body: change});
+    if (hasCode(error, 'wrong_password') || hasCode(error, 'invalid_password')) {
+      return error;
+    }
+    if (error !== undefined) {
+      throw error;
+    }
+    return null;
+  },
+});
+
 /**
  * Returns the options of the form that changes the User's password, for each app's `useAppForm`:
  * their current password, and a new one typed twice. The form empties once the password changed,
@@ -39,7 +65,7 @@ export function usePasswordProblemMessage(): (problem: PasswordProblem) => strin
  */
 export function useChangePasswordFormOptions(onChanged: () => void) {
   const {t} = useTranslation('core');
-  const queryClient = useQueryClient();
+  const change = useMutation(changePasswordMutation);
   const passwordProblemMessage = usePasswordProblemMessage();
   return formOptions({
     defaultValues: {currentPassword: '', newPassword: '', passwordConfirmation: ''},
@@ -60,31 +86,32 @@ export function useChangePasswordFormOptions(onChanged: () => void) {
       },
     ],
     onSubmit: async ({value, formApi, createValidationError}) => {
-      const {error} = await changePassword({
-        // biome-ignore lint/style/useNamingConvention: the API's fields are snake_case
-        body: {current_password: value.currentPassword, new_password: value.newPassword},
-      });
-      if (error === undefined) {
+      let problem: PasswordChangeProblem | null;
+      try {
+        // biome-ignore-start lint/style/useNamingConvention: the API's fields are snake_case
+        problem = await change.mutateAsync({
+          current_password: value.currentPassword,
+          new_password: value.newPassword,
+        });
+        // biome-ignore-end lint/style/useNamingConvention: the API's fields are snake_case
+      } catch {
+        return createValidationError(t($ => $.core.errors.somethingWentWrong));
+      }
+      if (problem === null) {
         formApi.reset();
         onChanged();
         return null;
       }
-      if (hasCode(error, 'wrong_password')) {
-        return createValidationError({
-          fields: {currentPassword: t($ => $.core.password.wrongCurrentPassword)},
-        });
+      switch (problem.code) {
+        case 'wrong_password':
+          return createValidationError({
+            fields: {currentPassword: t($ => $.core.password.wrongCurrentPassword)},
+          });
+        case 'invalid_password':
+          return createValidationError({
+            fields: {newPassword: passwordProblemMessage(problem.reason)},
+          });
       }
-      if (hasCode(error, 'invalid_password')) {
-        return createValidationError({
-          fields: {newPassword: passwordProblemMessage(error.reason)},
-        });
-      }
-      // The session ended, such as when the password changed on another device
-      if (hasCode(error, 'unauthorized')) {
-        await forgetCurrentUser(queryClient);
-        return null;
-      }
-      return createValidationError(t($ => $.core.errors.somethingWentWrong));
     },
   });
 }
@@ -126,9 +153,12 @@ export function useResetPasswordFormOptions(token: string, onReset: () => Promis
     onSubmit: async ({value, createValidationError}) => {
       const {error} = await resetPassword({body: {token, password: value.password}});
       if (error === undefined) {
-        // Succeeds when nobody is signed in on this device, such as when it was the User
-        await logout();
-        await forgetCurrentUser(queryClient);
+        // Succeeds when nobody is signed in on this device, such as when it was the User. When it
+        // fails, the screens keep showing who's still signed in
+        const signedOut = await logout();
+        if (signedOut.error === undefined) {
+          await forgetCurrentUser(queryClient);
+        }
         await onReset();
         return null;
       }
