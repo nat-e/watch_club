@@ -1,0 +1,74 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT id, code, max_uses, uses, expires_at\n        FROM invitations\n        WHERE expires_at > now() AND (max_uses IS NULL OR uses < max_uses)\n        ORDER BY expires_at\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "invitations",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "code",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "invitations",
+            "name": "code"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "max_uses",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "invitations",
+            "name": "max_uses"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "uses",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "invitations",
+            "name": "uses"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "expires_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "invitations",
+            "name": "expires_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "40647bb93780564f845df33c703359c210504da7e9569963d304bc5dae43089b"
+}

@@ -39,9 +39,9 @@ async fn refuses_once_watchclub_is_set_up(db: PgPool) {
 }
 
 #[database_test]
-async fn says_which_rules_the_account_breaks(db: PgPool) {
+async fn says_which_rule_the_username_breaks(db: PgPool) {
     let db = watch_club::db::instrument(db);
-    let account = json!({ "username": "Ada!", "password": "short", "locale": "en-US" });
+    let account = json!({ "username": "Ada!", "password": "secret password", "locale": "en-US" });
     let response = Client::new(&db)
         .post("/api/instance/administrator", account)
         .await;
@@ -50,10 +50,28 @@ async fn says_which_rules_the_account_breaks(db: PgPool) {
     assert_eq!(
         response.body,
         json!({
-            "code": "invalid_fields",
-            "message": "the username or password breaks the rules",
-            "username": { "code": "invalid_characters" },
-            "password": { "code": "too_short", "min": 8 },
+            "code": "invalid_username",
+            "message": "the username has characters other than lowercase letters, digits and underscores",
+            "reason": { "code": "invalid_characters" },
+        })
+    );
+}
+
+#[database_test]
+async fn says_which_rule_the_password_breaks(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    let account = json!({ "username": "ada", "password": "short", "locale": "en-US" });
+    let response = Client::new(&db)
+        .post("/api/instance/administrator", account)
+        .await;
+
+    assert_eq!(response.status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(
+        response.body,
+        json!({
+            "code": "invalid_password",
+            "message": "the password is shorter than 8 characters",
+            "reason": { "code": "too_short", "min": 8 },
         })
     );
 }

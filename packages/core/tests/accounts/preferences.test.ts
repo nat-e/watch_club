@@ -40,7 +40,7 @@ const BOB: CurrentUser = {...ALICE, id: '0190c0de-0000-7000-8000-000000000002', 
 /** Saves the changes Alice made, as a screen of the app does. */
 function save(queryClient: QueryClient, changes: Partial<UserPreferences>) {
   return new MutationObserver(queryClient, savePreferencesMutation).mutate({
-    user: ALICE.id,
+    userId: ALICE.id,
     changes,
   });
 }

@@ -22,8 +22,13 @@ export async function startSentry(queryClient: QueryClient): Promise<void> {
     release: `watch_club@${instance.version}`,
     // The server's, so that Sentry shows a deployment's reports together
     environment: instance.sentry_environment,
-    // Keeps the User's IP address from Sentry, which would store it otherwise
-    dataCollection: {userInfo: false},
+    dataCollection: {
+      // Keeps the User's IP address from Sentry, which would store it otherwise
+      userInfo: false,
+      // Keeps query strings out of the reports' URLs, where a secret can be, such as an
+      // Invitation's code
+      urlQueryParams: false,
+    },
     beforeSend: (event, hint) => (isRequestFailure(hint.originalException) ? null : event),
   });
   captureReactException = capture;

@@ -5,8 +5,10 @@ mod auth;
 mod contents;
 mod health;
 mod instance;
+mod invitations;
 mod me;
 mod search;
+mod users;
 
 use axum::{
     extract::{FromRequest, FromRequestParts},
@@ -31,6 +33,8 @@ pub(crate) fn routes() -> OpenApiRouter<ApiContext> {
         .merge(instance::routes())
         .merge(auth::routes())
         .merge(me::routes())
+        .merge(users::routes())
+        .merge(invitations::routes())
         .merge(search::routes())
         .merge(contents::routes())
         // Unknown API paths aren't found, rather than showing the web app

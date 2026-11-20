@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        WITH target AS (\n            SELECT id, username, is_instance_administrator FROM users WHERE id = $1\n        ),\n        deleted AS (\n            DELETE FROM users\n            WHERE id IN (SELECT id FROM target WHERE NOT is_instance_administrator)\n        )\n        SELECT username AS \"username!\", is_instance_administrator AS \"is_instance_administrator!\"\n        FROM target\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "username!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "username"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "is_instance_administrator!",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "users",
+            "name": "is_instance_administrator"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "82d9a3048625780fe36e362839166bf1ce174a7aec0bb0e7894ab79c90eea0e3"
+}

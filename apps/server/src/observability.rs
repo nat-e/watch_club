@@ -263,8 +263,16 @@ pub(crate) fn instrument<S: Clone + Send + Sync + 'static>(
                 // The routes log the 500s themselves, with their cause
                 .on_failure(()),
         )
-        // Names the spans after the route, such as `GET /api/me`, once the router has matched it
-        .layer(otel_http::Layer::new())
+        // Names the spans after the route, such as `GET /api/me`, once the router has matched it.
+        // Hides the Invitations' codes, in the links to the page that redeems them and in the API.
+        // The list replaces the default one, which names other services' signatures that no request
+        // here carries
+        .layer(
+            otel_http::LayerBuilder::builder()
+                .with_sensitive_query_parameters(["code"])
+                .build()
+                .expect("the layer builds with the global providers"),
+        )
         .layer(middleware::from_fn(name_errors_after_route))
         .layer(SentryHttpLayer::new())
         // Outside the other Sentry layer, which needs a Sentry hub of the request's own

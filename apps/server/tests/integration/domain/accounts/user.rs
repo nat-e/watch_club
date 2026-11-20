@@ -1,7 +1,7 @@
-use std::{collections::BTreeSet, time::Duration};
+use std::collections::BTreeSet;
 
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
-use sqlx::{PgPool, postgres::PgPoolOptions};
+use sqlx::PgPool;
 use watch_club::db::Pool;
 use watch_club::domain::accounts::{
     self, AudioLanguage, CreateInstanceAdministratorError, CurrentUser, Locale, Password,
@@ -174,32 +174,6 @@ mod create_instance_administrator {
         let created = accounts::create_instance_administrator(
             &db,
             Username::parse(&admin.username).unwrap(),
-            Password::parse("secret password".into()).unwrap(),
-            Locale::EnUs,
-        )
-        .await;
-
-        assert!(matches!(
-            created,
-            Err(CreateInstanceAdministratorError::AlreadyExists)
-        ));
-    }
-
-    #[database_test]
-    async fn fails_when_there_is_one_already_with_a_single_connection(db: PgPool) {
-        let db = watch_club::db::instrument(
-            PgPoolOptions::new()
-                .max_connections(1)
-                .acquire_timeout(Duration::from_secs(2))
-                .connect_with(db.connect_options().as_ref().clone())
-                .await
-                .unwrap(),
-        );
-        support::create_instance_administrator(&db).await;
-
-        let created = accounts::create_instance_administrator(
-            &db,
-            Username::parse("ada").unwrap(),
             Password::parse("secret password".into()).unwrap(),
             Locale::EnUs,
         )

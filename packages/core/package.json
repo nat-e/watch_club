@@ -5,7 +5,9 @@
   "exports": {
     "./accounts/preferences": "./src/accounts/preferences.ts",
     "./accounts/current-user": "./src/accounts/current-user.ts",
+    "./accounts/invitations": "./src/accounts/invitations.ts",
     "./accounts/sign-in": "./src/accounts/sign-in.ts",
+    "./accounts/users": "./src/accounts/users.ts",
     "./contents/content": "./src/contents/content.ts",
     "./contents/media": "./src/contents/media.ts",
     "./contents/search": "./src/contents/search.ts",

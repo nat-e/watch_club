@@ -115,6 +115,14 @@ impl Client {
         self.send(Method::PUT, uri, Some(body)).await
     }
 
+    pub async fn patch(&mut self, uri: &str, body: Value) -> Response {
+        self.send(Method::PATCH, uri, Some(body)).await
+    }
+
+    pub async fn delete(&mut self, uri: &str) -> Response {
+        self.send(Method::DELETE, uri, None).await
+    }
+
     /// Signs the User in with `PASSWORD`, as the web app does.
     pub async fn sign_in(&mut self, user: &CurrentUser) {
         let credentials = serde_json::json!({ "username": user.username, "password": PASSWORD });

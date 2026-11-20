@@ -13,7 +13,10 @@ use sqlx::postgres::PgBindIterExt;
 use watch_club::{
     db::Pool,
     domain::{
-        accounts::{AudioLanguage, CurrentUser, Locale, TrackLanguage, UserId, UserPreferences},
+        accounts::{
+            AudioLanguage, CurrentUser, InvitationId, Locale, TrackLanguage, UserId,
+            UserPreferences,
+        },
         contents::MetadataProviders,
     },
     jobs::JobContext,
@@ -100,10 +103,37 @@ async fn insert_user(db: &Pool, username: &str, is_instance_administrator: bool)
 }
 
 /// Ends the User's sessions as if their lifetime had run out.
-pub async fn expire_sessions(db: &Pool, user: UserId) {
+pub async fn expire_sessions(db: &Pool, user_id: UserId) {
     sqlx::query!(
         "UPDATE sessions SET expires_at = now() - interval '1 second' WHERE user_id = $1",
-        user as UserId,
+        user_id as UserId,
+    )
+    .execute(db)
+    .await
+    .unwrap();
+}
+
+/// Creates an Invitation with this code, which works for a week, and returns its ID.
+pub async fn create_invitation(db: &Pool, code: &str, max_uses: Option<i64>) -> InvitationId {
+    sqlx::query_scalar!(
+        r#"
+        INSERT INTO invitations (code, max_uses, expires_at)
+        VALUES ($1, $2, now() + interval '7 days')
+        RETURNING id
+        "#,
+        code,
+        max_uses,
+    )
+    .fetch_one(db)
+    .await
+    .unwrap()
+}
+
+/// Makes the Invitation expire, as if its time had run out.
+pub async fn expire_invitation(db: &Pool, invitation_id: InvitationId) {
+    sqlx::query!(
+        "UPDATE invitations SET expires_at = now() - interval '1 second' WHERE id = $1",
+        invitation_id as InvitationId,
     )
     .execute(db)
     .await

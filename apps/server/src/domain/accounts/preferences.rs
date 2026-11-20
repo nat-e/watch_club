@@ -104,10 +104,10 @@ pub enum AudioLanguage {
 }
 
 /// Saves the User's preferences, and returns the current User with the new preferences.
-#[tracing::instrument(skip_all, fields(user.id = %user))]
+#[tracing::instrument(skip_all, fields(user.id = %user_id))]
 pub async fn save_preferences(
     db: &Pool,
-    user: UserId,
+    user_id: UserId,
     preferences: &UserPreferences,
 ) -> Result<CurrentUser, InternalError> {
     let row = sqlx::query_as!(
@@ -122,7 +122,7 @@ pub async fn save_preferences(
         RETURNING id, username, locale, audio_language, subtitle_language,
             languages_without_subtitles, is_instance_administrator
         "#,
-        user as UserId,
+        user_id as UserId,
         preferences.locale as Locale,
         preferences.audio_language as AudioLanguage,
         preferences.subtitle_language as Option<TrackLanguage>,

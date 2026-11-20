@@ -22,7 +22,7 @@ export default function Subtitles() {
       value={user.preferences.subtitle_language}
       save={async language => {
         // biome-ignore lint/style/useNamingConvention: the API's field
-        await save.mutateAsync({user: user.id, changes: {subtitle_language: language}});
+        await save.mutateAsync({userId: user.id, changes: {subtitle_language: language}});
         toast.success(t($ => $.core.settings.audioAndSubtitlesSaved));
       }}
       isSaving={save.isPending}

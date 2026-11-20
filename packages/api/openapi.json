@@ -668,6 +668,747 @@
         }
       }
     },
+    "/api/invitations": {
+      "get": {
+        "summary": "Returns the Invitations that can still be redeemed, the oldest first.",
+        "operationId": "list_invitations",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Invitation"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request was not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the Instance Administrator can do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "forbidden"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session_cookie": [
+              "instance_administrator"
+            ]
+          },
+          {
+            "session_token": [
+              "instance_administrator"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "summary": "Creates an Invitation with a random code, which works for 7 days.",
+        "operationId": "create_invitation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationSettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Invitation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request was not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the Instance Administrator can do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "forbidden"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session_cookie": [
+              "instance_administrator"
+            ]
+          },
+          {
+            "session_token": [
+              "instance_administrator"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/invitations/redeem": {
+      "post": {
+        "summary": "Creates a User with an Invitation, and signs the browser in as them. The Invitation counts one\nmore use.",
+        "operationId": "redeem_invitation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationRedemption"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created, and signed in with the session cookie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUser"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The Invitation can't be redeemed, or the username or password breaks the rules",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_RedeemInvitationRequestError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/invitations/redeemable": {
+      "get": {
+        "summary": "Returns whether the code is an Invitation's that can still be redeemed, for the page that\nredeems it.",
+        "operationId": "check_invitation",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "description": "The code in the Invitation's link",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationCheck"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/invitations/{invitation_id}": {
+      "delete": {
+        "summary": "Deletes the Invitation, so that nobody can redeem it anymore. The Users it created stay.",
+        "operationId": "delete_invitation",
+        "parameters": [
+          {
+            "name": "invitation_id",
+            "in": "path",
+            "description": "The Invitation's ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/InvitationId"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "400": {
+            "description": "The request was malformed or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request was not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the Instance Administrator can do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "forbidden"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "There's no such Invitation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_DeleteInvitationRequestError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session_cookie": [
+              "instance_administrator"
+            ]
+          },
+          {
+            "session_token": [
+              "instance_administrator"
+            ]
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Changes the Invitation's Max Uses, and returns the Invitation.",
+        "operationId": "update_invitation",
+        "parameters": [
+          {
+            "name": "invitation_id",
+            "in": "path",
+            "description": "The Invitation's ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/InvitationId"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationSettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Invitation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request was not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the Instance Administrator can do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "forbidden"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "There's no such Invitation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_UpdateInvitationRequestError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The Invitation has created more Users than the Max Uses already",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_UpdateInvitationRequestError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session_cookie": [
+              "instance_administrator"
+            ]
+          },
+          {
+            "session_token": [
+              "instance_administrator"
+            ]
+          }
+        ]
+      }
+    },
     "/api/me": {
       "get": {
         "summary": "Returns the signed-in User.",
@@ -991,6 +1732,274 @@
           }
         ]
       }
+    },
+    "/api/users": {
+      "get": {
+        "summary": "Returns every User, the first to join first.",
+        "operationId": "list_users",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request was not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the Instance Administrator can do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "forbidden"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session_cookie": [
+              "instance_administrator"
+            ]
+          },
+          {
+            "session_token": [
+              "instance_administrator"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/users/{user_id}": {
+      "delete": {
+        "summary": "Deletes the User, which signs them out on every device.",
+        "operationId": "delete_user",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "description": "The User's ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/UserId"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          },
+          "400": {
+            "description": "The request was malformed or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request was not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the Instance Administrator can do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "forbidden"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "There's no such User",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_DeleteUserRequestError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The Instance Administrator can't be deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_DeleteUserRequestError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session_cookie": [
+              "instance_administrator"
+            ]
+          },
+          {
+            "session_token": [
+              "instance_administrator"
+            ]
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -1162,20 +2171,36 @@
           {
             "type": "object",
             "required": [
+              "reason",
               "code"
             ],
             "properties": {
               "code": {
                 "type": "string",
                 "enum": [
-                  "invalid_fields"
+                  "invalid_username"
                 ]
               },
-              "password": {
-                "$ref": "#/components/schemas/PasswordProblem"
-              },
-              "username": {
+              "reason": {
                 "$ref": "#/components/schemas/UsernameProblem"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "reason",
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_password"
+                ]
+              },
+              "reason": {
+                "$ref": "#/components/schemas/PasswordProblem"
               }
             }
           },
@@ -1262,7 +2287,7 @@
       },
       "CurrentUser": {
         "type": "object",
-        "description": "The signed-in User, including what only this User can see: the Instance Administrator status\nand the User Preferences.",
+        "description": "The signed-in User, including what only this User can see: their User Preferences.",
         "required": [
           "id",
           "username",
@@ -1284,6 +2309,58 @@
           }
         }
       },
+      "DeleteInvitationRequestError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invitation_not_found"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "The failures of a request to delete an Invitation."
+      },
+      "DeleteUserRequestError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "user_not_found"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "cannot_delete_administrator"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "The failures of a request to delete a User."
+      },
       "ErrorBody_CreateInstanceAdministratorRequestError": {
         "allOf": [
           {
@@ -1291,20 +2368,36 @@
               {
                 "type": "object",
                 "required": [
+                  "reason",
                   "code"
                 ],
                 "properties": {
                   "code": {
                     "type": "string",
                     "enum": [
-                      "invalid_fields"
+                      "invalid_username"
                     ]
                   },
-                  "password": {
-                    "$ref": "#/components/schemas/PasswordProblem"
-                  },
-                  "username": {
+                  "reason": {
                     "$ref": "#/components/schemas/UsernameProblem"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "reason",
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "invalid_password"
+                    ]
+                  },
+                  "reason": {
+                    "$ref": "#/components/schemas/PasswordProblem"
                   }
                 }
               },
@@ -1324,6 +2417,92 @@
               }
             ],
             "description": "The failures of a request to create the Instance Administrator."
+          },
+          {
+            "type": "object",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The failure in English, for developers rather than users"
+              }
+            }
+          }
+        ],
+        "description": "The body of every error response: the error's `code` and details, and a message."
+      },
+      "ErrorBody_DeleteInvitationRequestError": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "invitation_not_found"
+                    ]
+                  }
+                }
+              }
+            ],
+            "description": "The failures of a request to delete an Invitation."
+          },
+          {
+            "type": "object",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The failure in English, for developers rather than users"
+              }
+            }
+          }
+        ],
+        "description": "The body of every error response: the error's `code` and details, and a message."
+      },
+      "ErrorBody_DeleteUserRequestError": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "user_not_found"
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "cannot_delete_administrator"
+                    ]
+                  }
+                }
+              }
+            ],
+            "description": "The failures of a request to delete a User."
           },
           {
             "type": "object",
@@ -1396,6 +2575,144 @@
               }
             ],
             "description": "The failures of a request to sign in."
+          },
+          {
+            "type": "object",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The failure in English, for developers rather than users"
+              }
+            }
+          }
+        ],
+        "description": "The body of every error response: the error's `code` and details, and a message."
+      },
+      "ErrorBody_RedeemInvitationRequestError": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "reason",
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "invalid_username"
+                    ]
+                  },
+                  "reason": {
+                    "$ref": "#/components/schemas/UsernameProblem"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "reason",
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "invalid_password"
+                    ]
+                  },
+                  "reason": {
+                    "$ref": "#/components/schemas/PasswordProblem"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "username_taken"
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "description": "No Invitation has the code, or it expired or created its Max Uses of Users",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "invitation_not_redeemable"
+                    ]
+                  }
+                }
+              }
+            ],
+            "description": "The failures of a request to redeem an Invitation."
+          },
+          {
+            "type": "object",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The failure in English, for developers rather than users"
+              }
+            }
+          }
+        ],
+        "description": "The body of every error response: the error's `code` and details, and a message."
+      },
+      "ErrorBody_UpdateInvitationRequestError": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "invitation_not_found"
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "description": "The Invitation has created more Users than the Max Uses already",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "max_uses_too_low"
+                    ]
+                  }
+                }
+              }
+            ],
+            "description": "The failures of a request to change an Invitation."
           },
           {
             "type": "object",
@@ -1554,6 +2871,107 @@
               "null"
             ],
             "description": "The Sentry DSN the web app reports its errors to, or null when it reports none"
+          }
+        }
+      },
+      "Invitation": {
+        "type": "object",
+        "description": "A link that lets new people create their account, until it expires or reaches its Max Uses.",
+        "required": [
+          "id",
+          "code",
+          "max_uses",
+          "uses",
+          "expires_at"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "The code in the link"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When it stops working"
+          },
+          "id": {
+            "$ref": "#/components/schemas/InvitationId"
+          },
+          "max_uses": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "description": "The most Users it can create, or null for no limit",
+            "minimum": 1
+          },
+          "uses": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The Users it created"
+          }
+        }
+      },
+      "InvitationCheck": {
+        "type": "object",
+        "description": "Whether an Invitation can still be redeemed.",
+        "required": [
+          "redeemable"
+        ],
+        "properties": {
+          "redeemable": {
+            "type": "boolean",
+            "description": "False when no Invitation has the code, or when it expired or created its Max Uses of Users"
+          }
+        }
+      },
+      "InvitationId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "The unique ID of an Invitation."
+      },
+      "InvitationRedemption": {
+        "type": "object",
+        "description": "A new person's account, and the code of the Invitation they create it with.",
+        "required": [
+          "code",
+          "username",
+          "password",
+          "locale"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "The code in the Invitation's link"
+          },
+          "locale": {
+            "$ref": "#/components/schemas/Locale",
+            "description": "The Locale of the visitor's browser"
+          },
+          "password": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "InvitationSettings": {
+        "type": "object",
+        "description": "The settings the Instance Administrator chooses for an Invitation.",
+        "required": [
+          "max_uses"
+        ],
+        "properties": {
+          "max_uses": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "description": "The most Users it can create, or null for no limit",
+            "minimum": 1
           }
         }
       },
@@ -1720,6 +3138,76 @@
         ],
         "description": "Potential errors when parsing Passwords"
       },
+      "RedeemInvitationRequestError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "reason",
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_username"
+                ]
+              },
+              "reason": {
+                "$ref": "#/components/schemas/UsernameProblem"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "reason",
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_password"
+                ]
+              },
+              "reason": {
+                "$ref": "#/components/schemas/PasswordProblem"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "username_taken"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "No Invitation has the code, or it expired or created its Max Uses of Users",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invitation_not_redeemable"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "The failures of a request to redeem an Invitation."
+      },
       "SearchResult": {
         "allOf": [
           {
@@ -1816,6 +3304,66 @@
           "en",
           "fr"
         ]
+      },
+      "UpdateInvitationRequestError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invitation_not_found"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "The Invitation has created more Users than the Max Uses already",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "max_uses_too_low"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "The failures of a request to change an Invitation."
+      },
+      "User": {
+        "type": "object",
+        "description": "A User as the list of Users shows them.",
+        "required": [
+          "id",
+          "username",
+          "is_instance_administrator",
+          "member_since"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/UserId"
+          },
+          "is_instance_administrator": {
+            "type": "boolean"
+          },
+          "member_since": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When they created their account"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
       },
       "UserId": {
         "type": "string",

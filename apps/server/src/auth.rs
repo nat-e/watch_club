@@ -65,6 +65,27 @@ where
     }
 }
 
+/// Proof that the Instance Administrator signed the request: endpoints only they can call take it
+/// as an argument. Requests without a valid session fail with a 401, and other Users' with a 403.
+/// Their `security` names the `instance_administrator` role, so that their description lists the
+/// 403.
+pub(crate) struct InstanceAdministrator;
+
+impl<S: Send + Sync> FromRequestParts<S> for InstanceAdministrator
+where
+    Pool: FromRef<S>,
+{
+    type Rejection = Response;
+
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Response> {
+        let current_user = CurrentUser::from_request_parts(parts, state).await?;
+        if !current_user.is_instance_administrator {
+            return Err(ApiError::Forbidden.into_response());
+        }
+        Ok(Self)
+    }
+}
+
 /// The browser's session cookie, which keeps it signed in. Scripts can't read it, and other
 /// sites can't make the browser send it.
 pub(crate) struct SessionCookie {
