@@ -1,11 +1,9 @@
-import {useQueryClient, useSuspenseQuery} from '@tanstack/react-query';
+import {useSuspenseQuery} from '@tanstack/react-query';
 import {createFileRoute, Link, useNavigate} from '@tanstack/react-router';
-import {hasCode, resetPassword} from '@watchclub/api';
-import {currentUserQuery, forgetCurrentUser} from '@watchclub/core/accounts/current-user';
 import {
   PASSWORD_MIN_LENGTH,
   passwordResetLinkQuery,
-  usePasswordProblemMessage,
+  useResetPasswordFormOptions,
 } from '@watchclub/core/accounts/passwords';
 import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
@@ -23,7 +21,7 @@ interface ResetPasswordSearch {
 /**
  * The page of a Password Reset Link, where a User who forgot their password chooses a new one, then
  * signs in with it. It also works for a browser that's signed in, as it may be the User's, who
- * can't change their password in Settings without the current one.
+ * can't change their password in Settings without the current one, and signs it out.
  */
 export const Route = createFileRoute('/_signed-out/reset-password')({
   validateSearch: (search): ResetPasswordSearch => ({
@@ -53,53 +51,16 @@ function PasswordReset({token}: {token: string}) {
   );
 }
 
-/**
- * The form with the User's new password, typed twice. Once it's saved, the API has signed the User
- * out everywhere, and they go sign in with it.
- */
+/** The form with the User's new password, typed twice, after which they go sign in with it. */
 function NewPasswordForm({token, username}: {token: string; username: string}) {
   const {t} = useTranslation(['web', 'core']);
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const passwordProblemMessage = usePasswordProblemMessage();
-  const form = useAppForm({
-    defaultValues: {password: '', passwordConfirmation: ''},
-    validators: [
-      {
-        // On submit only, as the User may not have typed the confirmation yet
-        triggers: [],
-        run: ({value, createErrorMap}) => {
-          const errors = createErrorMap();
-          if (value.passwordConfirmation !== value.password) {
-            errors.fields.passwordConfirmation = t($ => $.core.password.passwordsDiffer);
-          }
-          return errors;
-        },
-      },
-    ],
-    onSubmit: async ({value, createValidationError}) => {
-      const {error} = await resetPassword({body: {token, password: value.password}});
-      if (error === undefined) {
-        // When this browser was signed in as the User, the API signed it out too
-        const signedInUser = queryClient.getQueryData(currentUserQuery.queryKey);
-        if (signedInUser?.username === username) {
-          await forgetCurrentUser(queryClient);
-        }
-        toast.success(t($ => $.web.resetPassword.saved));
-        await navigate({to: '/sign-in'});
-        return null;
-      }
-      if (hasCode(error, 'invalid_password')) {
-        return createValidationError({fields: {password: passwordProblemMessage(error.reason)}});
-      }
-      // It expired, or the Instance Administrator replaced it, since the page opened
-      if (hasCode(error, 'link_no_longer_works')) {
-        queryClient.setQueryData(passwordResetLinkQuery(token).queryKey, {username: null});
-        return null;
-      }
-      return createValidationError(t($ => $.core.errors.somethingWentWrong));
-    },
-  });
+  const form = useAppForm(
+    useResetPasswordFormOptions(token, async () => {
+      toast.success(t($ => $.web.resetPassword.saved));
+      await navigate({to: '/sign-in'});
+    }),
+  );
 
   return (
     <Card>

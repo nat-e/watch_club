@@ -15,12 +15,13 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
     ApiContext,
+    auth::CurrentSession,
     db::Pool,
     domain::{
         InternalError,
         accounts::{
             self, AudioLanguage, ChangePasswordError, CurrentUser, Locale, Password, PasswordError,
-            SessionToken, TrackLanguage, UserId, UserPreferences,
+            TrackLanguage, UserId, UserPreferences,
         },
     },
     error::{self, ApiError, ErrorBody},
@@ -76,15 +77,14 @@ async fn update_preferences(
 )]
 async fn change_password(
     State(db): State<Pool>,
-    current_user: CurrentUser,
-    session: SessionToken,
+    session: CurrentSession,
     Json(request): Json<ChangePasswordRequest>,
 ) -> Result<StatusCode, ChangePasswordRequestError> {
     let new_password = Password::parse(request.new_password)?;
     accounts::change_password(
         &db,
-        current_user.id,
-        &session,
+        session.user.id,
+        &session.token,
         request.current_password,
         new_password,
     )

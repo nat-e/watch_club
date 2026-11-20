@@ -4,14 +4,17 @@
  * one.
  */
 import {formOptions} from '@tanstack/react-form';
-import {queryOptions} from '@tanstack/react-query';
+import {queryOptions, useQueryClient} from '@tanstack/react-query';
 import {
   changePassword,
   checkPasswordResetLinkOptions,
   hasCode,
+  logout,
   type PasswordProblem,
+  resetPassword,
 } from '@watchclub/api';
 import {useTranslation} from 'react-i18next';
+import {forgetCurrentUser} from './current-user';
 
 /** The fewest characters a password has, which its hint says */
 export const PASSWORD_MIN_LENGTH = 8;
@@ -36,6 +39,7 @@ export function usePasswordProblemMessage(): (problem: PasswordProblem) => strin
  */
 export function useChangePasswordFormOptions(onChanged: () => void) {
   const {t} = useTranslation('core');
+  const queryClient = useQueryClient();
   const passwordProblemMessage = usePasswordProblemMessage();
   return formOptions({
     defaultValues: {currentPassword: '', newPassword: '', passwordConfirmation: ''},
@@ -75,6 +79,11 @@ export function useChangePasswordFormOptions(onChanged: () => void) {
           fields: {newPassword: passwordProblemMessage(error.reason)},
         });
       }
+      // The session ended, such as when the password changed on another device
+      if (hasCode(error, 'unauthorized')) {
+        await forgetCurrentUser(queryClient);
+        return null;
+      }
       return createValidationError(t($ => $.core.errors.somethingWentWrong));
     },
   });
@@ -86,4 +95,52 @@ export function useChangePasswordFormOptions(onChanged: () => void) {
  */
 export function passwordResetLinkQuery(token: string) {
   return queryOptions(checkPasswordResetLinkOptions({query: {token}}));
+}
+
+/**
+ * Returns the options of the form that sets a new password with the Password Reset Link that has
+ * this token, for each app's `useAppForm`: the new password, typed twice. Once it's saved, the API
+ * has signed the User out everywhere, and this device is signed out too, even when another User was
+ * signed in on it, so that it's ready for them to sign in: `onReset` then runs, such as to go sign
+ * in. When the link stops working meanwhile, its query says so.
+ */
+export function useResetPasswordFormOptions(token: string, onReset: () => Promise<void>) {
+  const {t} = useTranslation('core');
+  const queryClient = useQueryClient();
+  const passwordProblemMessage = usePasswordProblemMessage();
+  return formOptions({
+    defaultValues: {password: '', passwordConfirmation: ''},
+    validators: [
+      {
+        // On submit only, as the User may not have typed the confirmation yet
+        triggers: [],
+        run: ({value, createErrorMap}) => {
+          const errors = createErrorMap();
+          if (value.passwordConfirmation !== value.password) {
+            errors.fields.passwordConfirmation = t($ => $.core.password.passwordsDiffer);
+          }
+          return errors;
+        },
+      },
+    ],
+    onSubmit: async ({value, createValidationError}) => {
+      const {error} = await resetPassword({body: {token, password: value.password}});
+      if (error === undefined) {
+        // Succeeds when nobody is signed in on this device, such as when it was the User
+        await logout();
+        await forgetCurrentUser(queryClient);
+        await onReset();
+        return null;
+      }
+      if (hasCode(error, 'invalid_password')) {
+        return createValidationError({fields: {password: passwordProblemMessage(error.reason)}});
+      }
+      // It expired, or the Instance Administrator replaced it, since the page opened
+      if (hasCode(error, 'link_no_longer_works')) {
+        queryClient.setQueryData(passwordResetLinkQuery(token).queryKey, {username: null});
+        return null;
+      }
+      return createValidationError(t($ => $.core.errors.somethingWentWrong));
+    },
+  });
 }
