@@ -7,7 +7,7 @@ use axum::{Router, extract::FromRef};
 // Lets the paths in `sqlx.toml` start with `::watch_club` here too, as in the binaries and tests
 extern crate self as watch_club;
 
-mod api_client;
+pub mod api_client;
 mod auth;
 pub mod config;
 pub mod db;
@@ -17,7 +17,7 @@ pub mod jobs;
 pub mod observability;
 pub mod openapi;
 pub mod routes;
-mod utils;
+pub mod utils;
 mod web;
 
 /// What the request handlers share, which `router` takes. Jobs have theirs, `jobs::JobContext`.
@@ -28,6 +28,9 @@ pub struct ApiContext {
     pub instance_name: Arc<str>,
     pub apps_sentry: AppsSentry,
     pub metadata_providers: domain::contents::MetadataProviders,
+    pub encryption_key: utils::encryption::EncryptionKey,
+    /// The connections that the calls to Sources' apps share
+    pub http_client: api_client::HttpClient,
 }
 
 /// The Sentry settings the apps report their errors with, which `GET /api/instance` gives them.

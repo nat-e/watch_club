@@ -98,6 +98,7 @@ impl Tmdb {
                 ],
             )
             .await
+            .map_err(anyhow::Error::from)
     }
 }
 

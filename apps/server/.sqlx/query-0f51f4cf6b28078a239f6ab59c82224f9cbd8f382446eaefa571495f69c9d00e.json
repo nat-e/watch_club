@@ -1,0 +1,157 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT id, source_type, media_type, path, url, api_key_encrypted,\n            quality_profile_id, quality_profile_name, root_folder_path, local_root_folder_path\n        FROM sources\n        ORDER BY inserted_at, id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "sources",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "source_type",
+        "type_info": {
+          "Custom": {
+            "name": "source_type",
+            "kind": {
+              "Enum": [
+                "filesystem",
+                "radarr",
+                "sonarr",
+                "sportarr"
+              ]
+            }
+          }
+        },
+        "origin": {
+          "Table": {
+            "table": "sources",
+            "name": "source_type"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "media_type",
+        "type_info": {
+          "Custom": {
+            "name": "media_type",
+            "kind": {
+              "Enum": [
+                "movie",
+                "tv_show_episode",
+                "sports_event"
+              ]
+            }
+          }
+        },
+        "origin": {
+          "Table": {
+            "table": "sources",
+            "name": "media_type"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "path",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "sources",
+            "name": "path"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "url",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "sources",
+            "name": "url"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "api_key_encrypted",
+        "type_info": "Bytea",
+        "origin": {
+          "Table": {
+            "table": "sources",
+            "name": "api_key_encrypted"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "quality_profile_id",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "sources",
+            "name": "quality_profile_id"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "quality_profile_name",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "sources",
+            "name": "quality_profile_name"
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "root_folder_path",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "sources",
+            "name": "root_folder_path"
+          }
+        }
+      },
+      {
+        "ordinal": 9,
+        "name": "local_root_folder_path",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "sources",
+            "name": "local_root_folder_path"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "0f51f4cf6b28078a239f6ab59c82224f9cbd8f382446eaefa571495f69c9d00e"
+}

@@ -240,9 +240,9 @@ function UserMenu({user}: {user: CurrentUser}) {
                 <icons.FilmIcon />
                 {t($ => $.web.mediaBrowser.title)}
               </DropdownMenuItem>
-              <DropdownMenuItem render={<Link to="/admin/media/sources" />}>
+              <DropdownMenuItem render={<Link to="/admin/sources" />}>
                 <icons.FolderInputIcon />
-                {t($ => $.web.mediaSources.title)}
+                {t($ => $.web.sources.title)}
               </DropdownMenuItem>
               <DropdownMenuItem render={<Link to="/admin/problem-reports" />}>
                 <icons.FlagIcon />

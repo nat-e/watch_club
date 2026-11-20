@@ -48,9 +48,6 @@ export default {
   mediaBrowser: {
     title: 'Media browser',
   },
-  mediaSources: {
-    title: 'Media sources',
-  },
   newAccount: {
     chooseUsername: 'Choose a username',
     submit: 'Create account',
@@ -96,6 +93,107 @@ export default {
     description: 'The main navigation and your menu.',
     title: 'Sidebar',
     toggle: 'Show or hide the sidebar',
+  },
+  sources: {
+    actions: 'Actions for {{source}}',
+    add: 'Add {{type}} source',
+    configured: 'Source configured',
+    connectionErrors: {
+      invalidApiKey:
+        "This API key doesn't work with {{app}}. Find yours in {{app}} under Settings > General.",
+      invalidServarrUrl: 'Could not connect to {{app}} at this URL.',
+    },
+    delete: 'Delete…',
+    deleted: 'Source deleted',
+    deleteDialog: {
+      confirm: 'Delete source',
+      consequence: 'Its media will be removed from WatchClub too. Their files stay on disk.',
+      deleting: 'Deleting…',
+      intro: 'This will delete this source:',
+      title: 'Delete source',
+    },
+    description:
+      "Sources are where WatchClub finds its videos, and where it sends your friends' requests.",
+    edit: 'Edit',
+    filesystemForm: {
+      create: 'Create source',
+      createDescription: 'Choose what to import from your filesystem.',
+      createTitle: 'Configure source',
+      directory: 'Directory',
+      directoryHint: 'WatchClub looks for files of this type in the folder and all its subfolders.',
+      editTitle: 'Edit source',
+      enterPath: 'Enter a path',
+      mediaType: 'Media type',
+      mediaTypeLocked: "You can't change the media type later.",
+      save: 'Save changes',
+    },
+    folderErrors: {
+      notAbsolute: "Enter the folder's full path, such as /media/movies.",
+      notFound: "We can't find this folder on WatchClub's server. Check the path.",
+    },
+    mediaTypes: {
+      movie: 'Movie',
+      sportsEvent: 'Sports event',
+      tvShowEpisode: 'TV show episode',
+    },
+    none: 'No {{type}} sources yet',
+    qualityProfileErrors: {
+      noneInApp: '{{app}} has no quality profiles. Add one in {{app}}, then connect again.',
+    },
+    rootFolderErrors: {
+      noneInApp: '{{app}} has no root folders. Add one in {{app}}, then connect again.',
+    },
+    servarrForm: {
+      add: 'Add source',
+      apiKey: 'API key',
+      apiKeyHint: 'Your {{app}} API key. Find it in {{app}} under Settings > General.',
+      apiKeyKeepHint:
+        "Leave this empty to keep the current key, or enter a new one from {{app}}'s Settings > General.",
+      configureDescription:
+        "Choose the quality profile and root folder WatchClub uses for your friends' requests.",
+      configureTitle: 'Configure source',
+      connect: 'Connect',
+      connectDescription: 'Enter the credentials to connect to your {{app}} server.',
+      connecting: 'Connecting…',
+      connectTitle: 'Connect {{app}} server',
+      enterApiKey: 'Enter the API key',
+      enterUrl: 'Enter the URL',
+      localRootFolder: 'Path in WatchClub (optional)',
+      localRootFolderHint:
+        'WatchClub needs to reach this folder to play its files. If it sees the folder at another path, for example in Docker, enter that path.',
+      qualityProfile: 'Quality profile',
+      qualityProfileHint: 'The quality used for requests sent to this source.',
+      rootFolder: 'Root folder',
+      rootFolderHint: 'Where requested files go, and where WatchClub imports them from.',
+      save: 'Save changes',
+      url: '{{app}} URL',
+      urlHint: 'The address where WatchClub reaches {{app}}.',
+    },
+    title: 'Sources',
+    types: {
+      filesystem: {
+        description: 'Import media from a directory on your hard drive or a remote filesystem.',
+        empty: 'Configure a Filesystem source to scan a directory for media.',
+        name: 'Filesystem',
+      },
+      radarr: {
+        description: 'Import movies from Radarr, and send it movie requests.',
+        empty: 'Connect a Radarr server to import movies and fulfill movie requests.',
+        name: 'Radarr',
+      },
+      sonarr: {
+        description: 'Import TV shows from Sonarr, and send it TV show requests.',
+        empty: 'Connect a Sonarr server to import TV shows and fulfill TV show requests.',
+        name: 'Sonarr',
+      },
+      sportarr: {
+        description: 'Import sports events from Sportarr, and send it sports event requests.',
+        empty:
+          'Connect a Sportarr server to import sports events and fulfill sports event requests.',
+        name: 'Sportarr',
+      },
+    },
+    updated: 'Source updated',
   },
   toaster: {
     closeNotification: 'Close notification',

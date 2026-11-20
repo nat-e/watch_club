@@ -15,6 +15,7 @@ use tokio_util::sync::CancellationToken;
 use tracing::Level;
 use watch_club::{
     ApiContext, AppsSentry,
+    api_client::HttpClient,
     config::Config,
     db,
     domain::contents::{Hardcover, MetadataProviders, Sportarr, Tmdb},
@@ -40,10 +41,11 @@ async fn serve(config: Config) -> anyhow::Result<()> {
     let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, config.port))
         .await
         .with_context(|| format!("failed to listen on port {}", config.port))?;
+    let http_client = HttpClient::new()?;
     let metadata_providers = MetadataProviders {
-        tmdb: Tmdb::new(&config.tmdb_api_token)?,
-        sportarr: Sportarr::new()?,
-        hardcover: Hardcover::new(&config.hardcover_api_token)?,
+        tmdb: Tmdb::new(&http_client, &config.tmdb_api_token)?,
+        sportarr: Sportarr::new(&http_client),
+        hardcover: Hardcover::new(&http_client, &config.hardcover_api_token)?,
     };
     let shutdown = CancellationToken::new();
     cancel_on_signals(shutdown.clone()).context("failed to listen for shutdown signals")?;
@@ -71,6 +73,8 @@ async fn serve(config: Config) -> anyhow::Result<()> {
                 environment: config.observability.sentry_environment.into(),
             },
             metadata_providers,
+            encryption_key: config.encryption_key,
+            http_client,
         }),
     )
     .with_graceful_shutdown(shutdown.clone().cancelled_owned());

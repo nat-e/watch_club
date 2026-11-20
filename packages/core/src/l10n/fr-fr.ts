@@ -44,6 +44,7 @@ export default {
     tvShow: 'Série',
   },
   controls: {
+    back: 'Retour',
     cancel: 'Annuler',
     close: 'Fermer',
     tryAgain: 'Réessayer',

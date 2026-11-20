@@ -15,8 +15,8 @@ interface ErrorBody {
 }
 
 /**
- * An error the API sent. It holds the body's code, message and details, such as the problems with
- * each field, so it matches the error type of the request that failed.
+ * An error the API sent. It holds the body's code, message and details, such as the errors in each
+ * field, so it matches the error type of the request that failed.
  */
 export class ApiError extends Error {
   override readonly name = 'ApiError';

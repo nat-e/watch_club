@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO sources (\n            source_type, media_type, url, api_key_encrypted, quality_profile_id,\n            quality_profile_name, root_folder_path, local_root_folder_path\n        )\n        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)\n        RETURNING id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "sources",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "source_type",
+            "kind": {
+              "Enum": [
+                "filesystem",
+                "radarr",
+                "sonarr",
+                "sportarr"
+              ]
+            }
+          }
+        },
+        {
+          "Custom": {
+            "name": "media_type",
+            "kind": {
+              "Enum": [
+                "movie",
+                "tv_show_episode",
+                "sports_event"
+              ]
+            }
+          }
+        },
+        "Text",
+        "Bytea",
+        "Int4",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "8fe4741536ede601b3cd92cddaa13d268c992ecbeabfeaba8a68b446e89ccf58"
+}

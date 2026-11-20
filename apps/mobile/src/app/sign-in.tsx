@@ -5,7 +5,7 @@ import {useTranslation} from 'react-i18next';
 import {useAppForm} from '@/components/forms/form';
 import type {FocusableField} from '@/components/forms/text-field';
 import {FormScreen} from '@/components/layouts/form-screen';
-import {checkInstance, type InstanceProblem} from '@/instance-url';
+import {checkInstance, type InstanceError} from '@/instance-url';
 import {useSession, useSessionStore} from '@/session';
 
 /** The form that signs the User in to their WatchClub: its address, username and password. */
@@ -100,7 +100,7 @@ function useInstanceForm(
   signIn: (instanceUrl: string) => Promise<void>,
 ) {
   const {t} = useTranslation('mobile');
-  const messages: Record<InstanceProblem, string> = {
+  const messages: Record<InstanceError, string> = {
     invalidAddress: t($ => $.mobile.signIn.enterAddress),
     unreachable: t($ => $.mobile.signIn.unreachable),
     needsSetup: t($ => $.mobile.signIn.needsSetup),
@@ -116,7 +116,7 @@ function useInstanceForm(
             return createOutput(check.url);
           }
           const errors = createErrorMap();
-          errors.fields.address = messages[check.problem];
+          errors.fields.address = messages[check.error];
           return errors;
         },
       },

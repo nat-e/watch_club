@@ -1,7 +1,50 @@
-//! The Contents of the dev catalog in `dev/catalog/media`, by External ID, which the seed saves.
-//! It will import the catalog's files instead once WatchClub has Media Sources.
+//! The dev catalog in `dev/catalog/media`, which the seed saves: its Contents, by External ID, and
+//! the Sources of the Radarr, Sonarr and Sportarr that `pnpm catalog` runs. It will import the
+//! catalog's files instead of its Contents once Sources import Media Files.
 
-use watch_club::domain::contents::{ExternalContentId, SportarrId, TmdbId};
+use watch_club::domain::{
+    contents::{ExternalContentId, SportarrId, TmdbId},
+    sources::ServarrApp,
+};
+
+/// A Source of one of the catalog's apps, with the Source Configuration of the catalog's snapshot.
+pub struct CatalogSource {
+    pub app: ServarrApp,
+    pub url: &'static str,
+    pub api_key: &'static str,
+    pub quality_profile_id: i32,
+    pub root_folder_path: &'static str,
+    /// The root folder in the primary worktree, which docker-compose.dev.yml mounts in the app
+    pub local_root_folder: &'static str,
+}
+
+/// The Sources of the catalog's apps
+pub const SOURCES: [CatalogSource; 3] = [
+    CatalogSource {
+        app: ServarrApp::Radarr,
+        url: "http://localhost:4103",
+        api_key: "bda1c59d732041b6b519f84d38478ca0",
+        quality_profile_id: 1,
+        root_folder_path: "/media/radarr",
+        local_root_folder: "tmp/catalog/radarr",
+    },
+    CatalogSource {
+        app: ServarrApp::Sonarr,
+        url: "http://localhost:4104",
+        api_key: "24388b48b19d420f9df41ba1976e5cc6",
+        quality_profile_id: 1,
+        root_folder_path: "/media/sonarr",
+        local_root_folder: "tmp/catalog/sonarr",
+    },
+    CatalogSource {
+        app: ServarrApp::Sportarr,
+        url: "http://localhost:4105",
+        api_key: "cd24fe4dbb484e0fa9079e51edb71038",
+        quality_profile_id: 1,
+        root_folder_path: "/media/sportarr",
+        local_root_folder: "tmp/catalog/sportarr",
+    },
+];
 
 /// The catalog's Movies, by TMDB ID
 #[expect(

@@ -25,6 +25,8 @@ docker run --detach --publish 4000:4000 \
 
 Database migrations run on start.
 
+WatchClub encrypts the secrets it stores, such as the API keys of Radarr, Sonarr and Sportarr. By default, it uses a key written in its code, so anyone with a copy of the database can read them. To protect them, generate your own key with `openssl rand -base64 32` and put it in `ENCRYPTION_KEY`. When you set or change the key, enter the API keys again.
+
 To see what the server is doing, through its logs, OpenTelemetry or Sentry, read [docs/observability.md](docs/observability.md).
 
 ## Contributing

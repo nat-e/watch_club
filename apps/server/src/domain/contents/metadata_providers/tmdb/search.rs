@@ -2,7 +2,6 @@
 
 use std::num::NonZeroU32;
 
-use anyhow::Context;
 use jiff::civil::Date;
 use serde::Deserialize;
 
@@ -45,9 +44,9 @@ impl Tmdb {
             ];
             let found: MultiSearchPage = self
                 .api
-                .get("/search/multi", &[], &params)
-                .await?
-                .context("TMDB answered GET /search/multi with 404 Not Found")?;
+                .get_required("/search/multi", &[], &params)
+                .await
+                .map_err(anyhow::Error::from)?;
 
             let next_page = found.next_page();
             let results: Vec<_> = found
