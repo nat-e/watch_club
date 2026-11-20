@@ -94,7 +94,13 @@ async fn create_instance_administrator(
     (StatusCode, CookieJar, Json<CurrentUserResponse>),
     CreateInstanceAdministratorRequestError,
 > {
-    let (username, password, locale) = request.parse()?;
+    let CreateInstanceAdministratorRequest {
+        username,
+        password,
+        locale,
+    } = request;
+    let username = Username::parse(&username)?;
+    let password = Password::parse(password)?;
     let (user, token) =
         accounts::create_instance_administrator(&db, username, password, locale).await?;
     Ok((StatusCode::CREATED, cookie.set(&token), Json(user.into())))
@@ -111,36 +117,19 @@ struct CreateInstanceAdministratorRequest {
     locale: Locale,
 }
 
-impl CreateInstanceAdministratorRequest {
-    /// Checks the username and password, and reports the problems with both at once.
-    fn parse(
-        self,
-    ) -> Result<(Username, Password, Locale), CreateInstanceAdministratorRequestError> {
-        match (
-            Username::parse(&self.username),
-            Password::parse(self.password),
-        ) {
-            (Ok(username), Ok(password)) => Ok((username, password, self.locale)),
-            (username, password) => Err(CreateInstanceAdministratorRequestError::InvalidFields {
-                username: username.err(),
-                password: password.err(),
-            }),
-        }
-    }
-}
-
 /// The failures of a request to create the Instance Administrator.
 #[derive(Debug, Serialize, ToSchema, thiserror::Error)]
 #[serde(tag = "code", rename_all = "snake_case")]
 enum CreateInstanceAdministratorRequestError {
-    #[error("the username or password breaks the rules")]
-    InvalidFields {
-        #[serde(skip_serializing_if = "Option::is_none")]
-        #[schema(nullable = false)]
-        username: Option<UsernameError>,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        #[schema(nullable = false)]
-        password: Option<PasswordError>,
+    #[error(transparent)]
+    InvalidUsername {
+        #[from]
+        reason: UsernameError,
+    },
+    #[error(transparent)]
+    InvalidPassword {
+        #[from]
+        reason: PasswordError,
     },
     #[error("WatchClub already has its Instance Administrator")]
     InstanceAdministratorAlreadyExists,
@@ -163,7 +152,9 @@ impl From<CreateInstanceAdministratorError> for CreateInstanceAdministratorReque
 impl IntoResponse for CreateInstanceAdministratorRequestError {
     fn into_response(self) -> Response {
         let status = match self {
-            Self::InvalidFields { .. } => StatusCode::UNPROCESSABLE_ENTITY,
+            Self::InvalidUsername { .. } | Self::InvalidPassword { .. } => {
+                StatusCode::UNPROCESSABLE_ENTITY
+            }
             Self::InstanceAdministratorAlreadyExists => StatusCode::CONFLICT,
             Self::Internal(error) => return ApiError::from(error).into_response(),
         };

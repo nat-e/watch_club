@@ -93,11 +93,31 @@ async fn refuses_a_taken_username_and_gives_the_use_back(db: PgPool) {
 }
 
 #[database_test]
-async fn says_which_rules_the_account_breaks(db: PgPool) {
+async fn says_which_rule_the_username_breaks(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    support::create_invitation(&db, "FRIENDS", None).await;
+
+    let response = Client::new(&db)
+        .post("/api/invitations/redeem", redemption("FRIENDS", "Ada!"))
+        .await;
+
+    assert_eq!(response.status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(
+        response.body,
+        json!({
+            "code": "invalid_username",
+            "message": "the username has characters other than lowercase letters, digits and underscores",
+            "reason": { "code": "invalid_characters" },
+        })
+    );
+}
+
+#[database_test]
+async fn says_which_rule_the_password_breaks(db: PgPool) {
     let db = watch_club::db::instrument(db);
     support::create_invitation(&db, "FRIENDS", None).await;
     let account =
-        json!({ "code": "FRIENDS", "username": "Ada!", "password": "short", "locale": "en-US" });
+        json!({ "code": "FRIENDS", "username": "ada", "password": "short", "locale": "en-US" });
 
     let response = Client::new(&db)
         .post("/api/invitations/redeem", account)
@@ -107,10 +127,9 @@ async fn says_which_rules_the_account_breaks(db: PgPool) {
     assert_eq!(
         response.body,
         json!({
-            "code": "invalid_fields",
-            "message": "the username or password breaks the rules",
-            "username": { "code": "invalid_characters" },
-            "password": { "code": "too_short", "min": 8 },
+            "code": "invalid_password",
+            "message": "the password is shorter than 8 characters",
+            "reason": { "code": "too_short", "min": 8 },
         })
     );
 }

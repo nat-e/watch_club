@@ -2171,20 +2171,36 @@
           {
             "type": "object",
             "required": [
+              "reason",
               "code"
             ],
             "properties": {
               "code": {
                 "type": "string",
                 "enum": [
-                  "invalid_fields"
+                  "invalid_username"
                 ]
               },
-              "password": {
-                "$ref": "#/components/schemas/PasswordProblem"
-              },
-              "username": {
+              "reason": {
                 "$ref": "#/components/schemas/UsernameProblem"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "reason",
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_password"
+                ]
+              },
+              "reason": {
+                "$ref": "#/components/schemas/PasswordProblem"
               }
             }
           },
@@ -2352,20 +2368,36 @@
               {
                 "type": "object",
                 "required": [
+                  "reason",
                   "code"
                 ],
                 "properties": {
                   "code": {
                     "type": "string",
                     "enum": [
-                      "invalid_fields"
+                      "invalid_username"
                     ]
                   },
-                  "password": {
-                    "$ref": "#/components/schemas/PasswordProblem"
-                  },
-                  "username": {
+                  "reason": {
                     "$ref": "#/components/schemas/UsernameProblem"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "reason",
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "invalid_password"
+                    ]
+                  },
+                  "reason": {
+                    "$ref": "#/components/schemas/PasswordProblem"
                   }
                 }
               },
@@ -2566,20 +2598,36 @@
               {
                 "type": "object",
                 "required": [
+                  "reason",
                   "code"
                 ],
                 "properties": {
                   "code": {
                     "type": "string",
                     "enum": [
-                      "invalid_fields"
+                      "invalid_username"
                     ]
                   },
-                  "password": {
-                    "$ref": "#/components/schemas/PasswordProblem"
-                  },
-                  "username": {
+                  "reason": {
                     "$ref": "#/components/schemas/UsernameProblem"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "reason",
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "invalid_password"
+                    ]
+                  },
+                  "reason": {
+                    "$ref": "#/components/schemas/PasswordProblem"
                   }
                 }
               },
@@ -3095,20 +3143,36 @@
           {
             "type": "object",
             "required": [
+              "reason",
               "code"
             ],
             "properties": {
               "code": {
                 "type": "string",
                 "enum": [
-                  "invalid_fields"
+                  "invalid_username"
                 ]
               },
-              "password": {
-                "$ref": "#/components/schemas/PasswordProblem"
-              },
-              "username": {
+              "reason": {
                 "$ref": "#/components/schemas/UsernameProblem"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "reason",
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_password"
+                ]
+              },
+              "reason": {
+                "$ref": "#/components/schemas/PasswordProblem"
               }
             }
           },

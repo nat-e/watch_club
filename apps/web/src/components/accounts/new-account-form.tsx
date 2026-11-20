@@ -11,14 +11,15 @@ export interface NewAccount {
   password: string;
 }
 
-/** The problems the API finds with a new account's username and password. */
+/** The first problem the API finds with a new account's username or password. */
 type NewAccountProblem =
-  | {code: 'invalid_fields'; username?: UsernameProblem; password?: PasswordProblem}
+  | {code: 'invalid_username'; reason: UsernameProblem}
+  | {code: 'invalid_password'; reason: PasswordProblem}
   | {code: 'username_taken'};
 
 /**
  * The form that creates an account, on Setup and with an Invitation: a username, and a password
- * typed twice. `createAccount` sends them, and returns the API's problems with them, or null once
+ * typed twice. `createAccount` sends them, and returns the API's problem with them, or null once
  * the account is created or the page handled the failure itself. It throws on other failures, which
  * the form reports.
  */
@@ -77,13 +78,10 @@ export function NewAccountForm({
         return null;
       }
       switch (problem.code) {
-        case 'invalid_fields':
-          return createValidationError({
-            fields: {
-              username: problem.username && usernameMessage(problem.username),
-              password: problem.password && passwordMessage(problem.password),
-            },
-          });
+        case 'invalid_username':
+          return createValidationError({fields: {username: usernameMessage(problem.reason)}});
+        case 'invalid_password':
+          return createValidationError({fields: {password: passwordMessage(problem.reason)}});
         case 'username_taken':
           return createValidationError({
             fields: {username: t($ => $.web.newAccount.usernameTaken)},

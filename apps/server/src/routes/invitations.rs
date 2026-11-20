@@ -239,7 +239,8 @@ async fn redeem_invitation(
         password,
         locale,
     } = request;
-    let (username, password) = parse_credentials(&username, password)?;
+    let username = Username::parse(&username)?;
+    let password = Password::parse(password)?;
     let (user, token) = accounts::redeem_invitation(&db, &code, username, password, locale).await?;
     Ok((StatusCode::CREATED, cookie.set(&token), Json(user.into())))
 }
@@ -257,32 +258,19 @@ struct RedeemInvitationRequest {
     locale: Locale,
 }
 
-/// Checks the username and password, and reports the problems with both at once.
-fn parse_credentials(
-    username: &str,
-    password: SecretString,
-) -> Result<(Username, Password), RedeemInvitationRequestError> {
-    match (Username::parse(username), Password::parse(password)) {
-        (Ok(username), Ok(password)) => Ok((username, password)),
-        (username, password) => Err(RedeemInvitationRequestError::InvalidFields {
-            username: username.err(),
-            password: password.err(),
-        }),
-    }
-}
-
 /// The failures of a request to redeem an Invitation.
 #[derive(Debug, Serialize, ToSchema, thiserror::Error)]
 #[serde(tag = "code", rename_all = "snake_case")]
 enum RedeemInvitationRequestError {
-    #[error("the username or password breaks the rules")]
-    InvalidFields {
-        #[serde(skip_serializing_if = "Option::is_none")]
-        #[schema(nullable = false)]
-        username: Option<UsernameError>,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        #[schema(nullable = false)]
-        password: Option<PasswordError>,
+    #[error(transparent)]
+    InvalidUsername {
+        #[from]
+        reason: UsernameError,
+    },
+    #[error(transparent)]
+    InvalidPassword {
+        #[from]
+        reason: PasswordError,
     },
     #[error("another User has the username")]
     UsernameTaken,
@@ -307,7 +295,10 @@ impl From<RedeemInvitationError> for RedeemInvitationRequestError {
 impl IntoResponse for RedeemInvitationRequestError {
     fn into_response(self) -> Response {
         match self {
-            Self::InvalidFields { .. } | Self::UsernameTaken | Self::InvitationNotRedeemable => {
+            Self::InvalidUsername { .. }
+            | Self::InvalidPassword { .. }
+            | Self::UsernameTaken
+            | Self::InvitationNotRedeemable => {
                 error::response(StatusCode::UNPROCESSABLE_ENTITY, &self)
             }
             Self::Internal(error) => ApiError::from(error).into_response(),

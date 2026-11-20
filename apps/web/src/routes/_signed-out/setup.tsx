@@ -42,7 +42,8 @@ function Setup() {
       return null;
     }
     switch (error.code) {
-      case 'invalid_fields':
+      case 'invalid_username':
+      case 'invalid_password':
         return error;
       // Someone else finished Setup in the meantime
       case 'instance_administrator_already_exists':

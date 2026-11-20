@@ -59,7 +59,8 @@ function Invitation({code}: {code: string}) {
       return null;
     }
     switch (error.code) {
-      case 'invalid_fields':
+      case 'invalid_username':
+      case 'invalid_password':
       case 'username_taken':
         return error;
       // It expired, or others used it up, since the page opened
