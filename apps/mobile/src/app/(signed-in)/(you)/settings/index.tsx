@@ -8,8 +8,8 @@ import {linkRow} from '@/components/lists/link-row';
 import {Feedback} from '@/components/text';
 
 /**
- * Settings, where Users choose their User Preferences: each row opens the screen to change it. Then
- * About, with TMDB's notice.
+ * Settings, where Users choose their User Preferences and change their password: each row opens the
+ * screen to change it. Then About, with TMDB's notice.
  */
 export default function Settings() {
   const {t} = useTranslation(['core', 'mobile']);
@@ -51,6 +51,9 @@ export default function Settings() {
         <FieldGroup.SectionFooter>
           <Feedback hint={t($ => $.core.settings.audioAndSubtitlesDescription)} />
         </FieldGroup.SectionFooter>
+      </FieldGroup.Section>
+      <FieldGroup.Section title={t($ => $.core.settings.security)}>
+        {linkRow({label: t($ => $.core.user.password), href: '/settings/password'})}
       </FieldGroup.Section>
       <FieldGroup.Section>
         {linkRow({label: t($ => $.core.settings.about), href: '/settings/about'})}

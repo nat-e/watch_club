@@ -32,7 +32,7 @@ export function TextField({
   // Material shows the error itself, rather than through `Feedback`, which announces it elsewhere
   useAnnouncement(error);
 
-  const isPassword = purpose === 'current-password';
+  const isPassword = purpose === 'current-password' || purpose === 'new-password';
   const supportingText = error ?? hint;
   return (
     <OutlinedTextField

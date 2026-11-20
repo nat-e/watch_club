@@ -13,7 +13,7 @@ export interface FocusableField {
  * What a text field holds, from which it sets its keyboard, autofill and masking. None of them is
  * capitalized or corrected.
  */
-export type TextFieldPurpose = 'url' | 'username' | 'current-password';
+export type TextFieldPurpose = 'url' | 'username' | 'current-password' | 'new-password';
 
 /** A labelled text field, with its error or hint. */
 export interface TextFieldProps {
@@ -58,7 +58,7 @@ export function TextField({label, purpose, error, hint, ref, ...input}: TextFiel
         modifiers={[textFieldStyle('roundedBorder')]}
         autoComplete={purpose}
         inputMode={purpose === 'url' ? 'url' : undefined}
-        secureTextEntry={purpose === 'current-password'}
+        secureTextEntry={purpose === 'current-password' || purpose === 'new-password'}
         autoCapitalize="none"
         autoCorrect={false}
         {...input}
