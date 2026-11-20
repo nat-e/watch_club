@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.17](https://github.com/nat-e/watch_club/compare/v0.1.16...v0.1.17) (2026-11-20)
+
+
+### Features
+
+* **media:** import new files from every Radarr, Sonarr and Sportarr Media Source every 15 minutes ([#162](https://github.com/nat-e/watch_club/issues/162)) ([1aa1d8c](https://github.com/nat-e/watch_club/commit/1aa1d8cf196a0ce3afdaba0051fe9acfac77a953))
+* **remote:** pick the Quality the TV plays, and report a problem ([#165](https://github.com/nat-e/watch_club/issues/165)) ([63f2610](https://github.com/nat-e/watch_club/commit/63f26103a6cece7c2b1dfe4af1476b8ca8907391))
+
 ## [0.1.16](https://github.com/nat-e/watch_club/compare/v0.1.15...v0.1.16) (2026-11-19)
 
 
