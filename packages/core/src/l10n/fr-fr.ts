@@ -3,9 +3,14 @@ export default {
     title: 'Parcourir',
   },
   contents: {
+    authors: 'Auteurs',
     cast: 'Casting',
     creditKinds: {
+      artist: 'Dessin',
+      author: 'Écriture',
       director: 'Réalisation',
+      illustrator: 'Illustration',
+      narrator: 'Narration',
     },
     episodes: 'Épisodes',
     less: 'Moins',
@@ -14,6 +19,7 @@ export default {
     loadFailed_sportsEvent: "On n'a pas pu charger ce contenu. Réessaie dans un instant.",
     loadFailed_tvShow: "On n'a pas pu charger cette série. Réessaie dans un instant.",
     loading: 'Chargement…',
+    markAsRead: 'Marquer comme lu',
     markAsWatched: 'Marquer comme vu',
     more: 'Plus',
     notFound_book: "On n'a pas trouvé ce livre.",

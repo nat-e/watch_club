@@ -3,11 +3,14 @@ import {Link, linkOptions, notFound, useCanGoBack, useRouter} from '@tanstack/re
 import {type Content, type ContentType, type ExternalContentId, hasCode} from '@watchclub/api';
 import {
   contentQuery,
+  creditedPeople,
   initials,
   LONG_OVERVIEW_LENGTH,
   useContentFacts,
+  useCreditedPeopleHeading,
   useCreditRole,
   useGenreNames,
+  useMarkAsWatchedLabel,
 } from '@watchclub/core/contents/content';
 import {cn} from 'cn';
 import {
@@ -81,16 +84,10 @@ export function ContentPagePending() {
   );
 }
 
-/**
- * A Content's page: its header on its backdrop, under the bar, then its cast. The pages of Sports
- * Events and Books only show their title for now.
- */
+/** A Content's page: its header on its backdrop, under the bar, then its cast or authors. */
 export function ContentPage({externalContentId}: {externalContentId: ExternalContentId}) {
   const {data: content} = useSuspenseQuery(contentQuery(externalContentId));
   const titleRef = useRef<HTMLHeadingElement>(null);
-  if (content.content_type === 'sports_event' || content.content_type === 'book') {
-    return <Page title={content.title} />;
-  }
 
   return (
     // A container, so that the header lays out by the page's width beside the sidebar
@@ -99,7 +96,7 @@ export function ContentPage({externalContentId}: {externalContentId: ExternalCon
       <ContentHeader content={content} titleRef={titleRef} />
       {/* One column, so a long line of text can't widen the page past the screen */}
       <div className="grid grid-cols-1 content-start gap-12 px-page pt-6 pb-page-y">
-        <Cast content={content} />
+        <CreditedPeople content={content} />
       </div>
     </div>
   );
@@ -233,7 +230,13 @@ function ContentHeader({
               ))}
             </ul>
           )}
-          {content.overview && <Overview text={content.overview} />}
+          {content.overview && (
+            <Overview
+              text={content.overview}
+              // sportarr.net writes in English only
+              lang={content.content_type === 'sports_event' ? 'en' : undefined}
+            />
+          )}
           <Actions content={content} />
         </div>
       </div>
@@ -243,7 +246,8 @@ function ContentHeader({
 
 /**
  * "🇫🇷 2001 · Movie · 2 hr 2 min · ★ 7.9": the original language's flag next to the year, then the
- * rating, which opens the Content on TMDB.
+ * rating, which opens the Content on TMDB. A Sports Event shows its day and league: "April 13,
+ * 2024 · Sports event · UFC".
  */
 function Facts({content}: {content: Content}) {
   const {t} = useTranslation('core');
@@ -271,8 +275,8 @@ function Facts({content}: {content: Content}) {
     );
   }
   items.push(<span>{facts.contentType}</span>);
-  if (facts.length) {
-    items.push(<span>{facts.length}</span>);
+  if (facts.detail) {
+    items.push(<span>{facts.detail}</span>);
   }
   if (facts.rating) {
     const rating = (
@@ -314,8 +318,18 @@ function Facts({content}: {content: Content}) {
   );
 }
 
-/** The overview: a long one shortened to a few lines, with More to read it whole. */
-function Overview({text}: {text: string}) {
+/**
+ * The overview, in paragraphs, such as a Book's: a long one shortened to a few lines, with More to
+ * read it whole.
+ */
+function Overview({
+  text,
+  lang,
+}: {
+  text: string;
+  /** Its language, when it may not be the User's */
+  lang?: string;
+}) {
   const {t} = useTranslation('core');
   const [isExpanded, setIsExpanded] = useState(false);
   const id = useId();
@@ -324,8 +338,9 @@ function Overview({text}: {text: string}) {
     <div className="flex max-w-readable flex-col items-center gap-1 @3xl:items-start">
       <p
         id={id}
+        lang={lang}
         className={cn(
-          'text-muted-foreground',
+          'whitespace-pre-line text-muted-foreground',
           isLong && !isExpanded && 'line-clamp-3 @3xl:line-clamp-5',
         )}
       >
@@ -349,11 +364,12 @@ function Overview({text}: {text: string}) {
 }
 
 /**
- * Request first, then the quieter Episodes of a TV Show, Watch trailer and Mark as watched. Request
- * and Mark as watched wait for their features.
+ * Request first, then the quieter Episodes of a TV Show, Watch trailer, and Mark as watched, or
+ * Mark as read for a Book. Request and Mark as watched wait for their features.
  */
 function Actions({content}: {content: Content}) {
   const {t} = useTranslation('core');
+  const markAsWatchedLabel = useMarkAsWatchedLabel(content.content_type);
   return (
     <div className="flex flex-col gap-4 @3xl:flex-row @3xl:flex-wrap @3xl:items-start @3xl:gap-x-6">
       {/* On a solid background, so the backdrop doesn't show through it while it's disabled. Its
@@ -375,28 +391,32 @@ function Actions({content}: {content: Content}) {
             render={<a href={content.trailer_url} target="_blank" rel="noopener noreferrer" />}
           />
         )}
-        <RoundAction label={t($ => $.core.contents.markAsWatched)} icon={<CircleIcon />} disabled />
+        <RoundAction label={markAsWatchedLabel} icon={<CircleIcon />} disabled />
       </div>
     </div>
   );
 }
 
-/** Who directed the Content, then who's in it, as round photos in a row that scrolls sideways. */
-function Cast({content}: {content: Content}) {
-  const {t} = useTranslation('core');
+/**
+ * The people credited for the Content, as round photos in a row that scrolls sideways: a Movie's or
+ * a TV Show's directors then actors, or a Book's authors, illustrators and narrators.
+ */
+function CreditedPeople({content}: {content: Content}) {
+  const heading = useCreditedPeopleHeading(content.content_type);
   const creditRole = useCreditRole();
   const headingId = useId();
-  if (content.credits.length === 0) {
+  const people = creditedPeople(content.credits);
+  if (people.length === 0) {
     return null;
   }
 
   return (
     <section aria-labelledby={headingId} className="flex min-w-0 flex-col gap-4">
       <h2 id={headingId} className="font-heading text-xl font-semibold">
-        {t($ => $.core.contents.cast)}
+        {heading}
       </h2>
       <ScrollRow list>
-        {content.credits.map((credit, index) => {
+        {people.map((credit, index) => {
           const role = creditRole(credit);
           return (
             // Credits keep their order, and have no ID

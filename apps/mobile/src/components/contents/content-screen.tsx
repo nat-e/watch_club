@@ -3,11 +3,14 @@ import {useQuery} from '@tanstack/react-query';
 import {type Content, type ContentType, hasCode} from '@watchclub/api';
 import {
   contentQuery,
+  creditedPeople,
   initials,
   LONG_OVERVIEW_LENGTH,
   useContentFacts,
+  useCreditedPeopleHeading,
   useCreditRole,
   useGenreNames,
+  useMarkAsWatchedLabel,
 } from '@watchclub/core/contents/content';
 import {router, Stack, useLocalSearchParams} from 'expo-router';
 import {SymbolView, type SymbolViewProps} from 'expo-symbols';
@@ -21,10 +24,7 @@ import {Host} from '@/components/host';
 import {StatusScreen} from '@/components/layouts/status-screen';
 import {ScrollRow} from '@/components/scroll-row';
 
-/**
- * The screen of the Content whose External ID is the route's `id`, with its title in the header.
- * The screens of Sports Events and Books only show their title for now.
- */
+/** The screen of the Content whose External ID is the route's `id`, with its title in the header. */
 export function ContentScreen({contentType}: {contentType: ContentType}) {
   const {t} = useTranslation('core');
   const {id} = useLocalSearchParams<{id: string}>();
@@ -58,15 +58,12 @@ export function ContentScreen({contentType}: {contentType: ContentType}) {
           <ActivityIndicator accessibilityLabel={t($ => $.core.contents.loading)} />
         </View>
       )}
-      {content.data &&
-        (content.data.content_type === 'movie' || content.data.content_type === 'tv_show') && (
-          <ContentDetails content={content.data} />
-        )}
+      {content.data && <ContentDetails content={content.data} />}
     </>
   );
 }
 
-/** A Movie's or a TV Show's header on its dimmed backdrop, then its cast. */
+/** A Content's header on its dimmed backdrop, then its cast or authors. */
 function ContentDetails({content}: {content: Content}) {
   const genreNames = useGenreNames();
   return (
@@ -107,14 +104,15 @@ function ContentDetails({content}: {content: Content}) {
         {content.overview && <Overview text={content.overview} />}
         <Actions content={content} />
       </View>
-      <Cast content={content} />
+      <CreditedPeople content={content} />
     </ScrollView>
   );
 }
 
 /**
  * "🇫🇷 2001 · Movie · 2 hr 2 min · ★ 7.9": the original language's flag next to the year, then the
- * rating, which opens the Content on TMDB.
+ * rating, which opens the Content on TMDB. A Sports Event shows its day and league: "April 13,
+ * 2024 · Sports event · UFC".
  */
 function Facts({content}: {content: Content}) {
   const {t} = useTranslation('core');
@@ -125,9 +123,9 @@ function Facts({content}: {content: Content}) {
   const firstFact = [facts.originalLanguage?.flag, facts.date]
     .filter(text => Boolean(text))
     .join(' ');
-  const texts = [firstFact, facts.contentType, facts.length].filter(text => Boolean(text));
+  const texts = [firstFact, facts.contentType, facts.detail].filter(text => Boolean(text));
   // The flag means nothing to screen readers: they read the language's name instead
-  const spokenTexts = [languageLabel, facts.date, facts.contentType, facts.length].filter(text =>
+  const spokenTexts = [languageLabel, facts.date, facts.contentType, facts.detail].filter(text =>
     Boolean(text),
   );
   const ratingUrl = facts.ratingUrl;
@@ -195,11 +193,12 @@ function Overview({text}: {text: string}) {
 }
 
 /**
- * Request first, then the quieter Episodes of a TV Show, Watch trailer and Mark as watched. Request
- * and Mark as watched wait for their features.
+ * Request first, then the quieter Episodes of a TV Show, Watch trailer, and Mark as watched, or
+ * Mark as read for a Book. Request and Mark as watched wait for their features.
  */
 function Actions({content}: {content: Content}) {
   const {t} = useTranslation('core');
+  const markAsWatchedLabel = useMarkAsWatchedLabel(content.content_type);
   const trailerUrl = content.trailer_url;
   return (
     <View className="w-full items-center gap-4">
@@ -234,7 +233,7 @@ function Actions({content}: {content: Content}) {
           />
         )}
         <RoundAction
-          label={t($ => $.core.contents.markAsWatched)}
+          label={markAsWatchedLabel}
           symbol={{ios: 'circle', android: 'radio_button_unchecked'}}
           disabled
         />
@@ -274,21 +273,25 @@ function RoundAction({
   );
 }
 
-/** Who directed the Content, then who's in it, as round photos in a row that scrolls sideways. */
-function Cast({content}: {content: Content}) {
-  const {t} = useTranslation('core');
+/**
+ * The people credited for the Content, as round photos in a row that scrolls sideways: a Movie's or
+ * a TV Show's directors then actors, or a Book's authors, illustrators and narrators.
+ */
+function CreditedPeople({content}: {content: Content}) {
+  const heading = useCreditedPeopleHeading(content.content_type);
   const creditRole = useCreditRole();
-  if (content.credits.length === 0) {
+  const people = creditedPeople(content.credits);
+  if (people.length === 0) {
     return null;
   }
 
   return (
     <View className="gap-3 pt-4">
       <Text accessibilityRole="header" className="px-4 font-heading text-xl text-foreground">
-        {t($ => $.core.contents.cast)}
+        {heading}
       </Text>
       <ScrollRow contentContainerClassName="gap-4 px-4">
-        {content.credits.map((credit, index) => {
+        {people.map((credit, index) => {
           const role = creditRole(credit);
           return (
             // Credits keep their order, and have no ID

@@ -48,8 +48,8 @@ export interface ContentFacts {
   /** The year it came out, or the day a Sports Event takes place */
   date: string | null;
   contentType: string;
-  /** A Movie's runtime, or a TV Show's number of seasons */
-  length: string | null;
+  /** A Movie's runtime, a TV Show's number of seasons, or a Sports Event's league */
+  detail: string | null;
   /** Its rating out of 10, to one decimal, such as "7.9" */
   rating: string | null;
   /** The page of its rating at its Metadata Provider */
@@ -71,11 +71,13 @@ export function useContentFacts(content: Content): ContentFacts {
   const formatRuntime = useFormatRuntime();
   const language = i18n.language;
 
-  let length: string | null = null;
-  if (content.content_type === 'tv_show' && content.media_group_count > 0) {
-    length = t($ => $.core.contents.seasonCount, {count: content.media_group_count});
+  let detail: string | null = null;
+  if (content.content_type === 'sports_event') {
+    detail = content.credits.find(credit => credit.kind === 'league')?.name ?? null;
+  } else if (content.content_type === 'tv_show' && content.media_group_count > 0) {
+    detail = t($ => $.core.contents.seasonCount, {count: content.media_group_count});
   } else if (content.runtime_seconds !== null) {
-    length = formatRuntime(content.runtime_seconds);
+    detail = formatRuntime(content.runtime_seconds);
   }
 
   return {
@@ -88,7 +90,7 @@ export function useContentFacts(content: Content): ContentFacts {
         ? null
         : releaseText(content.content_type, content.release_date, language),
     contentType: contentTypeNames[content.content_type],
-    length,
+    detail,
     rating: content.rating === null ? null : formatRating(content.rating, language),
     ratingUrl: tmdbUrl(content),
   };
@@ -129,8 +131,22 @@ export function useGenreNames(): Record<Genre, string> {
 }
 
 /**
+ * Returns the people of a Content's credits, which its page shows in a row: a Movie's or a TV
+ * Show's cast, or a Book's authors. A Sports Event's league is in its facts instead.
+ */
+export function creditedPeople(credits: readonly Credit[]): Credit[] {
+  return credits.filter(credit => credit.kind !== 'league');
+}
+
+/** Returns the heading of the row of people a Content's page shows: Cast, or a Book's Authors. */
+export function useCreditedPeopleHeading(contentType: ContentType): string {
+  const {t} = useTranslation('core');
+  return contentType === 'book' ? t($ => $.core.contents.authors) : t($ => $.core.contents.cast);
+}
+
+/**
  * Returns the function that gives the line under a credited person's name: the character an actor
- * plays, or Director.
+ * plays, or their part, such as Director or Illustrator.
  */
 export function useCreditRole(): (credit: Credit) => string | null {
   const {t} = useTranslation('core');
@@ -140,15 +156,27 @@ export function useCreditRole(): (credit: Credit) => string | null {
         return credit.character;
       case 'director':
         return t($ => $.core.contents.creditKinds.director);
-      // Only the pages of Movies and TV Shows show their credits for now
       case 'author':
+        return t($ => $.core.contents.creditKinds.author);
       case 'illustrator':
+        return t($ => $.core.contents.creditKinds.illustrator);
       case 'narrator':
+        return t($ => $.core.contents.creditKinds.narrator);
       case 'artist':
+        return t($ => $.core.contents.creditKinds.artist);
+      // In a Sports Event's facts, rather than in a row
       case 'league':
         return null;
     }
   };
+}
+
+/** Returns the label of the action that marks a Content as watched, or a Book as read. */
+export function useMarkAsWatchedLabel(contentType: ContentType): string {
+  const {t} = useTranslation('core');
+  return contentType === 'book'
+    ? t($ => $.core.contents.markAsRead)
+    : t($ => $.core.contents.markAsWatched);
 }
 
 /** Returns a person's initials, such as "AT" for Audrey Tautou, for a photo they don't have. */

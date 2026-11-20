@@ -3,9 +3,14 @@ export default {
     title: 'Browse',
   },
   contents: {
+    authors: 'Authors',
     cast: 'Cast',
     creditKinds: {
+      artist: 'Artist',
+      author: 'Author',
       director: 'Director',
+      illustrator: 'Illustrator',
+      narrator: 'Narrator',
     },
     episodes: 'Episodes',
     less: 'Less',
@@ -14,6 +19,7 @@ export default {
     loadFailed_sportsEvent: "We couldn't load this sports event. Try again in a moment.",
     loadFailed_tvShow: "We couldn't load this TV show. Try again in a moment.",
     loading: 'Loading…',
+    markAsRead: 'Mark as read',
     markAsWatched: 'Mark as watched',
     more: 'More',
     notFound_book: "We couldn't find this book.",

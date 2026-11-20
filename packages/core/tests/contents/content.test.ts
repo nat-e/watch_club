@@ -1,5 +1,12 @@
+import type {Credit} from '@watchclub/api';
 import {describe, expect, it} from 'vitest';
-import {formatRating, initials, longDate, tmdbUrl} from '../../src/contents/content';
+import {
+  creditedPeople,
+  formatRating,
+  initials,
+  longDate,
+  tmdbUrl,
+} from '../../src/contents/content';
 
 describe('formatRating', () => {
   it('writes the rating to one decimal, as the language does', () => {
@@ -20,6 +27,15 @@ describe('initials', () => {
     expect(initials('Jean-Pierre Jeunet')).toBe('JJ');
     expect(initials(' Rufus ')).toBe('R');
     expect(initials('Helena Bonham Carter')).toBe('HB');
+  });
+});
+
+describe('creditedPeople', () => {
+  it("leaves out a Sports Event's league, which its facts show", () => {
+    const league: Credit = {kind: 'league', name: 'UFC', character: null, photo: null};
+    const author: Credit = {kind: 'author', name: 'J.K. Rowling', character: null, photo: null};
+
+    expect(creditedPeople([league, author])).toEqual([author]);
   });
 });
 
