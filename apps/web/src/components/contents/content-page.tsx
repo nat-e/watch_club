@@ -356,9 +356,10 @@ function Actions({content}: {content: Content}) {
   const {t} = useTranslation('core');
   return (
     <div className="flex flex-col gap-4 @3xl:flex-row @3xl:flex-wrap @3xl:items-start @3xl:gap-x-6">
-      {/* On a solid background, so the backdrop doesn't show through it while it's disabled */}
+      {/* On a solid background, so the backdrop doesn't show through it while it's disabled. Its
+          fill runs under its transparent border, which would show the background as a dark ring */}
       <span className="flex w-full rounded-md bg-background @max-3xl:mx-auto @max-3xl:max-w-sm @3xl:w-auto @3xl:min-w-64">
-        <Button size="lg" disabled className="h-12 w-full gap-2 px-6 text-base">
+        <Button size="lg" disabled className="h-12 w-full gap-2 bg-clip-border px-6 text-base">
           <DownloadIcon className="size-5" />
           {t($ => $.core.contents.request)}
         </Button>
