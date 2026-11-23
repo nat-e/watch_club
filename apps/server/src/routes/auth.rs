@@ -16,7 +16,7 @@ use crate::{
     ApiContext,
     auth::SessionCookie,
     db::Pool,
-    domain::accounts::sessions::{self, SessionToken},
+    domain::accounts::sessions::{self, SessionToken, SignInError},
     error::{self, ApiError, ErrorBody},
     routes::{Json, me::CurrentUserResponse},
 };
@@ -43,9 +43,7 @@ async fn login(
     cookie: SessionCookie,
     Json(credentials): Json<LoginRequest>,
 ) -> Result<(CookieJar, Json<CurrentUserResponse>), LoginRequestError> {
-    let (user, token) = sessions::sign_in(&db, &credentials.username, credentials.password)
-        .await?
-        .ok_or(LoginRequestError::WrongCredentials)?;
+    let (user, token) = sessions::sign_in(&db, &credentials.username, credentials.password).await?;
     Ok((cookie.set(&token), Json(user.into())))
 }
 
@@ -67,6 +65,15 @@ enum LoginRequestError {
     #[error(transparent)]
     #[serde(skip)]
     Internal(#[from] anyhow::Error),
+}
+
+impl From<SignInError> for LoginRequestError {
+    fn from(error: SignInError) -> Self {
+        match error {
+            SignInError::WrongCredentials => Self::WrongCredentials,
+            SignInError::Internal(error) => Self::Internal(error),
+        }
+    }
 }
 
 impl IntoResponse for LoginRequestError {
@@ -93,9 +100,7 @@ async fn login_token(
     State(db): State<Pool>,
     Json(credentials): Json<LoginRequest>,
 ) -> Result<(StatusCode, Json<LoginTokenResponse>), LoginRequestError> {
-    let (user, token) = sessions::sign_in(&db, &credentials.username, credentials.password)
-        .await?
-        .ok_or(LoginRequestError::WrongCredentials)?;
+    let (user, token) = sessions::sign_in(&db, &credentials.username, credentials.password).await?;
     let session = LoginTokenResponse {
         token: token.encode(),
         user: user.into(),

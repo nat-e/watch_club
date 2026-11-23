@@ -38,15 +38,23 @@ impl SessionToken {
     }
 }
 
+/// The reason a User wasn't signed in.
+#[derive(Debug, thiserror::Error)]
+pub enum SignInError {
+    /// No User has the username, or the password isn't theirs
+    #[error("wrong username or password")]
+    WrongCredentials,
+    #[error(transparent)]
+    Internal(#[from] anyhow::Error),
+}
+
 /// Signs the User in on a new device, and returns them with their session token.
-///
-/// Returns None if the username or password is wrong.
 #[tracing::instrument(skip_all)]
 pub async fn sign_in(
     db: &Pool,
     username: &str,
     password: SecretString,
-) -> anyhow::Result<Option<(CurrentUser, SessionToken)>> {
+) -> Result<(CurrentUser, SessionToken), SignInError> {
     let username = username.trim();
     let Some(user) = users::check_credentials(db, username, password).await? else {
         tracing::event!(
@@ -55,7 +63,7 @@ pub async fn sign_in(
             user.name = username,
             "wrong username or password",
         );
-        return Ok(None);
+        return Err(SignInError::WrongCredentials);
     };
     let token = create(db, user.id).await?;
     tracing::event!(
@@ -65,7 +73,7 @@ pub async fn sign_in(
         user.name = user.username,
         "signed in",
     );
-    Ok(Some((user, token)))
+    Ok((user, token))
 }
 
 /// Returns the User the token keeps signed in, or None once their session ended or expired.

@@ -79,7 +79,6 @@ mod create {
         assert_eq!(current_user.as_ref(), Some(&admin));
         let (signed_in, _) = sessions::sign_in(&db, "ada", "secret password".into())
             .await
-            .unwrap()
             .unwrap();
         assert_eq!(signed_in, admin);
     }

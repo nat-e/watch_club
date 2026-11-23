@@ -2,7 +2,7 @@ use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use sqlx::PgPool;
 use watch_club::db::Pool;
 use watch_club::domain::accounts::{
-    sessions::{self, SessionToken},
+    sessions::{self, SessionToken, SignInError},
     users::CurrentUser,
 };
 use watch_club_test_macros::database_test;
@@ -13,7 +13,6 @@ use crate::support::{self, PASSWORD};
 async fn new_session(db: &Pool, user: &CurrentUser) -> SessionToken {
     let (_, token) = sessions::sign_in(db, &user.username, PASSWORD.into())
         .await
-        .unwrap()
         .unwrap();
     token
 }
@@ -28,7 +27,6 @@ mod sign_in {
 
         let (signed_in, token) = sessions::sign_in(&db, " ada ", PASSWORD.into())
             .await
-            .unwrap()
             .unwrap();
 
         assert_eq!(signed_in, user);
@@ -48,25 +46,27 @@ mod sign_in {
     }
 
     #[database_test]
-    async fn is_none_for_a_wrong_password(db: PgPool) {
+    async fn fails_for_a_wrong_password(db: PgPool) {
         let db = watch_club::db::instrument(db);
         support::create_user(&db, "ada").await;
 
-        let signed_in = sessions::sign_in(&db, "ada", "wrong password".into())
-            .await
-            .unwrap();
+        let signed_in = sessions::sign_in(&db, "ada", "wrong password".into()).await;
 
-        assert!(signed_in.is_none());
+        assert!(
+            matches!(signed_in, Err(SignInError::WrongCredentials)),
+            "{signed_in:?}"
+        );
     }
 
     #[database_test]
-    async fn is_none_for_an_unknown_username(db: PgPool) {
+    async fn fails_for_an_unknown_username(db: PgPool) {
         let db = watch_club::db::instrument(db);
-        let signed_in = sessions::sign_in(&db, "ada", PASSWORD.into())
-            .await
-            .unwrap();
+        let signed_in = sessions::sign_in(&db, "ada", PASSWORD.into()).await;
 
-        assert!(signed_in.is_none());
+        assert!(
+            matches!(signed_in, Err(SignInError::WrongCredentials)),
+            "{signed_in:?}"
+        );
     }
 }
 

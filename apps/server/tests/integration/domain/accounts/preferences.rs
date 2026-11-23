@@ -28,7 +28,6 @@ mod save {
         assert_eq!(saved.preferences, preferences);
         let (signed_in, _) = sessions::sign_in(&db, "ada", PASSWORD.into())
             .await
-            .unwrap()
             .unwrap();
         assert_eq!(signed_in, saved);
     }
