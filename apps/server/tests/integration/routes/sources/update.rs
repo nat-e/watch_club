@@ -147,7 +147,7 @@ async fn answers_why_the_source_cant_take_the_configuration(db: PgPool) {
         invalid.body,
         json!({
             "code": "invalid_filesystem_configuration",
-            "error": { "code": "not_found" },
+            "reason": { "code": "not_found" },
             "message": "WatchClub can't read the folder",
         })
     );
@@ -177,7 +177,7 @@ async fn answers_why_the_app_cant_take_the_configuration(db: PgPool) {
         response.body,
         json!({
             "code": "invalid_servarr_configuration",
-            "error": { "part": "local_root_folder", "code": "not_found" },
+            "reason": { "part": "local_root_folder", "code": "not_found" },
             "message": "the app's configuration is invalid",
         })
     );

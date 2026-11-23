@@ -108,7 +108,7 @@ async fn create_servarr_source(
     body: ServarrConfigurationBody,
 ) -> Result<Source, CreateSourceRequestError> {
     let (configuration, api_key) = body.parse().await?;
-    let api_key = api_key.ok_or(ServarrConfigurationError::Connection(
+    let api_key = api_key.ok_or(ApiServarrConfigurationError::Connection(
         ApiConnectionError::InvalidApiKey,
     ))?;
 
@@ -368,13 +368,13 @@ impl ServarrConfigurationBody {
     /// profile and root folder among those `servarr::test_connection` listed.
     async fn parse(
         self,
-    ) -> Result<(ServarrConfiguration, Option<SecretString>), ServarrConfigurationError> {
+    ) -> Result<(ServarrConfiguration, Option<SecretString>), ApiServarrConfigurationError> {
         // None or blank when WatchClub sees the root folder at the app's path
         let local_root_folder_path = match self.local_root_folder_path.as_deref().map(str::trim) {
             Some(path) if !path.is_empty() => Some(
                 AbsoluteFolder::parse(path)
                     .await
-                    .map_err(|error| ServarrConfigurationError::LocalRootFolder(error.into()))?,
+                    .map_err(|error| ApiServarrConfigurationError::LocalRootFolder(error.into()))?,
             ),
             _ => None,
         };
@@ -511,7 +511,8 @@ impl IntoResponse for TestSavedSourceServarrConnectionRequestError {
 /// for a Radarr, Sonarr or Sportarr Source: the part to change, and why.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, ToSchema, thiserror::Error)]
 #[serde(tag = "part", rename_all = "snake_case")]
-enum ServarrConfigurationError {
+#[schema(as = ServarrConfigurationError)]
+enum ApiServarrConfigurationError {
     /// The app's URL or API key
     #[error(transparent)]
     Connection(#[from] ApiConnectionError),
@@ -526,12 +527,12 @@ enum CreateSourceRequestError {
     #[error("WatchClub can't read the folder")]
     InvalidFilesystemConfiguration {
         #[from]
-        error: ApiFolderError,
+        reason: ApiFolderError,
     },
     #[error("the app's configuration is invalid")]
     InvalidServarrConfiguration {
         #[from]
-        error: ServarrConfigurationError,
+        reason: ApiServarrConfigurationError,
     },
     #[error(transparent)]
     #[serde(skip)]
@@ -556,12 +557,12 @@ enum UpdateSourceRequestError {
     #[error("WatchClub can't read the folder")]
     InvalidFilesystemConfiguration {
         #[from]
-        error: ApiFolderError,
+        reason: ApiFolderError,
     },
     #[error("the app's configuration is invalid")]
     InvalidServarrConfiguration {
         #[from]
-        error: ServarrConfigurationError,
+        reason: ApiServarrConfigurationError,
     },
     #[error("a Source keeps its type and Media Type")]
     TypeChanged,

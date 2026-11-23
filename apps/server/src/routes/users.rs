@@ -160,10 +160,10 @@ impl IntoResponse for CreatePasswordResetLinkRequestError {
     }
 }
 
-/// Potential errors when parsing Usernames
+/// The reasons a username breaks the rules.
 #[derive(Debug, Serialize, ToSchema, thiserror::Error)]
 #[serde(tag = "code", rename_all = "snake_case")]
-#[schema(as = UsernameProblem)]
+#[schema(as = UsernameError)]
 pub(super) enum ApiUsernameError {
     #[error("the username is missing")]
     Missing,
@@ -187,10 +187,10 @@ impl From<ParseUsernameError> for ApiUsernameError {
     }
 }
 
-/// Potential errors when parsing Passwords
+/// The reasons a password breaks the rules.
 #[derive(Debug, Serialize, ToSchema, thiserror::Error)]
 #[serde(tag = "code", rename_all = "snake_case")]
-#[schema(as = PasswordProblem)]
+#[schema(as = PasswordError)]
 pub(super) enum ApiPasswordError {
     #[error("the password is missing")]
     Missing,

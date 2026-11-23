@@ -149,10 +149,10 @@ export const saveSourceMutation = mutationOptions({
     }
     if (!(error instanceof api.UnexpectedError)) {
       if (error.code === 'invalid_filesystem_configuration') {
-        throw new InvalidFilesystemConfigurationError(error.error);
+        throw new InvalidFilesystemConfigurationError(error.reason);
       }
       if (error.code === 'invalid_servarr_configuration') {
-        throw new InvalidServarrConfigurationError(error.error);
+        throw new InvalidServarrConfigurationError(error.reason);
       }
     }
     throw error;
