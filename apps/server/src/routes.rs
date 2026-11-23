@@ -77,7 +77,8 @@ fn answer_method_not_allowed(endpoints: OpenApiRouter<ApiContext>) -> OpenApiRou
 }
 
 /// Like axum's `Json`, but a body that isn't the JSON the endpoint takes fails with a 400. That
-/// leaves 422 to mean that the request was well formed, but its values break a rule.
+/// leaves 422 for every well-formed request that an endpoint refuses, such as one with a taken
+/// username: its `code` says why.
 #[derive(FromRequest)]
 #[from_request(via(axum::Json), rejection(ApiError))]
 struct Json<T>(T);

@@ -84,8 +84,7 @@ struct GetInstanceResponse {
     request_body = CreateInstanceAdministratorRequest,
     responses(
         (status = CREATED, body = CurrentUserResponse, description = "Created, and signed in with the session cookie"),
-        (status = CONFLICT, body = ErrorBody<CreateInstanceAdministratorRequestError>, description = "WatchClub already has its Instance Administrator"),
-        (status = UNPROCESSABLE_ENTITY, body = ErrorBody<CreateInstanceAdministratorRequestError>, description = "The username or password breaks the rules"),
+        (status = UNPROCESSABLE_ENTITY, body = ErrorBody<CreateInstanceAdministratorRequestError>, description = "WatchClub already has its Instance Administrator, or the username or password breaks the rules"),
     ),
 )]
 async fn create_instance_administrator(
@@ -153,10 +152,9 @@ impl From<CreateInstanceAdministratorError> for CreateInstanceAdministratorReque
 impl IntoResponse for CreateInstanceAdministratorRequestError {
     fn into_response(self) -> Response {
         let status = match self {
-            Self::InvalidUsername { .. } | Self::InvalidPassword { .. } => {
-                StatusCode::UNPROCESSABLE_ENTITY
-            }
-            Self::InstanceAdministratorAlreadyExists => StatusCode::CONFLICT,
+            Self::InvalidUsername { .. }
+            | Self::InvalidPassword { .. }
+            | Self::InstanceAdministratorAlreadyExists => StatusCode::UNPROCESSABLE_ENTITY,
             Self::Internal(error) => return ApiError::from(error).into_response(),
         };
         error::response(status, &self)

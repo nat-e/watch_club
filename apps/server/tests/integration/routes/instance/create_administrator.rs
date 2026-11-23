@@ -31,7 +31,7 @@ async fn refuses_once_watchclub_is_set_up(db: PgPool) {
         .post("/api/instance/administrator", account)
         .await;
 
-    assert_eq!(response.status, StatusCode::CONFLICT);
+    assert_eq!(response.status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(
         response.body["code"],
         "instance_administrator_already_exists"

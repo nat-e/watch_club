@@ -723,16 +723,6 @@
               }
             }
           },
-          "409": {
-            "description": "WatchClub already has its Instance Administrator",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorBody_CreateInstanceAdministratorRequestError"
-                }
-              }
-            }
-          },
           "413": {
             "description": "The body is too large.",
             "content": {
@@ -786,7 +776,7 @@
             }
           },
           "422": {
-            "description": "The username or password breaks the rules",
+            "description": "WatchClub already has its Instance Administrator, or the username or password breaks the rules",
             "content": {
               "application/json": {
                 "schema": {
@@ -3812,7 +3802,7 @@
               }
             }
           },
-          "409": {
+          "422": {
             "description": "The Instance Administrator can't be deleted",
             "content": {
               "application/json": {

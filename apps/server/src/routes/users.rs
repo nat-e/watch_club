@@ -52,7 +52,7 @@ async fn list_users(
     responses(
         (status = NO_CONTENT, description = "Deleted"),
         (status = NOT_FOUND, body = ErrorBody<DeleteUserRequestError>, description = "There's no such User"),
-        (status = CONFLICT, body = ErrorBody<DeleteUserRequestError>, description = "The Instance Administrator can't be deleted"),
+        (status = UNPROCESSABLE_ENTITY, body = ErrorBody<DeleteUserRequestError>, description = "The Instance Administrator can't be deleted"),
     ),
     security(("session_cookie" = ["instance_administrator"]), ("session_token" = ["instance_administrator"])),
 )]
@@ -92,7 +92,7 @@ impl IntoResponse for DeleteUserRequestError {
     fn into_response(self) -> Response {
         let status = match self {
             Self::NotFound => StatusCode::NOT_FOUND,
-            Self::CannotDeleteAdministrator => StatusCode::CONFLICT,
+            Self::CannotDeleteAdministrator => StatusCode::UNPROCESSABLE_ENTITY,
             Self::Internal(error) => return ApiError::from(error).into_response(),
         };
         error::response(status, &self)
