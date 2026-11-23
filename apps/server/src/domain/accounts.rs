@@ -1,27 +1,11 @@
-//! The accounts of Users: Setup, Invitations, signing in and out, passwords, the list of Users, and
-//! User Preferences.
+//! The accounts of Users: Setup, which creates the Instance Administrator, Invitations, the list of
+//! Users and their passwords, the sessions that keep them signed in, and User Preferences.
+//!
+//! Callers reach each part through its module, such as `users::delete`.
 
-mod invitations;
-mod passwords;
-mod preferences;
+pub mod instance_administrator;
+pub mod invitations;
+pub mod preferences;
+pub mod sessions;
 mod token;
-mod user;
-
-pub use self::{
-    invitations::{
-        DeleteInvitationError, Invitation, InvitationId, RedeemInvitationError,
-        UpdateInvitationError, create_invitation, delete_invitation, is_redeemable,
-        list_redeemable_invitations, redeem_invitation, update_invitation,
-    },
-    passwords::{
-        ChangePasswordError, CreatePasswordResetLinkError, ResetPasswordError, change_password,
-        create_password_reset_link, password_reset_username, reset_password,
-    },
-    preferences::{AudioLanguage, Locale, TrackLanguage, UserPreferences, save_preferences},
-    user::{
-        CreateInstanceAdministratorError, CurrentUser, DeleteUserError, Password, PasswordError,
-        SESSION_LIFETIME, SessionToken, User, UserId, Username, UsernameError,
-        create_instance_administrator, delete_expired_sessions, delete_user,
-        has_instance_administrator, list_users, session_user, sign_in, sign_out,
-    },
-};
+pub mod users;

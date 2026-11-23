@@ -34,7 +34,7 @@ async fn refuses_to_delete_the_instance_administrator(db: PgPool) {
 
     let response = browser.delete(&format!("/api/users/{}", admin.id)).await;
 
-    assert_eq!(response.status, StatusCode::CONFLICT);
+    assert_eq!(response.status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(response.body["code"], "cannot_delete_administrator");
     assert_eq!(browser.get("/api/me").await.status, StatusCode::OK);
 }
@@ -52,7 +52,7 @@ async fn says_when_there_is_no_such_user(db: PgPool) {
     let response = browser.delete(&uri).await;
 
     assert_eq!(response.status, StatusCode::NOT_FOUND);
-    assert_eq!(response.body["code"], "user_not_found");
+    assert_eq!(response.body["code"], "not_found");
 }
 
 #[database_test]

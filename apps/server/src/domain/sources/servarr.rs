@@ -14,11 +14,11 @@ use tracing::Level;
 use utoipa::ToSchema;
 
 use self::client::ServarrClient;
-use super::{Source, SourceConfiguration, SourceId, SourceType, UpdateError};
+use super::{Source, SourceId, SourceType, UpdateSourceError};
 use crate::{
     api_client::{ApiCredentialsError, ApiUrl, ApiUrlError, HttpClient},
     db::Pool,
-    domain::{InternalError, contents::MediaType},
+    domain::contents::MediaType,
     utils::{
         encryption::{EncryptedSecret, EncryptionKey},
         filesystem::AbsoluteFolder,
@@ -71,69 +71,18 @@ pub struct QualityProfile {
     pub name: String,
 }
 
-/// The Source Configuration of a Radarr, Sonarr or Sportarr Source.
+/// The Source Configuration of a Radarr, Sonarr or Sportarr Source, without its API key: WatchClub
+/// keeps it encrypted, and only decrypts it to call the app.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ServarrConfiguration {
-    /// The app, which tells the Source Type and the Media Type
-    pub app: ServarrApp,
     /// The address WatchClub calls the app at, with its API under it
     pub url: ApiUrl,
-    /// The key WatchClub calls the app with, which it decrypts only to call it
-    pub api_key: EncryptedSecret,
     /// The quality the app downloads requested Content in
     pub quality_profile: QualityProfile,
     /// The folder the app downloads requested Content to, as the app sees it
     pub root_folder_path: String,
     /// The root folder, as WatchClub sees it when that's another path, such as in Docker
     pub local_root_folder_path: Option<AbsoluteFolder>,
-}
-
-impl ServarrConfiguration {
-    /// Returns the API key, decrypted to call the app. Refuses it when another key encrypted it,
-    /// such as before the host changed `ENCRYPTION_KEY`: the Instance Administrator enters it again.
-    pub fn decrypt_api_key(
-        &self,
-        encryption_key: &EncryptionKey,
-    ) -> Result<SecretString, ConnectionError> {
-        encryption_key.decrypt(&self.api_key).map_err(|error| {
-            tracing::event!(
-                name: "sources.api_key.unreadable",
-                Level::WARN,
-                exception.message = %error,
-                "failed to decrypt a Source's API key",
-            );
-            ConnectionError::InvalidApiKey
-        })
-    }
-}
-
-/// The new Source Configuration of a Radarr, Sonarr or Sportarr Source, which keeps its app.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct ServarrConfigurationUpdate {
-    /// The address WatchClub calls the app at, with its API under it
-    pub url: ApiUrl,
-    /// A new key to call the app with, or None to keep the saved one
-    pub api_key: Option<EncryptedSecret>,
-    /// The quality the app downloads requested Content in
-    pub quality_profile: QualityProfile,
-    /// The folder the app downloads requested Content to, as the app sees it
-    pub root_folder_path: String,
-    /// The root folder, as WatchClub sees it when that's another path, such as in Docker
-    pub local_root_folder_path: Option<AbsoluteFolder>,
-}
-
-/// The reason WatchClub can't use a Source's app: which of its URL and API key the Instance
-/// Administrator has to change. The logs say why.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, ToSchema, thiserror::Error)]
-#[serde(tag = "code", rename_all = "snake_case")]
-pub enum ConnectionError {
-    /// It isn't an http or https URL, nothing answers there, or what answers isn't the app the
-    /// Source expects, or answers with an error
-    #[error("the URL doesn't lead to the app's API")]
-    InvalidServarrUrl,
-    /// There's none, WatchClub can't decrypt the saved one, or the app rejects it
-    #[error("there's no API key the app takes")]
-    InvalidApiKey,
 }
 
 /// The quality profiles and root folders of a Radarr, Sonarr or Sportarr app, which the Instance
@@ -145,12 +94,42 @@ pub struct ServarrChoices {
     pub root_folders: Vec<String>,
 }
 
-/// Creates a Source of the configuration's app, and returns it.
-#[tracing::instrument(skip_all, fields(servarr.app = configuration.app.name()))]
-pub async fn create_servarr_source(
+/// The reason WatchClub can't use a Source's app: which of its URL and API key the Instance
+/// Administrator has to change. The logs say why.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, thiserror::Error)]
+pub enum TestConnectionError {
+    /// It isn't an http or https URL, nothing answers there, or what answers isn't the app the
+    /// Source expects, or answers with an error
+    #[error("the URL doesn't lead to the app's API")]
+    InvalidUrl,
+    /// It can't go in a request, WatchClub can't decrypt the saved one, or the app rejects it
+    #[error("there's no API key the app takes")]
+    InvalidApiKey,
+}
+
+/// The reason the connection to a Radarr, Sonarr or Sportarr Source's app wasn't tested.
+#[derive(Debug, thiserror::Error)]
+pub enum TestSavedConnectionError {
+    /// There's no Radarr, Sonarr or Sportarr Source with the ID
+    #[error("no such Radarr, Sonarr or Sportarr Source")]
+    NotFound,
+    #[error(transparent)]
+    Connection(#[from] TestConnectionError),
+    #[error(transparent)]
+    Internal(#[from] anyhow::Error),
+}
+
+/// Creates a Source of the app with the configuration, which keeps the API key encrypted with
+/// `encryption_key`, and returns it.
+#[tracing::instrument(skip_all, fields(servarr.app = app.name()))]
+pub async fn create(
     db: &Pool,
+    encryption_key: &EncryptionKey,
+    app: ServarrApp,
     configuration: ServarrConfiguration,
-) -> Result<Source, InternalError> {
+    api_key: &SecretString,
+) -> anyhow::Result<Source> {
+    let api_key = encryption_key.encrypt(api_key);
     let id = sqlx::query_scalar!(
         r#"
         INSERT INTO sources (
@@ -160,10 +139,10 @@ pub async fn create_servarr_source(
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         RETURNING id
         "#,
-        SourceType::from(configuration.app),
-        configuration.app.media_type(),
+        SourceType::from(app),
+        app.media_type(),
         configuration.url.as_str(),
-        &configuration.api_key as &EncryptedSecret,
+        &api_key as &EncryptedSecret,
         configuration.quality_profile.id,
         configuration.quality_profile.name,
         configuration.root_folder_path,
@@ -174,23 +153,28 @@ pub async fn create_servarr_source(
     .await
     .context("failed to create the app's Source")?;
 
-    Ok(Source {
+    Ok(Source::Servarr {
         id,
-        configuration: SourceConfiguration::Servarr(configuration),
+        app,
+        configuration,
     })
 }
 
-/// Gives the Radarr, Sonarr or Sportarr Source with this ID the configuration, and returns it. The
-/// Source keeps its app.
+/// Gives the Radarr, Sonarr or Sportarr Source with this ID the configuration, and the API key
+/// encrypted with `encryption_key`, or keeps its saved one without, and returns it. The Source keeps
+/// its app.
 #[tracing::instrument(skip_all, fields(source.id = %id))]
-pub async fn update_servarr_source(
+pub async fn update(
     db: &Pool,
+    encryption_key: &EncryptionKey,
     id: SourceId,
-    configuration: ServarrConfigurationUpdate,
-) -> Result<Source, UpdateError> {
+    configuration: ServarrConfiguration,
+    api_key: Option<&SecretString>,
+) -> Result<Source, UpdateSourceError> {
+    let api_key = api_key.map(|api_key| encryption_key.encrypt(api_key));
     // Without a new API key, `COALESCE` keeps the one in the row as it is when Postgres writes it,
     // rather than the one the caller read before: a key that another request saved meanwhile stays
-    let updated = sqlx::query!(
+    let source_type = sqlx::query_scalar!(
         r#"
         UPDATE sources
         SET url = $2,
@@ -200,11 +184,11 @@ pub async fn update_servarr_source(
             root_folder_path = $6,
             local_root_folder_path = $7
         WHERE id = $1 AND source_type IN ('radarr', 'sonarr', 'sportarr')
-        RETURNING source_type, api_key_encrypted AS "api_key_encrypted!: EncryptedSecret"
+        RETURNING source_type
         "#,
         id as SourceId,
         configuration.url.as_str(),
-        configuration.api_key.as_ref() as Option<&EncryptedSecret>,
+        api_key.as_ref() as Option<&EncryptedSecret>,
         configuration.quality_profile.id,
         configuration.quality_profile.name,
         configuration.root_folder_path,
@@ -214,37 +198,30 @@ pub async fn update_servarr_source(
     .fetch_optional(db)
     .await
     .context("failed to update the app's Source")?
-    .ok_or(UpdateError::SourceNotFound)?;
+    .ok_or(UpdateSourceError::NotFound)?;
 
-    Ok(Source {
+    Ok(Source::Servarr {
         id,
-        configuration: SourceConfiguration::Servarr(ServarrConfiguration {
-            app: updated
-                .source_type
-                .app()
-                .expect("the update only finds apps' Sources"),
-            url: configuration.url,
-            api_key: updated.api_key_encrypted,
-            quality_profile: configuration.quality_profile,
-            root_folder_path: configuration.root_folder_path,
-            local_root_folder_path: configuration.local_root_folder_path,
-        }),
+        app: source_type
+            .app()
+            .expect("the update only finds apps' Sources"),
+        configuration,
     })
 }
 
 /// Checks that `app` answers at `url` and takes the API key, then returns the app's quality
 /// profiles and root folders. Refuses another app, such as Sonarr at a Radarr Source's URL.
 #[tracing::instrument(skip_all, fields(servarr.app = app.name()))]
-pub async fn test_servarr_connection(
+pub async fn test_connection(
+    http_client: &HttpClient,
     app: ServarrApp,
     url: &str,
     api_key: &SecretString,
-    http_client: &HttpClient,
-) -> Result<ServarrChoices, ConnectionError> {
+) -> Result<ServarrChoices, TestConnectionError> {
     let url: ApiUrl = url.parse()?;
     let client = ServarrClient::new(http_client, app, &url, api_key)?;
 
-    let app_name = client.fetch_app_name().await?;
+    let app_name = client.fetch_app_name().await.map_err(report_failed_call)?;
     if app_name != app.name() {
         tracing::event!(
             name: "servarr.app.unexpected",
@@ -253,48 +230,105 @@ pub async fn test_servarr_connection(
             exception.message = %format_args!("{app_name} answered, rather than {}", app.name()),
             "another app answered at a Source's URL",
         );
-        return Err(ConnectionError::InvalidServarrUrl);
+        return Err(TestConnectionError::InvalidUrl);
     }
 
     let (quality_profiles, root_folders) =
-        tokio::try_join!(client.list_quality_profiles(), client.list_root_folders())?;
+        tokio::try_join!(client.list_quality_profiles(), client.list_root_folders())
+            .map_err(report_failed_call)?;
     Ok(ServarrChoices {
         quality_profiles,
         root_folders,
     })
 }
 
+/// Tests the connection to the app of the Radarr, Sonarr or Sportarr Source with this ID, at `url`
+/// and with `api_key`, or else with the Source's saved API key, as `test_connection` does.
+#[tracing::instrument(skip_all, fields(source.id = %id))]
+pub async fn test_saved_connection(
+    db: &Pool,
+    encryption_key: &EncryptionKey,
+    http_client: &HttpClient,
+    id: SourceId,
+    url: &str,
+    api_key: Option<SecretString>,
+) -> Result<ServarrChoices, TestSavedConnectionError> {
+    let saved = sqlx::query!(
+        r#"
+        SELECT source_type, api_key_encrypted AS "api_key_encrypted!: EncryptedSecret"
+        FROM sources
+        WHERE id = $1 AND source_type IN ('radarr', 'sonarr', 'sportarr')
+        "#,
+        id as SourceId,
+    )
+    .with_operation("SELECT", "sources")
+    .fetch_optional(db)
+    .await
+    .context("failed to find the app's Source")?
+    .ok_or(TestSavedConnectionError::NotFound)?;
+    let app = saved
+        .source_type
+        .app()
+        .expect("the query only finds apps' Sources");
+
+    let api_key = match api_key {
+        Some(api_key) => api_key,
+        None => decrypt_api_key(encryption_key, &saved.api_key_encrypted)?,
+    };
+    Ok(test_connection(http_client, app, url, &api_key).await?)
+}
+
+/// Returns the saved API key, decrypted to call the app. Refuses it when another key encrypted it,
+/// such as before the host changed `ENCRYPTION_KEY`: the Instance Administrator enters it again.
+fn decrypt_api_key(
+    encryption_key: &EncryptionKey,
+    api_key: &EncryptedSecret,
+) -> Result<SecretString, TestConnectionError> {
+    encryption_key.decrypt(api_key).map_err(|error| {
+        tracing::event!(
+            name: "sources.api_key.unreadable",
+            Level::WARN,
+            exception.message = %format_args!("{error:#}"),
+            "failed to decrypt a Source's API key",
+        );
+        TestConnectionError::InvalidApiKey
+    })
+}
+
+/// Logs why a call to a Source's app failed, which the Instance Administrator doesn't see, and
+/// returns the setting the failure shows is wrong: the API key when the app rejects it with a 401,
+/// or else the URL.
+fn report_failed_call(error: reqwest::Error) -> TestConnectionError {
+    let api_key_rejected = error.status() == Some(StatusCode::UNAUTHORIZED);
+    // With the causes, such as `connection refused`, which only `anyhow` prints
+    let error = anyhow::Error::from(error);
+    tracing::event!(
+        name: "servarr.call.failed",
+        Level::WARN,
+        exception.message = %format_args!("{error:#}"),
+        "failed to call a Source's app",
+    );
+
+    if api_key_rejected {
+        TestConnectionError::InvalidApiKey
+    } else {
+        // Nothing answered, or not as the app's API does, such as a web page, an error or a 404 at
+        // the app's API path
+        TestConnectionError::InvalidUrl
+    }
+}
+
 /// Blames the URL when it isn't one WatchClub can call the app's API under, such as `radarr:7878`
 /// without `http://`.
-impl From<ApiUrlError> for ConnectionError {
+impl From<ApiUrlError> for TestConnectionError {
     fn from(_: ApiUrlError) -> Self {
-        Self::InvalidServarrUrl
+        Self::InvalidUrl
     }
 }
 
 /// Blames the API key when it has a character that can't go in a request, such as a line break.
-impl From<ApiCredentialsError> for ConnectionError {
+impl From<ApiCredentialsError> for TestConnectionError {
     fn from(_: ApiCredentialsError) -> Self {
         Self::InvalidApiKey
-    }
-}
-
-/// Tells which setting a failed call shows is wrong: the API key when the app rejects it with a
-/// 401, or else the URL. Logs the cause, which the Instance Administrator doesn't see.
-impl From<reqwest::Error> for ConnectionError {
-    fn from(error: reqwest::Error) -> Self {
-        tracing::event!(
-            name: "servarr.call.failed",
-            Level::WARN,
-            exception.message = %format_args!("{error:#}"),
-            "failed to call a Source's app",
-        );
-        if error.status() == Some(StatusCode::UNAUTHORIZED) {
-            Self::InvalidApiKey
-        } else {
-            // Nothing answered, or not as the app's API does, such as a web page, an error or a
-            // 404 at the app's API path
-            Self::InvalidServarrUrl
-        }
     }
 }

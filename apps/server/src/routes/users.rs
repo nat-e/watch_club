@@ -1,5 +1,5 @@
 //! The Users of the Instance, which the Instance Administrator lists and deletes, and whose Password
-//! Reset Links they create.
+//! Reset Links they create. Also how the API reports a username or password that breaks the rules.
 
 use axum::{
     extract::State,
@@ -15,9 +15,9 @@ use crate::{
     ApiContext,
     auth::InstanceAdministrator,
     db::Pool,
-    domain::{
-        InternalError,
-        accounts::{self, CreatePasswordResetLinkError, DeleteUserError, User, UserId},
+    domain::accounts::users::{
+        self, CreatePasswordResetLinkError, DeleteUserError, ParsePasswordError,
+        ParseUsernameError, User, UserId,
     },
     error::{self, ApiError, ErrorBody},
     routes::{Json, Path},
@@ -41,7 +41,7 @@ async fn list_users(
     State(db): State<Pool>,
     _: InstanceAdministrator,
 ) -> Result<Json<Vec<User>>, ApiError> {
-    Ok(Json(accounts::list_users(&db).await?))
+    Ok(Json(users::list(&db).await?))
 }
 
 /// Deletes the User, which signs them out on every device.
@@ -52,7 +52,7 @@ async fn list_users(
     responses(
         (status = NO_CONTENT, description = "Deleted"),
         (status = NOT_FOUND, body = ErrorBody<DeleteUserRequestError>, description = "There's no such User"),
-        (status = CONFLICT, body = ErrorBody<DeleteUserRequestError>, description = "The Instance Administrator can't be deleted"),
+        (status = UNPROCESSABLE_ENTITY, body = ErrorBody<DeleteUserRequestError>, description = "The Instance Administrator can't be deleted"),
     ),
     security(("session_cookie" = ["instance_administrator"]), ("session_token" = ["instance_administrator"])),
 )]
@@ -61,7 +61,7 @@ async fn delete_user(
     _: InstanceAdministrator,
     Path(user_id): Path<UserId>,
 ) -> Result<StatusCode, DeleteUserRequestError> {
-    accounts::delete_user(&db, user_id).await?;
+    users::delete(&db, user_id).await?;
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -70,20 +70,20 @@ async fn delete_user(
 #[serde(tag = "code", rename_all = "snake_case")]
 enum DeleteUserRequestError {
     #[error("no such User")]
-    UserNotFound,
+    NotFound,
     #[error("the Instance Administrator can't be deleted")]
     CannotDeleteAdministrator,
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl From<DeleteUserError> for DeleteUserRequestError {
     fn from(error: DeleteUserError) -> Self {
         match error {
-            DeleteUserError::UserNotFound => Self::UserNotFound,
-            DeleteUserError::CannotDeleteAdministrator => Self::CannotDeleteAdministrator,
-            DeleteUserError::Internal(error) => Self::Internal(error.into()),
+            DeleteUserError::NotFound => Self::NotFound,
+            DeleteUserError::IsInstanceAdministrator => Self::CannotDeleteAdministrator,
+            DeleteUserError::Internal(error) => Self::Internal(error),
         }
     }
 }
@@ -91,8 +91,8 @@ impl From<DeleteUserError> for DeleteUserRequestError {
 impl IntoResponse for DeleteUserRequestError {
     fn into_response(self) -> Response {
         let status = match self {
-            Self::UserNotFound => StatusCode::NOT_FOUND,
-            Self::CannotDeleteAdministrator => StatusCode::CONFLICT,
+            Self::NotFound => StatusCode::NOT_FOUND,
+            Self::CannotDeleteAdministrator => StatusCode::UNPROCESSABLE_ENTITY,
             Self::Internal(error) => return ApiError::from(error).into_response(),
         };
         error::response(status, &self)
@@ -116,7 +116,7 @@ async fn create_password_reset_link(
     _: InstanceAdministrator,
     Path(user_id): Path<UserId>,
 ) -> Result<(StatusCode, Json<PasswordResetLink>), CreatePasswordResetLinkRequestError> {
-    let token = accounts::create_password_reset_link(&db, user_id).await?;
+    let token = users::create_password_reset_link(&db, user_id).await?;
     let link = PasswordResetLink {
         token: token.expose_secret().to_owned(),
     };
@@ -135,26 +135,74 @@ struct PasswordResetLink {
 #[serde(tag = "code", rename_all = "snake_case")]
 enum CreatePasswordResetLinkRequestError {
     #[error("no such User")]
-    UserNotFound,
+    NotFound,
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl From<CreatePasswordResetLinkError> for CreatePasswordResetLinkRequestError {
     fn from(error: CreatePasswordResetLinkError) -> Self {
         match error {
-            CreatePasswordResetLinkError::UserNotFound => Self::UserNotFound,
-            CreatePasswordResetLinkError::Internal(error) => Self::Internal(error.into()),
+            CreatePasswordResetLinkError::NotFound => Self::NotFound,
+            CreatePasswordResetLinkError::Internal(error) => Self::Internal(error),
         }
     }
 }
 
 impl IntoResponse for CreatePasswordResetLinkRequestError {
     fn into_response(self) -> Response {
-        match self {
-            Self::UserNotFound => error::response(StatusCode::NOT_FOUND, &self),
-            Self::Internal(error) => ApiError::from(error).into_response(),
+        let status = match self {
+            Self::NotFound => StatusCode::NOT_FOUND,
+            Self::Internal(error) => return ApiError::from(error).into_response(),
+        };
+        error::response(status, &self)
+    }
+}
+
+/// The reasons a username breaks the rules.
+#[derive(Debug, Serialize, ToSchema, thiserror::Error)]
+#[serde(tag = "code", rename_all = "snake_case")]
+#[schema(as = UsernameError)]
+pub(super) enum ApiUsernameError {
+    #[error("the username is missing")]
+    Missing,
+    #[error("the username is shorter than {min} characters")]
+    TooShort { min: usize },
+    #[error("the username is longer than {max} characters")]
+    TooLong { max: usize },
+    /// Characters other than lowercase letters, digits and underscores
+    #[error("the username has characters other than lowercase letters, digits and underscores")]
+    InvalidCharacters,
+}
+
+impl From<ParseUsernameError> for ApiUsernameError {
+    fn from(error: ParseUsernameError) -> Self {
+        match error {
+            ParseUsernameError::Missing => Self::Missing,
+            ParseUsernameError::TooShort { min } => Self::TooShort { min },
+            ParseUsernameError::TooLong { max } => Self::TooLong { max },
+            ParseUsernameError::InvalidCharacters => Self::InvalidCharacters,
+        }
+    }
+}
+
+/// The reasons a password breaks the rules.
+#[derive(Debug, Serialize, ToSchema, thiserror::Error)]
+#[serde(tag = "code", rename_all = "snake_case")]
+#[schema(as = PasswordError)]
+pub(super) enum ApiPasswordError {
+    #[error("the password is missing")]
+    Missing,
+    #[error("the password is shorter than {min} characters")]
+    TooShort { min: usize },
+}
+
+impl From<ParsePasswordError> for ApiPasswordError {
+    fn from(error: ParsePasswordError) -> Self {
+        match error {
+            ParsePasswordError::Missing => Self::Missing,
+            ParsePasswordError::TooShort { min } => Self::TooShort { min },
         }
     }
 }

@@ -12,7 +12,7 @@ import {
   hasCode,
   logout,
   type PasswordChange,
-  type PasswordProblem,
+  type PasswordError,
   resetPassword,
 } from '@watchclub/api';
 import {useTranslation} from 'react-i18next';
@@ -22,7 +22,7 @@ import {forgetCurrentUser} from './current-user';
 export const PASSWORD_MIN_LENGTH = 8;
 
 /** Returns the function that says, in the User's language, which rule a new password breaks. */
-export function usePasswordProblemMessage(): (problem: PasswordProblem) => string {
+export function usePasswordProblemMessage(): (problem: PasswordError) => string {
   const {t} = useTranslation('core');
   return problem => {
     switch (problem.code) {

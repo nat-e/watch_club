@@ -5,12 +5,8 @@ use std::{
     path::Path,
 };
 
-use serde::Serialize;
-use utoipa::ToSchema;
-
 /// The reasons WatchClub can't read a folder.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, ToSchema, thiserror::Error)]
-#[serde(tag = "code", rename_all = "snake_case")]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, thiserror::Error)]
 pub enum FolderError {
     /// Such as `movies` rather than `/media/movies`, or the root, which is the whole server rather
     /// than one of its folders

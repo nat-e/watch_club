@@ -96,12 +96,22 @@ mod run_available {
         );
     }
 
-    /// Queues a job whose attempts fail, as its kind no longer exists.
+    /// Queues a job whose attempts fail: it refreshes a Content from TMDB, which doesn't answer in
+    /// tests.
     async fn enqueue_failing(db: &Pool, max_attempts: i16) -> JobId {
         sqlx::query_scalar!(
             r#"
-            INSERT INTO jobs (queue, kind, max_attempts)
-            VALUES ('default', 'removed_job', $1)
+            WITH content AS (
+                INSERT INTO contents (
+                    content_type, metadata_provider, external_ids, original_title, genres,
+                    metadata_refreshed_at
+                )
+                VALUES ('movie', 'tmdb', '{"tmdb": "194"}', 'Amélie', '{}', now())
+                RETURNING id
+            )
+            INSERT INTO jobs (queue, kind, args, max_attempts)
+            SELECT 'default', 'refresh_content', jsonb_build_object('content_id', id), $1
+            FROM content
             RETURNING id
             "#,
             max_attempts,
@@ -136,6 +146,27 @@ mod run_available {
     async fn fails_a_job_after_its_last_attempt(db: PgPool) {
         let db = watch_club::db::instrument(db);
         let id = enqueue_failing(&db, 1).await;
+
+        jobs::run_available(&support::job_context(&db))
+            .await
+            .unwrap();
+
+        assert_eq!(job_state(&db, id).await, (JobState::Failed, 1));
+    }
+
+    #[database_test]
+    async fn fails_a_job_that_does_not_read_at_once(db: PgPool) {
+        let db = watch_club::db::instrument(db);
+        let id = sqlx::query_scalar!(
+            r#"
+            INSERT INTO jobs (queue, kind, max_attempts)
+            VALUES ('default', 'removed_job', 3)
+            RETURNING id
+            "#,
+        )
+        .fetch_one(&db)
+        .await
+        .unwrap();
 
         jobs::run_available(&support::job_context(&db))
             .await

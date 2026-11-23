@@ -1,5 +1,9 @@
 use sqlx::PgPool;
-use watch_club::domain::accounts::{self, Locale, Password, RedeemInvitationError, Username};
+use watch_club::domain::accounts::{
+    invitations::{self, RedeemInvitationError},
+    preferences::Locale,
+    users::{Password, Username},
+};
 use watch_club_test_macros::database_test;
 
 use crate::support;
@@ -11,7 +15,7 @@ async fn people_who_redeem_it_at_once_stay_within_its_max_uses(db: PgPool) {
     let redeem = |username| {
         let username = Username::parse(username).unwrap();
         let password = Password::parse("secret password".into()).unwrap();
-        accounts::redeem_invitation(&db, "FRIENDS", username, password, Locale::EnUs)
+        invitations::redeem(&db, "FRIENDS", username, password, Locale::EnUs)
     };
 
     let (ada, grace) = tokio::join!(redeem("ada"), redeem("grace"));

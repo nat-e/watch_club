@@ -1,7 +1,7 @@
 use axum::http::StatusCode;
 use serde_json::json;
 use sqlx::PgPool;
-use watch_club::domain::accounts::{self, Locale, UserPreferences};
+use watch_club::domain::accounts::preferences::{self, Locale, UserPreferences};
 use watch_club_test_macros::database_test;
 use wiremock::{
     Mock, ResponseTemplate,
@@ -17,7 +17,7 @@ use crate::support::{
 async fn returns_a_page_of_movies_and_tv_shows_in_the_users_language(db: PgPool) {
     let db = watch_club::db::instrument(db);
     let user = support::create_user(&db, "ada").await;
-    accounts::save_preferences(&db, user.id, &UserPreferences::new(Locale::FrFr))
+    preferences::save(&db, user.id, &UserPreferences::new(Locale::FrFr))
         .await
         .unwrap();
     let tmdb = FakeTmdb::start().await;

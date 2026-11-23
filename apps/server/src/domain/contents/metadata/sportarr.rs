@@ -9,18 +9,16 @@ use std::{
     num::NonZeroU32,
 };
 
+use anyhow::Context;
 use jiff::civil::Date;
 use serde::{Deserialize, Deserializer};
 
 use crate::{
     api_client::{ApiClient, ApiCredentials, ApiUrl, HttpClient},
-    domain::{
-        InternalError,
-        contents::{
-            ContentMetadata, ContentTranslations, CreditKind, CreditMetadata, ExternalContentId,
-            ExternalIds, Image, ImageSource, LookUpError, MediaMetadata, MediaTranslations,
-            MediaType, SearchResult, SearchResults, Translations,
-        },
+    domain::contents::{
+        ContentTranslations, CreditKind, ExternalContentId, Image, ImageSource, MediaTranslations,
+        MediaType, SearchResult, SearchResults, Translations,
+        metadata::{ContentMetadata, CreditMetadata, ExternalIds, MediaMetadata},
     },
 };
 
@@ -82,11 +80,7 @@ impl Sportarr {
     ///
     /// sportarr.net sends every match at once, 25 at most, on the first page: the next ones have
     /// none.
-    pub async fn search(
-        &self,
-        query: &str,
-        page: NonZeroU32,
-    ) -> Result<SearchResults, InternalError> {
+    pub async fn search(&self, query: &str, page: NonZeroU32) -> anyhow::Result<SearchResults> {
         if page > NonZeroU32::MIN {
             return Ok(SearchResults::default());
         }
@@ -95,7 +89,7 @@ impl Sportarr {
             .api
             .get_required("/search/event/{pattern}", &[&title_pattern(query)], &[])
             .await
-            .map_err(anyhow::Error::from)?;
+            .context("failed to search sportarr.net")?;
 
         let results = found.data.search.into_iter().map(search_result).collect();
         Ok(SearchResults {
@@ -104,20 +98,22 @@ impl Sportarr {
         })
     }
 
-    /// Returns the Sports Event with this ID, with its one Media. sportarr.net doesn't say which
-    /// language its texts are in, so they're its original ones.
+    /// Returns the Sports Event with this ID, with its one Media, or None when sportarr.net doesn't
+    /// know it. sportarr.net doesn't say which language its texts are in, so they're its original
+    /// ones.
     pub async fn fetch_sports_event(
         &self,
         id: &SportarrId,
-    ) -> Result<ContentMetadata, LookUpError> {
-        let found: LookUpEventAnswer = self
+    ) -> anyhow::Result<Option<ContentMetadata>> {
+        let found: Option<LookUpEventAnswer> = self
             .api
             .get("/lookup/event/{id}", &[&id.0], &[])
             .await
-            .map_err(anyhow::Error::from)?
-            .ok_or(LookUpError::NotFound)?;
+            .context("failed to fetch a Sports Event from sportarr.net")?;
         // sportarr.net answers an ID it doesn't know with no event, rather than with a 404
-        let event = found.data.into_iter().next().ok_or(LookUpError::NotFound)?;
+        let Some(event) = found.and_then(|found| found.data.into_iter().next()) else {
+            return Ok(None);
+        };
 
         let credits = event.league.map(|league| CreditMetadata {
             kind: CreditKind::League,
@@ -135,7 +131,7 @@ impl Sportarr {
             image: None,
             texts: MediaTranslations::default(),
         };
-        Ok(ContentMetadata {
+        Ok(Some(ContentMetadata {
             id: ExternalContentId::SportsEvent(id.clone()),
             external_ids: ExternalIds::default(),
             original_title: event.title,
@@ -152,7 +148,7 @@ impl Sportarr {
             },
             credits: credits.into_iter().collect(),
             media: vec![media],
-        })
+        }))
     }
 }
 

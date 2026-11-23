@@ -12,10 +12,11 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 
 use super::{
-    CurrentUser, Locale, Password, SessionToken, Username,
-    user::{create_session, insert_user},
+    preferences::Locale,
+    sessions::{self, SessionToken},
+    users::{self, CurrentUser, Password, Username},
 };
-use crate::{db::Pool, domain::InternalError};
+use crate::db::Pool;
 
 /// The unique ID of an Invitation.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, sqlx::Type, ToSchema)]
@@ -82,7 +83,7 @@ impl From<InvitationRow> for Invitation {
 
 /// Returns the Invitations that can still be redeemed, the oldest first.
 #[tracing::instrument(skip_all)]
-pub async fn list_redeemable_invitations(db: &Pool) -> Result<Vec<Invitation>, InternalError> {
+pub async fn list_redeemable(db: &Pool) -> anyhow::Result<Vec<Invitation>> {
     // Every Invitation works for as long, so the first to expire is the oldest
     let rows = sqlx::query_as!(
         InvitationRow,
@@ -102,10 +103,7 @@ pub async fn list_redeemable_invitations(db: &Pool) -> Result<Vec<Invitation>, I
 
 /// Creates an Invitation with a random code, which works for `INVITATION_VALIDITY_DURATION`.
 #[tracing::instrument(skip_all)]
-pub async fn create_invitation(
-    db: &Pool,
-    max_uses: Option<NonZeroU32>,
-) -> Result<Invitation, InternalError> {
+pub async fn create(db: &Pool, max_uses: Option<NonZeroU32>) -> anyhow::Result<Invitation> {
     let code = random_code().context("failed to generate an Invitation's code")?;
     // The database's clock, which redeeming checks the expiry against
     let row = sqlx::query_as!(
@@ -130,7 +128,7 @@ pub async fn create_invitation(
 #[derive(Debug, thiserror::Error)]
 pub enum UpdateInvitationError {
     #[error("no such Invitation")]
-    InvitationNotFound,
+    NotFound,
     /// Lower than the Users the Invitation created already
     #[error("the Max Uses is lower than the Invitation's uses")]
     MaxUsesTooLow,
@@ -140,7 +138,7 @@ pub enum UpdateInvitationError {
 
 /// Changes the Invitation's Max Uses, or removes the limit when None, and returns the Invitation.
 #[tracing::instrument(skip_all, fields(invitation.id = %invitation_id))]
-pub async fn update_invitation(
+pub async fn update(
     db: &Pool,
     invitation_id: InvitationId,
     max_uses: Option<NonZeroU32>,
@@ -159,34 +157,31 @@ pub async fn update_invitation(
     .with_operation("UPDATE", "invitations")
     .fetch_optional(db)
     .await;
-    match changed {
-        Ok(Some(row)) => Ok(row.into()),
-        Ok(None) => Err(UpdateInvitationError::InvitationNotFound),
+    let row = match changed {
         // The constraint that keeps the uses within the Max Uses, the only one an update can break
         Err(sqlx::Error::Database(error)) if error.is_check_violation() => {
-            Err(UpdateInvitationError::MaxUsesTooLow)
+            return Err(UpdateInvitationError::MaxUsesTooLow);
         }
-        Err(error) => Err(anyhow::Error::new(error)
-            .context("failed to change an Invitation's Max Uses")
-            .into()),
-    }
+        other => other.context("failed to change an Invitation's Max Uses")?,
+    };
+    let Some(row) = row else {
+        return Err(UpdateInvitationError::NotFound);
+    };
+    Ok(row.into())
 }
 
 /// The reason an Invitation wasn't deleted.
 #[derive(Debug, thiserror::Error)]
 pub enum DeleteInvitationError {
     #[error("no such Invitation")]
-    InvitationNotFound,
+    NotFound,
     #[error(transparent)]
     Internal(#[from] anyhow::Error),
 }
 
 /// Deletes the Invitation, so that nobody can redeem it anymore. The Users it created stay.
 #[tracing::instrument(skip_all, fields(invitation.id = %invitation_id))]
-pub async fn delete_invitation(
-    db: &Pool,
-    invitation_id: InvitationId,
-) -> Result<(), DeleteInvitationError> {
+pub async fn delete(db: &Pool, invitation_id: InvitationId) -> Result<(), DeleteInvitationError> {
     let deleted = sqlx::query!(
         "DELETE FROM invitations WHERE id = $1",
         invitation_id as InvitationId,
@@ -196,14 +191,14 @@ pub async fn delete_invitation(
     .await
     .context("failed to delete an Invitation")?;
     if deleted.rows_affected() == 0 {
-        return Err(DeleteInvitationError::InvitationNotFound);
+        return Err(DeleteInvitationError::NotFound);
     }
     Ok(())
 }
 
 /// Returns whether the code is an Invitation's that can still be redeemed.
 #[tracing::instrument(skip_all)]
-pub async fn is_redeemable(db: &Pool, code: &str) -> Result<bool, InternalError> {
+pub async fn is_redeemable(db: &Pool, code: &str) -> anyhow::Result<bool> {
     let is_redeemable = sqlx::query_scalar!(
         r#"
         SELECT EXISTS (
@@ -232,16 +227,10 @@ pub enum RedeemInvitationError {
     Internal(#[from] anyhow::Error),
 }
 
-impl From<InternalError> for RedeemInvitationError {
-    fn from(error: InternalError) -> Self {
-        Self::Internal(error.0)
-    }
-}
-
 /// Creates a User with the Invitation's code, with a new User's preferences for their Locale, signs
 /// them in on a new device and returns them as the current User. The Invitation counts one more use.
 #[tracing::instrument(skip_all)]
-pub async fn redeem_invitation(
+pub async fn redeem(
     db: &Pool,
     code: &str,
     username: Username,
@@ -271,18 +260,14 @@ pub async fn redeem_invitation(
         return Err(RedeemInvitationError::NotRedeemable);
     };
 
-    let inserted = insert_user(&mut transaction, &username, password_hash, locale, false).await;
+    let inserted = users::insert(&mut transaction, &username, password_hash, locale, false).await;
     let user = match inserted {
-        Ok(user) => user,
         Err(sqlx::Error::Database(error)) if error.is_unique_violation() => {
             return Err(RedeemInvitationError::UsernameTaken);
         }
-        Err(error) => {
-            let error = anyhow::Error::new(error).context("failed to create a User");
-            return Err(error.into());
-        }
+        other => other.context("failed to create a User")?,
     };
-    let token = create_session(&mut transaction, user.id).await?;
+    let token = sessions::create(&mut transaction, user.id).await?;
     transaction
         .commit()
         .await

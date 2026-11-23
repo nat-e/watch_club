@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            WITH content AS (\n                INSERT INTO contents (\n                    content_type, metadata_provider, external_ids, original_title, genres,\n                    metadata_refreshed_at\n                )\n                VALUES ('movie', 'tmdb', '{\"tmdb\": \"194\"}', 'Amélie', '{}', now())\n                RETURNING id\n            )\n            INSERT INTO jobs (queue, kind, args, max_attempts)\n            SELECT 'default', 'refresh_content', jsonb_build_object('content_id', id), $1\n            FROM content\n            RETURNING id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "jobs",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int2"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "ad420b1e13709032511dad5090202e26e9b6e5c5a4908db73b0d1a2fa8958912"
+}

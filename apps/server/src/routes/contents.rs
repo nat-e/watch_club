@@ -13,11 +13,10 @@ use crate::{
     ApiContext,
     db::Pool,
     domain::{
-        InternalError,
-        accounts::CurrentUser,
+        accounts::users::CurrentUser,
         contents::{
-            self, Content, ContentId, ContentType, ExternalContentId, LookUpError, Media,
-            MetadataProviders,
+            self, Content, ContentId, ContentType, ExternalContentId, Media,
+            metadata::MetadataProviders,
         },
     },
     error::{self, ApiError, ErrorBody},
@@ -58,7 +57,9 @@ async fn get_content_by_external_id(
 
     let locale = current_user.preferences.locale;
     let content =
-        contents::get_by_external_id(&db, &metadata_providers, external_content_id, locale).await?;
+        contents::get_by_external_id(&db, &metadata_providers, external_content_id, locale)
+            .await?
+            .ok_or(GetContentRequestError::NotFound)?;
     Ok(Json(content))
 }
 
@@ -89,23 +90,15 @@ enum GetContentRequestError {
     NotFound,
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
-}
-
-impl From<LookUpError> for GetContentRequestError {
-    fn from(error: LookUpError) -> Self {
-        match error {
-            LookUpError::NotFound => Self::NotFound,
-            LookUpError::Internal(error) => Self::Internal(error.into()),
-        }
-    }
+    Internal(#[from] anyhow::Error),
 }
 
 impl IntoResponse for GetContentRequestError {
     fn into_response(self) -> Response {
-        match self {
-            Self::NotFound => error::response(StatusCode::NOT_FOUND, &self),
-            Self::Internal(error) => ApiError::from(error).into_response(),
-        }
+        let status = match self {
+            Self::NotFound => StatusCode::NOT_FOUND,
+            Self::Internal(error) => return ApiError::from(error).into_response(),
+        };
+        error::response(status, &self)
     }
 }

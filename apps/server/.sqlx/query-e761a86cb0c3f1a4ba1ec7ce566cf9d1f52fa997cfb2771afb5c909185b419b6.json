@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE sources\n        SET url = $2,\n            api_key_encrypted = COALESCE($3, api_key_encrypted),\n            quality_profile_id = $4,\n            quality_profile_name = $5,\n            root_folder_path = $6,\n            local_root_folder_path = $7\n        WHERE id = $1 AND source_type IN ('radarr', 'sonarr', 'sportarr')\n        RETURNING source_type\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "source_type",
+        "type_info": {
+          "Custom": {
+            "name": "source_type",
+            "kind": {
+              "Enum": [
+                "filesystem",
+                "radarr",
+                "sonarr",
+                "sportarr"
+              ]
+            }
+          }
+        },
+        "origin": {
+          "Table": {
+            "table": "sources",
+            "name": "source_type"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Bytea",
+        "Int4",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "e761a86cb0c3f1a4ba1ec7ce566cf9d1f52fa997cfb2771afb5c909185b419b6"
+}

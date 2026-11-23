@@ -6,8 +6,8 @@ use std::{fs, path::Path};
 use secrecy::SecretString;
 use serde_json::Value;
 use watch_club::domain::{
-    accounts::Locale,
-    contents::{MetadataProviders, Tmdb},
+    accounts::preferences::Locale,
+    contents::metadata::{MetadataProviders, Tmdb},
 };
 use wiremock::{
     Mock, MockServer, ResponseTemplate,

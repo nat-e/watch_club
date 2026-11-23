@@ -1,5 +1,5 @@
 mod image;
-mod metadata_providers {
+mod metadata {
     mod hardcover;
     mod sportarr;
     mod tmdb;
@@ -13,10 +13,10 @@ use sqlx::PgPool;
 use watch_club::{
     db::Pool,
     domain::{
-        accounts::Locale,
+        accounts::preferences::Locale,
         contents::{
-            self, ContentId, ContentType, ExternalContentId, HardcoverId, LookUpError,
-            MetadataProviders, SearchResults, SearchScope, SportarrId, TmdbId,
+            self, ContentId, ContentType, ExternalContentId, SearchResults, SearchScope,
+            metadata::{HardcoverId, MetadataProviders, SportarrId, TmdbId},
         },
     },
     jobs::{self, JobContext},
@@ -132,9 +132,11 @@ async fn get_by_external_id_saves_a_movie_the_first_time_and_reads_it_after(db: 
 
     let first = contents::get_by_external_id(&db, &providers, amelie(), Locale::FrFr)
         .await
+        .unwrap()
         .unwrap();
     let second = contents::get_by_external_id(&db, &providers, amelie(), Locale::FrFr)
         .await
+        .unwrap()
         .unwrap();
 
     assert_eq!(first, second);
@@ -154,9 +156,11 @@ async fn get_by_external_id_returns_the_texts_in_the_locale_or_else_in_english(d
 
     let english = contents::get_by_external_id(&db, &providers, amelie(), Locale::EnUs)
         .await
+        .unwrap()
         .unwrap();
     let french = contents::get_by_external_id(&db, &providers, chernobyl(), Locale::FrFr)
         .await
+        .unwrap()
         .unwrap();
 
     assert_eq!(english.title, "Amélie");
@@ -179,11 +183,13 @@ async fn get_by_external_id_queues_a_refresh_of_a_content_saved_over_a_day_ago(d
     let providers = tmdb.metadata_providers();
     let saved = contents::get_by_external_id(&db, &providers, amelie(), Locale::EnUs)
         .await
+        .unwrap()
         .unwrap();
     make_stale(&db, saved.id).await;
 
     let content = contents::get_by_external_id(&db, &providers, amelie(), Locale::EnUs)
         .await
+        .unwrap()
         .unwrap();
 
     assert_eq!(content, saved);
@@ -198,6 +204,7 @@ async fn get_by_external_id_returns_a_saved_content_when_tmdb_is_down(db: PgPool
     let saved =
         contents::get_by_external_id(&db, &tmdb.metadata_providers(), amelie(), Locale::EnUs)
             .await
+            .unwrap()
             .unwrap();
     make_stale(&db, saved.id).await;
 
@@ -208,23 +215,46 @@ async fn get_by_external_id_returns_a_saved_content_when_tmdb_is_down(db: PgPool
         Locale::EnUs,
     )
     .await
+    .unwrap()
     .unwrap();
 
     assert_eq!(content, saved);
 }
 
 #[database_test]
-async fn get_by_external_id_fails_when_tmdb_has_no_such_content(db: PgPool) {
+async fn get_by_external_id_returns_a_saved_content_when_its_refresh_cant_be_queued(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    let tmdb = FakeTmdb::start().await;
+    tmdb.answer_fixtures().await;
+    let providers = tmdb.metadata_providers();
+    let saved = contents::get_by_external_id(&db, &providers, amelie(), Locale::EnUs)
+        .await
+        .unwrap()
+        .unwrap();
+    make_stale(&db, saved.id).await;
+    // Queuing then fails, as the database has no jobs table
+    sqlx::raw_sql("DROP TABLE jobs").execute(&db).await.unwrap();
+
+    let content = contents::get_by_external_id(&db, &providers, amelie(), Locale::EnUs)
+        .await
+        .unwrap()
+        .unwrap();
+
+    assert_eq!(content, saved);
+}
+
+#[database_test]
+async fn get_by_external_id_is_none_when_tmdb_has_no_such_content(db: PgPool) {
     let db = watch_club::db::instrument(db);
     // Answers 404 to every request
     let tmdb = FakeTmdb::start().await;
 
-    let error =
+    let content =
         contents::get_by_external_id(&db, &tmdb.metadata_providers(), amelie(), Locale::EnUs)
             .await
-            .unwrap_err();
+            .unwrap();
 
-    assert!(matches!(error, LookUpError::NotFound), "{error:?}");
+    assert_eq!(content, None);
 }
 
 #[database_test]
@@ -248,9 +278,11 @@ async fn get_by_external_id_saves_a_sports_event_and_a_book(db: PgPool) {
 
     let event = contents::get_by_external_id(&db, &providers, event_id, Locale::FrFr)
         .await
+        .unwrap()
         .unwrap();
     let book = contents::get_by_external_id(&db, &providers, book_id, Locale::FrFr)
         .await
+        .unwrap()
         .unwrap();
 
     assert_eq!(event.title, "Canelo Álvarez vs Edgar Berlanga");
@@ -267,6 +299,7 @@ async fn list_media_lists_the_episodes_in_order_with_their_texts_in_the_locale(d
     let tv_show =
         contents::get_by_external_id(&db, &tmdb.metadata_providers(), chernobyl(), Locale::EnUs)
             .await
+            .unwrap()
             .unwrap();
 
     let episodes = contents::list_media(&db, tv_show.id, Locale::FrFr)
@@ -299,6 +332,7 @@ async fn refresh_saves_what_changed_and_deletes_the_episodes_tmdb_no_longer_list
     let tv_show =
         contents::get_by_external_id(&db, &tmdb.metadata_providers(), chernobyl(), Locale::EnUs)
             .await
+            .unwrap()
             .unwrap();
     make_stale(&db, tv_show.id).await;
     let mut details = fixture("tv_details");
@@ -327,6 +361,7 @@ async fn refresh_saves_what_changed_and_deletes_the_episodes_tmdb_no_longer_list
     };
     contents::get_by_external_id(&db, &context.metadata_providers, chernobyl(), Locale::EnUs)
         .await
+        .unwrap()
         .unwrap();
 
     jobs::run_available(&context).await.unwrap();
@@ -334,6 +369,7 @@ async fn refresh_saves_what_changed_and_deletes_the_episodes_tmdb_no_longer_list
     let content =
         contents::get_by_external_id(&db, &context.metadata_providers, chernobyl(), Locale::EnUs)
             .await
+            .unwrap()
             .unwrap();
     assert_eq!(content.id, tv_show.id);
     assert_eq!(content.title, "Tchernobyl");
@@ -352,6 +388,7 @@ async fn refresh_keeps_a_content_tmdb_no_longer_knows(db: PgPool) {
     let saved =
         contents::get_by_external_id(&db, &tmdb.metadata_providers(), amelie(), Locale::EnUs)
             .await
+            .unwrap()
             .unwrap();
     // Answers 404 to every request
     let empty_tmdb = FakeTmdb::start().await;
@@ -367,6 +404,7 @@ async fn refresh_keeps_a_content_tmdb_no_longer_knows(db: PgPool) {
         Locale::EnUs,
     )
     .await
+    .unwrap()
     .unwrap();
     assert_eq!(content, saved);
 }

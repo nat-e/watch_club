@@ -20,10 +20,10 @@ use super::{
 };
 use crate::{
     domain::{
-        accounts::Locale,
+        accounts::preferences::Locale,
         contents::{
-            ContentMetadata, ExternalContentId, Language, LookUpError, MediaMetadata,
-            MediaTranslations, MediaType,
+            ExternalContentId, Language, MediaTranslations, MediaType,
+            metadata::{ContentMetadata, MediaMetadata},
         },
     },
     utils::time::minutes_to_seconds,
@@ -31,15 +31,14 @@ use crate::{
 
 impl Tmdb {
     /// Returns the TV Show with this ID, with its TV Show Episodes from season 1, in every language
-    /// TMDB has them.
-    pub async fn fetch_tv_show(&self, id: TmdbId) -> Result<ContentMetadata, LookUpError> {
+    /// TMDB has them, or None when TMDB doesn't know it.
+    pub async fn fetch_tv_show(&self, id: TmdbId) -> anyhow::Result<Option<ContentMetadata>> {
         // Asks for the first seasons before knowing which exist, which TMDB leaves out when they
         // don't: most TV Shows then need no other request in the base Locale
         let guessed_seasons: Vec<i32> = (1..).take(MAX_APPENDS - DETAILS_APPENDS.len()).collect();
-        let mut tv_show = self
-            .details("/tv/{id}", id, &guessed_seasons)
-            .await?
-            .ok_or(LookUpError::NotFound)?;
+        let Some(mut tv_show) = self.details("/tv/{id}", id, &guessed_seasons).await? else {
+            return Ok(None);
+        };
 
         // Season 0 holds the specials, which WatchClub leaves out
         let season_numbers: Vec<i32> = tv_show
@@ -67,7 +66,9 @@ impl Tmdb {
         }
 
         let media = episodes(seasons_by_locale);
-        Ok(tv_show.into_metadata(ExternalContentId::TvShow(id), media))
+        Ok(Some(
+            tv_show.into_metadata(ExternalContentId::TvShow(id), media),
+        ))
     }
 
     /// Returns the TV Show's seasons with these numbers, at most `MAX_APPENDS`, with their TV Show
@@ -93,7 +94,8 @@ impl Tmdb {
                     ("append_to_response", &appends),
                 ],
             )
-            .await?
+            .await
+            .context("failed to fetch a TV Show's seasons from TMDB")?
             .context("TMDB no longer knows the TV Show")?;
         Ok(seasons.0)
     }

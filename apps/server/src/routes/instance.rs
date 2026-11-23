@@ -18,15 +18,17 @@ use crate::{
     ApiContext,
     auth::SessionCookie,
     db::Pool,
-    domain::{
-        InternalError,
-        accounts::{
-            self, CreateInstanceAdministratorError, Locale, Password, PasswordError, Username,
-            UsernameError,
-        },
+    domain::accounts::{
+        instance_administrator::{self, CreateInstanceAdministratorError},
+        preferences::Locale,
+        users::{Password, Username},
     },
     error::{self, ApiError, ErrorBody},
-    routes::{Json, me::CurrentUserResponse},
+    routes::{
+        Json,
+        me::CurrentUserResponse,
+        users::{ApiPasswordError, ApiUsernameError},
+    },
 };
 
 pub(super) fn routes() -> OpenApiRouter<ApiContext> {
@@ -41,7 +43,7 @@ pub(super) fn routes() -> OpenApiRouter<ApiContext> {
 async fn get_instance(
     State(context): State<ApiContext>,
 ) -> Result<Json<GetInstanceResponse>, ApiError> {
-    let needs_setup = !accounts::has_instance_administrator(&context.db).await?;
+    let needs_setup = !instance_administrator::exists(&context.db).await?;
     Ok(Json(GetInstanceResponse {
         name: context.instance_name,
         version: env!("CARGO_PKG_VERSION"),
@@ -82,8 +84,7 @@ struct GetInstanceResponse {
     request_body = CreateInstanceAdministratorRequest,
     responses(
         (status = CREATED, body = CurrentUserResponse, description = "Created, and signed in with the session cookie"),
-        (status = CONFLICT, body = ErrorBody<CreateInstanceAdministratorRequestError>, description = "WatchClub already has its Instance Administrator"),
-        (status = UNPROCESSABLE_ENTITY, body = ErrorBody<CreateInstanceAdministratorRequestError>, description = "The username or password breaks the rules"),
+        (status = UNPROCESSABLE_ENTITY, body = ErrorBody<CreateInstanceAdministratorRequestError>, description = "WatchClub already has its Instance Administrator, or the username or password breaks the rules"),
     ),
 )]
 async fn create_instance_administrator(
@@ -99,10 +100,9 @@ async fn create_instance_administrator(
         password,
         locale,
     } = request;
-    let username = Username::parse(&username)?;
-    let password = Password::parse(password)?;
-    let (user, token) =
-        accounts::create_instance_administrator(&db, username, password, locale).await?;
+    let username = Username::parse(&username).map_err(ApiUsernameError::from)?;
+    let password = Password::parse(password).map_err(ApiPasswordError::from)?;
+    let (user, token) = instance_administrator::create(&db, username, password, locale).await?;
     Ok((StatusCode::CREATED, cookie.set(&token), Json(user.into())))
 }
 
@@ -124,18 +124,18 @@ enum CreateInstanceAdministratorRequestError {
     #[error(transparent)]
     InvalidUsername {
         #[from]
-        reason: UsernameError,
+        reason: ApiUsernameError,
     },
     #[error(transparent)]
     InvalidPassword {
         #[from]
-        reason: PasswordError,
+        reason: ApiPasswordError,
     },
     #[error("WatchClub already has its Instance Administrator")]
     InstanceAdministratorAlreadyExists,
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl From<CreateInstanceAdministratorError> for CreateInstanceAdministratorRequestError {
@@ -144,7 +144,7 @@ impl From<CreateInstanceAdministratorError> for CreateInstanceAdministratorReque
             CreateInstanceAdministratorError::AlreadyExists => {
                 Self::InstanceAdministratorAlreadyExists
             }
-            CreateInstanceAdministratorError::Internal(error) => Self::Internal(error.into()),
+            CreateInstanceAdministratorError::Internal(error) => Self::Internal(error),
         }
     }
 }
@@ -152,10 +152,9 @@ impl From<CreateInstanceAdministratorError> for CreateInstanceAdministratorReque
 impl IntoResponse for CreateInstanceAdministratorRequestError {
     fn into_response(self) -> Response {
         let status = match self {
-            Self::InvalidUsername { .. } | Self::InvalidPassword { .. } => {
-                StatusCode::UNPROCESSABLE_ENTITY
-            }
-            Self::InstanceAdministratorAlreadyExists => StatusCode::CONFLICT,
+            Self::InvalidUsername { .. }
+            | Self::InvalidPassword { .. }
+            | Self::InstanceAdministratorAlreadyExists => StatusCode::UNPROCESSABLE_ENTITY,
             Self::Internal(error) => return ApiError::from(error).into_response(),
         };
         error::response(status, &self)

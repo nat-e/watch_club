@@ -1,4 +1,4 @@
-import type {PasswordProblem, UsernameProblem} from '@watchclub/api';
+import type {PasswordError, UsernameError} from '@watchclub/api';
 import {PASSWORD_MIN_LENGTH, usePasswordProblemMessage} from '@watchclub/core/accounts/passwords';
 import {useTranslation} from 'react-i18next';
 import {useAppForm} from '@/components/forms/form';
@@ -11,8 +11,8 @@ export interface NewAccount {
 
 /** The first problem the API finds with a new account's username or password. */
 type NewAccountProblem =
-  | {code: 'invalid_username'; reason: UsernameProblem}
-  | {code: 'invalid_password'; reason: PasswordProblem}
+  | {code: 'invalid_username'; reason: UsernameError}
+  | {code: 'invalid_password'; reason: PasswordError}
   | {code: 'username_taken'};
 
 /**
@@ -29,7 +29,7 @@ export function NewAccountForm({
   const {t} = useTranslation(['web', 'core']);
   const passwordProblemMessage = usePasswordProblemMessage();
 
-  function usernameMessage(problem: UsernameProblem): string {
+  function usernameMessage(problem: UsernameError): string {
     switch (problem.code) {
       case 'missing':
         return t($ => $.web.newAccount.chooseUsername);

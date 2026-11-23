@@ -11,11 +11,12 @@ use sqlx::types::Json;
 use sqlx_otel::QueryAnnotateExt;
 
 use super::{
-    Content, ContentId, ContentMetadata, ContentType, Credit, ExternalContentId, Media, MediaType,
+    Content, ContentId, ContentType, Credit, ExternalContentId, Media, MediaType,
+    metadata::ContentMetadata,
 };
 use crate::{
     db::{Pool, Transaction},
-    domain::{InternalError, accounts::Locale},
+    domain::accounts::preferences::Locale,
 };
 
 /// A saved Content, with its texts in one Locale.
@@ -30,10 +31,7 @@ pub(super) struct SavedContent {
 /// to a deleted Media, such as its Watch Progress, goes with it.
 ///
 /// Two saves of the same Content at once take turns: the first locks its row until it commits.
-pub(super) async fn save(
-    db: &Pool,
-    metadata: &ContentMetadata,
-) -> Result<ContentId, InternalError> {
+pub(super) async fn save(db: &Pool, metadata: &ContentMetadata) -> anyhow::Result<ContentId> {
     let mut transaction = db.begin().await.context("failed to start a transaction")?;
 
     let content_id = save_content(&mut transaction, metadata).await?;
@@ -54,7 +52,7 @@ pub(super) async fn find_by_external_id(
     db: &Pool,
     external_content_id: &ExternalContentId,
     locale: Locale,
-) -> Result<Option<SavedContent>, InternalError> {
+) -> anyhow::Result<Option<SavedContent>> {
     let content_type = external_content_id.content_type();
     let Some(row) = sqlx::query!(
         r#"
@@ -138,7 +136,7 @@ pub async fn list_media(
     db: &Pool,
     content_id: ContentId,
     locale: Locale,
-) -> Result<Vec<Media>, InternalError> {
+) -> anyhow::Result<Vec<Media>> {
     let media = sqlx::query!(
         r#"
         SELECT m.id, m.group_number, m.number_in_group, l.title, l.overview, m.image,
@@ -175,7 +173,7 @@ pub async fn list_media(
 pub(super) async fn external_content_id(
     db: &Pool,
     content_id: ContentId,
-) -> Result<Option<ExternalContentId>, InternalError> {
+) -> anyhow::Result<Option<ExternalContentId>> {
     let row = sqlx::query!(
         "SELECT content_type, main_external_id FROM contents WHERE id = $1",
         content_id as ContentId,
@@ -202,7 +200,7 @@ pub(super) async fn external_content_id(
 async fn save_content(
     transaction: &mut Transaction,
     metadata: &ContentMetadata,
-) -> Result<ContentId, InternalError> {
+) -> anyhow::Result<ContentId> {
     let content_type = metadata.id.content_type();
     let external_ids = metadata.external_ids.clone().with(&metadata.id);
     let id = sqlx::query_scalar!(
@@ -247,7 +245,7 @@ async fn save_content_localizations(
     transaction: &mut Transaction,
     content_id: ContentId,
     metadata: &ContentMetadata,
-) -> Result<(), InternalError> {
+) -> anyhow::Result<()> {
     let localizations: Vec<_> = metadata.texts.localize(&metadata.original_title).collect();
     let locales: Vec<_> = localizations
         .iter()
@@ -311,7 +309,7 @@ async fn save_credits(
     transaction: &mut Transaction,
     content_id: ContentId,
     metadata: &ContentMetadata,
-) -> Result<(), InternalError> {
+) -> anyhow::Result<()> {
     let credits = &metadata.credits;
     let kinds: Vec<_> = credits.iter().map(|credit| credit.kind).collect();
     let names: Vec<_> = credits.iter().map(|credit| credit.name.as_str()).collect();
@@ -384,7 +382,7 @@ async fn save_media(
     transaction: &mut Transaction,
     content_id: ContentId,
     metadata: &ContentMetadata,
-) -> Result<(), InternalError> {
+) -> anyhow::Result<()> {
     let media = &metadata.media;
     let media_types: Vec<_> = media.iter().map(|media| media.media_type).collect();
     let group_numbers: Vec<_> = media.iter().map(|media| media.group_number).collect();

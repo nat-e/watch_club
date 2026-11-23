@@ -8,10 +8,11 @@ mod api_client;
 mod config;
 mod domain {
     mod accounts {
+        mod instance_administrator;
         mod invitations;
-        mod passwords;
         mod preferences;
-        mod user;
+        mod sessions;
+        mod users;
     }
     mod contents;
     mod sources;
@@ -42,6 +43,7 @@ mod routes {
         mod get;
         mod list_media;
     }
+    mod errors;
     mod me {
         mod change_password;
         mod get;

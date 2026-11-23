@@ -8,6 +8,7 @@
 //! and trailers for nearly every show, and only some lack English titles for their TV Show
 //! Episodes, which then show their number only.
 
+use anyhow::Context;
 use jiff::civil::Date;
 use serde::Deserialize;
 
@@ -19,10 +20,11 @@ use super::{
 };
 use crate::{
     domain::{
-        accounts::Locale,
+        accounts::preferences::Locale,
         contents::{
-            ContentMetadata, ContentTranslations, ExternalContentId, ExternalIds, Genre, Language,
-            LookUpError, MediaMetadata, MediaTranslations, MediaType, Translations,
+            ContentTranslations, ExternalContentId, Genre, Language, MediaTranslations, MediaType,
+            Translations,
+            metadata::{ContentMetadata, ExternalIds, MediaMetadata},
         },
     },
     utils::time::minutes_to_seconds,
@@ -48,12 +50,12 @@ pub(super) const MAX_APPENDS: usize = 20;
 const MIN_VOTES: u32 = 25;
 
 impl Tmdb {
-    /// Returns the Movie with this ID, in every language TMDB has it.
-    pub async fn fetch_movie(&self, id: TmdbId) -> Result<ContentMetadata, LookUpError> {
-        let movie = self
-            .details("/movie/{id}", id, &[])
-            .await?
-            .ok_or(LookUpError::NotFound)?;
+    /// Returns the Movie with this ID, in every language TMDB has it, or None when TMDB doesn't
+    /// know it.
+    pub async fn fetch_movie(&self, id: TmdbId) -> anyhow::Result<Option<ContentMetadata>> {
+        let Some(movie) = self.details("/movie/{id}", id, &[]).await? else {
+            return Ok(None);
+        };
 
         let media = MediaMetadata {
             media_type: MediaType::Movie,
@@ -64,7 +66,9 @@ impl Tmdb {
             image: None,
             texts: MediaTranslations::default(),
         };
-        Ok(movie.into_metadata(ExternalContentId::Movie(id), vec![media]))
+        Ok(Some(
+            movie.into_metadata(ExternalContentId::Movie(id), vec![media]),
+        ))
     }
 
     /// Returns the details of the Movie or TV Show at `route`, such as `/movie/{id}`, with these
@@ -98,7 +102,7 @@ impl Tmdb {
                 ],
             )
             .await
-            .map_err(anyhow::Error::from)
+            .context("failed to fetch a Movie or a TV Show from TMDB")
     }
 }
 

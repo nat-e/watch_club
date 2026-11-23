@@ -30,10 +30,7 @@ pub use self::{
     kinds::{delete_expired_sessions::DeleteExpiredSessions, refresh_content::RefreshContent},
     runner::{run, run_available},
 };
-use crate::{
-    db::Pool,
-    domain::{InternalError, contents::MetadataProviders},
-};
+use crate::{db::Pool, domain::contents::metadata::MetadataProviders};
 
 /// Work that runs in the background: a struct with the job's arguments, which also sets its
 /// settings.
@@ -81,12 +78,6 @@ pub enum JobError {
     /// once.
     #[error(transparent)]
     NonRetryable(anyhow::Error),
-}
-
-impl From<InternalError> for JobError {
-    fn from(error: InternalError) -> Self {
-        Self::Retryable(error.into())
-    }
 }
 
 /// A queue of jobs, which runs up to its limit of them at once.
@@ -203,7 +194,7 @@ impl NewJob {
         })
     }
 
-    async fn insert(self, db: impl PgExecutor<'_>) -> Result<JobId, InternalError> {
+    async fn insert(self, db: impl PgExecutor<'_>) -> anyhow::Result<JobId> {
         let id = sqlx::query_scalar!(
             r#"
             INSERT INTO jobs (queue, kind, args, priority, max_attempts)
@@ -235,14 +226,14 @@ struct ClaimedJob {
 
 /// Queues the job to run as soon as its queue has room. In a transaction, the job is only queued
 /// if the transaction commits.
-pub async fn enqueue<J: Job>(db: impl PgExecutor<'_>, job: J) -> Result<JobId, InternalError> {
+pub async fn enqueue<J: Job>(db: impl PgExecutor<'_>, job: J) -> anyhow::Result<JobId> {
     let new_job = NewJob::of(&job).context("failed to serialize a job")?;
     new_job.insert(db).await
 }
 
 /// Cancels the job if it's waiting in its queue, for its first attempt or a retry, and returns
 /// whether it did. A running job goes on, and a finished or missing job stays as it is.
-pub async fn cancel(db: impl PgExecutor<'_>, id: JobId) -> Result<bool, InternalError> {
+pub async fn cancel(db: impl PgExecutor<'_>, id: JobId) -> anyhow::Result<bool> {
     let cancelled = sqlx::query!(
         r#"
         UPDATE jobs SET state = 'cancelled', finished_at = now()

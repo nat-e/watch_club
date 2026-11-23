@@ -51,6 +51,8 @@ function Setup() {
         await navigate({to: '/'});
         return null;
       case 'invalid_request':
+      case 'payload_too_large':
+      case 'unsupported_media_type':
       case 'internal_error':
         throw error;
     }

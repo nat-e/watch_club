@@ -3,10 +3,10 @@ use std::num::NonZeroU32;
 use jiff::civil::date;
 use serde_json::{Value, json};
 use watch_club::domain::{
-    accounts::Locale,
+    accounts::preferences::Locale,
     contents::{
-        CreditKind, ExternalContentId, Genre, Image, ImageSource, Language, LookUpError, MediaType,
-        SearchResult, TmdbId,
+        CreditKind, ExternalContentId, Genre, Image, ImageSource, Language, MediaType,
+        SearchResult, metadata::TmdbId,
     },
 };
 use wiremock::{
@@ -297,7 +297,9 @@ async fn search_fails_with_the_status_tmdb_answers() {
 
     let error = format!("{error:#}");
     assert!(
-        error.starts_with("HTTP status client error (401 Unauthorized) for url"),
+        error.starts_with(
+            "failed to search TMDB: HTTP status client error (401 Unauthorized) for url"
+        ),
         "{error}"
     );
 }
@@ -315,7 +317,8 @@ async fn search_fails_when_tmdb_has_no_search() {
 
     let error = format!("{error:#}");
     assert!(
-        error.starts_with("HTTP status client error (404 Not Found) for url"),
+        error
+            .starts_with("failed to search TMDB: HTTP status client error (404 Not Found) for url"),
         "{error}"
     );
 }
@@ -336,10 +339,8 @@ async fn search_fails_without_trying_again_when_tmdb_is_unavailable() {
         .await
         .unwrap_err();
 
-    assert!(
-        error.to_string().contains("503 Service Unavailable"),
-        "{error:#}"
-    );
+    let error = format!("{error:#}");
+    assert!(error.contains("503 Service Unavailable"), "{error}");
 }
 
 #[tokio::test]
@@ -360,7 +361,12 @@ async fn fetch_movie_asks_for_everything_in_every_locales_language_at_once() {
         .mount(&tmdb.server)
         .await;
 
-    let movie = tmdb.client().fetch_movie(TmdbId::new(194)).await.unwrap();
+    let movie = tmdb
+        .client()
+        .fetch_movie(TmdbId::new(194))
+        .await
+        .unwrap()
+        .unwrap();
 
     assert_eq!(movie.id, ExternalContentId::Movie(TmdbId::new(194)));
 }
@@ -370,7 +376,12 @@ async fn fetch_movie_returns_its_metadata_with_its_one_media() {
     let tmdb = FakeTmdb::start().await;
     tmdb.answer_fixtures().await;
 
-    let movie = tmdb.client().fetch_movie(TmdbId::new(194)).await.unwrap();
+    let movie = tmdb
+        .client()
+        .fetch_movie(TmdbId::new(194))
+        .await
+        .unwrap()
+        .unwrap();
 
     assert_eq!(movie.original_title, "Le Fabuleux Destin d'Amélie Poulain");
     assert_eq!(movie.original_language.as_deref(), Some("fr"));
@@ -394,7 +405,12 @@ async fn fetch_movie_returns_its_director_then_its_actors_in_billing_order() {
     let tmdb = FakeTmdb::start().await;
     tmdb.answer_fixtures().await;
 
-    let movie = tmdb.client().fetch_movie(TmdbId::new(194)).await.unwrap();
+    let movie = tmdb
+        .client()
+        .fetch_movie(TmdbId::new(194))
+        .await
+        .unwrap()
+        .unwrap();
 
     let credits: Vec<_> = movie
         .credits
@@ -429,7 +445,12 @@ async fn fetch_movie_titles_its_original_languages_translation_with_its_original
     let tmdb = FakeTmdb::start().await;
     tmdb.answer_fixtures().await;
 
-    let movie = tmdb.client().fetch_movie(TmdbId::new(194)).await.unwrap();
+    let movie = tmdb
+        .client()
+        .fetch_movie(TmdbId::new(194))
+        .await
+        .unwrap()
+        .unwrap();
 
     // TMDB leaves the title of the original language's translation empty
     let french = Language::new("fr", Some("FR".to_owned()));
@@ -449,7 +470,12 @@ async fn fetch_movie_returns_its_youtube_trailers_by_language_the_best_first() {
     let tmdb = FakeTmdb::start().await;
     tmdb.answer_fixtures().await;
 
-    let movie = tmdb.client().fetch_movie(TmdbId::new(194)).await.unwrap();
+    let movie = tmdb
+        .client()
+        .fetch_movie(TmdbId::new(194))
+        .await
+        .unwrap()
+        .unwrap();
 
     // Leaves out the clips and featurettes, and puts the trailers before the teasers
     let trailers: Vec<_> = movie
@@ -478,6 +504,7 @@ async fn fetch_tv_show_returns_its_episodes_with_their_texts_in_each_locale() {
         .client()
         .fetch_tv_show(TmdbId::new(87_108))
         .await
+        .unwrap()
         .unwrap();
 
     assert_eq!(tv_show.original_title, "Chernobyl");
@@ -542,7 +569,12 @@ async fn fetch_tv_show_asks_for_the_seasons_it_didnt_guess_20_at_a_time_in_each_
             .await;
     }
 
-    let tv_show = tmdb.client().fetch_tv_show(TmdbId::new(456)).await.unwrap();
+    let tv_show = tmdb
+        .client()
+        .fetch_tv_show(TmdbId::new(456))
+        .await
+        .unwrap()
+        .unwrap();
 
     let seasons: Vec<_> = tv_show
         .media
@@ -564,7 +596,12 @@ async fn fetch_tv_show_leaves_out_the_titles_tmdb_makes_up_for_untranslated_epis
     tmdb.answer_in("/tv/456", Locale::EnUs, details).await;
     tmdb.answer_in("/tv/456", Locale::FrFr, french).await;
 
-    let tv_show = tmdb.client().fetch_tv_show(TmdbId::new(456)).await.unwrap();
+    let tv_show = tmdb
+        .client()
+        .fetch_tv_show(TmdbId::new(456))
+        .await
+        .unwrap()
+        .unwrap();
 
     let texts = &tv_show.media[0].texts;
     let english = Language::new("en", Some("US".to_owned()));
@@ -587,13 +624,18 @@ async fn fetch_tv_show_takes_tmdbs_runtime_of_0_as_unknown() {
     tmdb.answer_in("/tv/456", Locale::FrFr, appended_seasons(1..=1))
         .await;
 
-    let tv_show = tmdb.client().fetch_tv_show(TmdbId::new(456)).await.unwrap();
+    let tv_show = tmdb
+        .client()
+        .fetch_tv_show(TmdbId::new(456))
+        .await
+        .unwrap()
+        .unwrap();
 
     assert_eq!(tv_show.media[0].runtime_seconds, None);
 }
 
 #[tokio::test]
-async fn fetch_fails_with_not_found_when_tmdb_has_nothing_with_the_id() {
+async fn fetch_is_none_when_tmdb_has_nothing_with_the_id() {
     let tmdb = FakeTmdb::start().await;
     Mock::given(method("GET"))
         .and(path("/tv/194"))
@@ -605,13 +647,9 @@ async fn fetch_fails_with_not_found_when_tmdb_has_nothing_with_the_id() {
         .mount(&tmdb.server)
         .await;
 
-    let error = tmdb
-        .client()
-        .fetch_tv_show(TmdbId::new(194))
-        .await
-        .unwrap_err();
+    let found = tmdb.client().fetch_tv_show(TmdbId::new(194)).await.unwrap();
 
-    assert!(matches!(error, LookUpError::NotFound), "{error:?}");
+    assert_eq!(found, None);
 }
 
 /// Returns TMDB's `append_to_response` for these seasons, such as `season/1,season/2`.

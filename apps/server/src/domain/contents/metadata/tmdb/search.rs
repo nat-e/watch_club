@@ -2,13 +2,13 @@
 
 use std::num::NonZeroU32;
 
+use anyhow::Context;
 use jiff::civil::Date;
 use serde::Deserialize;
 
 use super::{Tmdb, TmdbId, optional_date, optional_text, poster};
 use crate::domain::{
-    InternalError,
-    accounts::Locale,
+    accounts::preferences::Locale,
     contents::{ExternalContentId, SearchResult, SearchResults},
 };
 
@@ -32,7 +32,7 @@ impl Tmdb {
         query: &str,
         mut page: NonZeroU32,
         locale: Locale,
-    ) -> Result<SearchResults, InternalError> {
+    ) -> anyhow::Result<SearchResults> {
         let mut pages_read = 1;
         loop {
             let page_number = page.to_string();
@@ -46,7 +46,7 @@ impl Tmdb {
                 .api
                 .get_required("/search/multi", &[], &params)
                 .await
-                .map_err(anyhow::Error::from)?;
+                .context("failed to search TMDB")?;
 
             let next_page = found.next_page();
             let results: Vec<_> = found

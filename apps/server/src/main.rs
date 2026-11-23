@@ -18,7 +18,7 @@ use watch_club::{
     api_client::HttpClient,
     config::Config,
     db,
-    domain::contents::{Hardcover, MetadataProviders, Sportarr, Tmdb},
+    domain::contents::metadata::MetadataProviders,
     jobs::{self, JobContext},
     observability,
 };
@@ -42,11 +42,11 @@ async fn serve(config: Config) -> anyhow::Result<()> {
         .await
         .with_context(|| format!("failed to listen on port {}", config.port))?;
     let http_client = HttpClient::new()?;
-    let metadata_providers = MetadataProviders {
-        tmdb: Tmdb::new(&http_client, &config.tmdb_api_token)?,
-        sportarr: Sportarr::new(&http_client),
-        hardcover: Hardcover::new(&http_client, &config.hardcover_api_token)?,
-    };
+    let metadata_providers = MetadataProviders::new(
+        &http_client,
+        &config.tmdb_api_token,
+        &config.hardcover_api_token,
+    )?;
     let shutdown = CancellationToken::new();
     cancel_on_signals(shutdown.clone()).context("failed to listen for shutdown signals")?;
 

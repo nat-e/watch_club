@@ -1,5 +1,5 @@
 //! The client of Radarr's, Sonarr's and Sportarr's APIs, which have the same calls to set up a
-//! Source. It calls the app as told: `test_servarr_connection` decides what its failures mean.
+//! Source. It calls the app as told: `test_connection` decides what its failures mean.
 
 use secrecy::SecretString;
 use serde::Deserialize;

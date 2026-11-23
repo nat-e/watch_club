@@ -17,7 +17,7 @@ use tower::ServiceExt;
 use watch_club::{
     ApiContext, AppsSentry,
     db::Pool,
-    domain::{accounts::CurrentUser, contents::MetadataProviders},
+    domain::{accounts::users::CurrentUser, contents::metadata::MetadataProviders},
 };
 
 use super::{PASSWORD, encryption_key, http_client, unreachable_metadata_providers};

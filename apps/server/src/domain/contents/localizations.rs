@@ -5,7 +5,7 @@
 //! take the User's Locale as is.
 
 use super::Image;
-use crate::domain::accounts::Locale;
+use crate::domain::accounts::preferences::Locale;
 
 /// A language a Metadata Provider has a text in: an ISO 639-1 code, such as `fr`, with the ISO
 /// 3166-1 code of the country it's written for, such as `CA`, when it says one.

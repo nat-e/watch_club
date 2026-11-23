@@ -17,15 +17,12 @@ use crate::{
     ApiContext,
     auth::CurrentSession,
     db::Pool,
-    domain::{
-        InternalError,
-        accounts::{
-            self, AudioLanguage, ChangePasswordError, CurrentUser, Locale, Password, PasswordError,
-            TrackLanguage, UserId, UserPreferences,
-        },
+    domain::accounts::{
+        preferences::{self, AudioLanguage, Locale, TrackLanguage, UserPreferences},
+        users::{self, ChangePasswordError, CurrentUser, Password, UserId},
     },
     error::{self, ApiError, ErrorBody},
-    routes::Json,
+    routes::{Json, users::ApiPasswordError},
 };
 
 pub(super) fn routes() -> OpenApiRouter<ApiContext> {
@@ -57,10 +54,9 @@ async fn get_current_user(current_user: CurrentUser) -> Json<CurrentUserResponse
 async fn update_preferences(
     State(db): State<Pool>,
     current_user: CurrentUser,
-    Json(preferences): Json<UserPreferencesBody>,
+    Json(body): Json<UserPreferencesBody>,
 ) -> Result<Json<CurrentUserResponse>, ApiError> {
-    let current_user =
-        accounts::save_preferences(&db, current_user.id, &preferences.into()).await?;
+    let current_user = preferences::save(&db, current_user.id, &body.into()).await?;
     Ok(Json(current_user.into()))
 }
 
@@ -80,8 +76,8 @@ async fn change_password(
     session: CurrentSession,
     Json(request): Json<ChangePasswordRequest>,
 ) -> Result<StatusCode, ChangePasswordRequestError> {
-    let new_password = Password::parse(request.new_password)?;
-    accounts::change_password(
+    let new_password = Password::parse(request.new_password).map_err(ApiPasswordError::from)?;
+    users::change_password(
         &db,
         session.user.id,
         &session.token,
@@ -112,30 +108,29 @@ enum ChangePasswordRequestError {
     #[error(transparent)]
     InvalidPassword {
         #[from]
-        reason: PasswordError,
+        reason: ApiPasswordError,
     },
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl From<ChangePasswordError> for ChangePasswordRequestError {
     fn from(error: ChangePasswordError) -> Self {
         match error {
             ChangePasswordError::WrongPassword => Self::WrongPassword,
-            ChangePasswordError::Internal(error) => Self::Internal(error.into()),
+            ChangePasswordError::Internal(error) => Self::Internal(error),
         }
     }
 }
 
 impl IntoResponse for ChangePasswordRequestError {
     fn into_response(self) -> Response {
-        match self {
-            Self::WrongPassword | Self::InvalidPassword { .. } => {
-                error::response(StatusCode::UNPROCESSABLE_ENTITY, &self)
-            }
-            Self::Internal(error) => ApiError::from(error).into_response(),
-        }
+        let status = match self {
+            Self::WrongPassword | Self::InvalidPassword { .. } => StatusCode::UNPROCESSABLE_ENTITY,
+            Self::Internal(error) => return ApiError::from(error).into_response(),
+        };
+        error::response(status, &self)
     }
 }
 

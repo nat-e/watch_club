@@ -61,6 +61,58 @@
               }
             }
           },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "Wrong username or password",
             "content": {
@@ -139,6 +191,58 @@
                       "type": "string",
                       "enum": [
                         "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
                       ]
                     },
                     "message": {
@@ -487,7 +591,7 @@
     },
     "/api/health": {
       "get": {
-        "summary": "Checks that the server reaches its database.",
+        "summary": "Checks that the server reaches its database within 3 s.",
         "operationId": "check_health",
         "responses": {
           "200": {
@@ -619,18 +723,60 @@
               }
             }
           },
-          "409": {
-            "description": "WatchClub already has its Instance Administrator",
+          "413": {
+            "description": "The body is too large.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorBody_CreateInstanceAdministratorRequestError"
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
                 }
               }
             }
           },
           "422": {
-            "description": "The username or password breaks the rules",
+            "description": "WatchClub already has its Instance Administrator, or the username or password breaks the rules",
             "content": {
               "application/json": {
                 "schema": {
@@ -878,6 +1024,58 @@
               }
             }
           },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "500": {
             "description": "Something went wrong. Try again later.",
             "content": {
@@ -959,6 +1157,58 @@
                       "type": "string",
                       "enum": [
                         "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
                       ]
                     },
                     "message": {
@@ -1358,6 +1608,58 @@
               }
             }
           },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "The Invitation has created more Users than the Max Uses already",
             "content": {
@@ -1556,6 +1858,58 @@
               }
             }
           },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "The current password is wrong, or the new one breaks the rules",
             "content": {
@@ -1668,6 +2022,58 @@
                       "type": "string",
                       "enum": [
                         "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
                       ]
                     },
                     "message": {
@@ -1827,6 +2233,58 @@
                       "type": "string",
                       "enum": [
                         "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
                       ]
                     },
                     "message": {
@@ -2221,6 +2679,58 @@
               }
             }
           },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "The configuration is invalid, such as a folder WatchClub can't read",
             "content": {
@@ -2363,6 +2873,58 @@
                       "type": "string",
                       "enum": [
                         "forbidden"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
                       ]
                     },
                     "message": {
@@ -2544,6 +3106,58 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorBody_UpdateSourceRequestError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
                 }
               }
             }
@@ -2868,6 +3482,58 @@
               }
             }
           },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "422": {
             "description": "WatchClub can't call the app with this URL and API key",
             "content": {
@@ -3136,7 +3802,7 @@
               }
             }
           },
-          "409": {
+          "422": {
             "description": "The Instance Administrator can't be deleted",
             "content": {
               "application/json": {
@@ -3401,7 +4067,7 @@
                 ]
               },
               "reason": {
-                "$ref": "#/components/schemas/PasswordProblem"
+                "$ref": "#/components/schemas/PasswordError"
               }
             }
           }
@@ -3593,7 +4259,7 @@
                 ]
               },
               "reason": {
-                "$ref": "#/components/schemas/UsernameProblem"
+                "$ref": "#/components/schemas/UsernameError"
               }
             }
           },
@@ -3611,7 +4277,7 @@
                 ]
               },
               "reason": {
-                "$ref": "#/components/schemas/PasswordProblem"
+                "$ref": "#/components/schemas/PasswordError"
               }
             }
           },
@@ -3643,7 +4309,7 @@
               "code": {
                 "type": "string",
                 "enum": [
-                  "user_not_found"
+                  "not_found"
                 ]
               }
             }
@@ -3656,7 +4322,7 @@
           {
             "type": "object",
             "required": [
-              "error",
+              "reason",
               "code"
             ],
             "properties": {
@@ -3666,7 +4332,7 @@
                   "invalid_filesystem_configuration"
                 ]
               },
-              "error": {
+              "reason": {
                 "$ref": "#/components/schemas/FolderError"
               }
             }
@@ -3674,7 +4340,7 @@
           {
             "type": "object",
             "required": [
-              "error",
+              "reason",
               "code"
             ],
             "properties": {
@@ -3684,7 +4350,7 @@
                   "invalid_servarr_configuration"
                 ]
               },
-              "error": {
+              "reason": {
                 "$ref": "#/components/schemas/ServarrConfigurationError"
               }
             }
@@ -3791,7 +4457,7 @@
               "code": {
                 "type": "string",
                 "enum": [
-                  "invitation_not_found"
+                  "not_found"
                 ]
               }
             }
@@ -3829,7 +4495,7 @@
               "code": {
                 "type": "string",
                 "enum": [
-                  "user_not_found"
+                  "not_found"
                 ]
               }
             }
@@ -3884,7 +4550,7 @@
                     ]
                   },
                   "reason": {
-                    "$ref": "#/components/schemas/PasswordProblem"
+                    "$ref": "#/components/schemas/PasswordError"
                   }
                 }
               }
@@ -3974,7 +4640,7 @@
                     ]
                   },
                   "reason": {
-                    "$ref": "#/components/schemas/UsernameProblem"
+                    "$ref": "#/components/schemas/UsernameError"
                   }
                 }
               },
@@ -3992,7 +4658,7 @@
                     ]
                   },
                   "reason": {
-                    "$ref": "#/components/schemas/PasswordProblem"
+                    "$ref": "#/components/schemas/PasswordError"
                   }
                 }
               },
@@ -4041,7 +4707,7 @@
                   "code": {
                     "type": "string",
                     "enum": [
-                      "user_not_found"
+                      "not_found"
                     ]
                   }
                 }
@@ -4071,7 +4737,7 @@
               {
                 "type": "object",
                 "required": [
-                  "error",
+                  "reason",
                   "code"
                 ],
                 "properties": {
@@ -4081,7 +4747,7 @@
                       "invalid_filesystem_configuration"
                     ]
                   },
-                  "error": {
+                  "reason": {
                     "$ref": "#/components/schemas/FolderError"
                   }
                 }
@@ -4089,7 +4755,7 @@
               {
                 "type": "object",
                 "required": [
-                  "error",
+                  "reason",
                   "code"
                 ],
                 "properties": {
@@ -4099,7 +4765,7 @@
                       "invalid_servarr_configuration"
                     ]
                   },
-                  "error": {
+                  "reason": {
                     "$ref": "#/components/schemas/ServarrConfigurationError"
                   }
                 }
@@ -4135,7 +4801,7 @@
                   "code": {
                     "type": "string",
                     "enum": [
-                      "invitation_not_found"
+                      "not_found"
                     ]
                   }
                 }
@@ -4207,7 +4873,7 @@
                   "code": {
                     "type": "string",
                     "enum": [
-                      "user_not_found"
+                      "not_found"
                     ]
                   }
                 }
@@ -4334,7 +5000,7 @@
                     ]
                   },
                   "reason": {
-                    "$ref": "#/components/schemas/UsernameProblem"
+                    "$ref": "#/components/schemas/UsernameError"
                   }
                 }
               },
@@ -4352,7 +5018,7 @@
                     ]
                   },
                   "reason": {
-                    "$ref": "#/components/schemas/PasswordProblem"
+                    "$ref": "#/components/schemas/PasswordError"
                   }
                 }
               },
@@ -4421,7 +5087,7 @@
                     ]
                   },
                   "reason": {
-                    "$ref": "#/components/schemas/PasswordProblem"
+                    "$ref": "#/components/schemas/PasswordError"
                   }
                 }
               },
@@ -4507,7 +5173,7 @@
                   "code": {
                     "type": "string",
                     "enum": [
-                      "invitation_not_found"
+                      "not_found"
                     ]
                   }
                 }
@@ -4552,7 +5218,7 @@
               {
                 "type": "object",
                 "required": [
-                  "error",
+                  "reason",
                   "code"
                 ],
                 "properties": {
@@ -4562,7 +5228,7 @@
                       "invalid_filesystem_configuration"
                     ]
                   },
-                  "error": {
+                  "reason": {
                     "$ref": "#/components/schemas/FolderError"
                   }
                 }
@@ -4570,7 +5236,7 @@
               {
                 "type": "object",
                 "required": [
-                  "error",
+                  "reason",
                   "code"
                 ],
                 "properties": {
@@ -4580,7 +5246,7 @@
                       "invalid_servarr_configuration"
                     ]
                   },
-                  "error": {
+                  "reason": {
                     "$ref": "#/components/schemas/ServarrConfigurationError"
                   }
                 }
@@ -5060,7 +5726,7 @@
           }
         }
       },
-      "PasswordProblem": {
+      "PasswordError": {
         "oneOf": [
           {
             "type": "object",
@@ -5096,7 +5762,7 @@
             }
           }
         ],
-        "description": "Potential errors when parsing Passwords"
+        "description": "The reasons a password breaks the rules."
       },
       "PasswordReset": {
         "type": "object",
@@ -5178,7 +5844,7 @@
                 ]
               },
               "reason": {
-                "$ref": "#/components/schemas/UsernameProblem"
+                "$ref": "#/components/schemas/UsernameError"
               }
             }
           },
@@ -5196,7 +5862,7 @@
                 ]
               },
               "reason": {
-                "$ref": "#/components/schemas/PasswordProblem"
+                "$ref": "#/components/schemas/PasswordError"
               }
             }
           },
@@ -5248,7 +5914,7 @@
                 ]
               },
               "reason": {
-                "$ref": "#/components/schemas/PasswordProblem"
+                "$ref": "#/components/schemas/PasswordError"
               }
             }
           },
@@ -5788,7 +6454,7 @@
               "code": {
                 "type": "string",
                 "enum": [
-                  "invitation_not_found"
+                  "not_found"
                 ]
               }
             }
@@ -5816,7 +6482,7 @@
           {
             "type": "object",
             "required": [
-              "error",
+              "reason",
               "code"
             ],
             "properties": {
@@ -5826,7 +6492,7 @@
                   "invalid_filesystem_configuration"
                 ]
               },
-              "error": {
+              "reason": {
                 "$ref": "#/components/schemas/FolderError"
               }
             }
@@ -5834,7 +6500,7 @@
           {
             "type": "object",
             "required": [
-              "error",
+              "reason",
               "code"
             ],
             "properties": {
@@ -5844,7 +6510,7 @@
                   "invalid_servarr_configuration"
                 ]
               },
-              "error": {
+              "reason": {
                 "$ref": "#/components/schemas/ServarrConfigurationError"
               }
             }
@@ -5950,7 +6616,7 @@
           }
         }
       },
-      "UsernameProblem": {
+      "UsernameError": {
         "oneOf": [
           {
             "type": "object",
@@ -6020,7 +6686,7 @@
             }
           }
         ],
-        "description": "Potential errors when parsing Usernames"
+        "description": "The reasons a username breaks the rules."
       }
     },
     "securitySchemes": {

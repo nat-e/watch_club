@@ -7,7 +7,7 @@ use croner::Cron;
 use jiff::{Timestamp, tz::TimeZone};
 use sqlx_otel::QueryAnnotateExt;
 
-use crate::{db::Pool, domain::InternalError};
+use crate::db::Pool;
 
 /// Returns the first run of the cron expression after `time`.
 fn next_run_after(cron: &str, time: Timestamp) -> anyhow::Result<Timestamp> {
@@ -22,7 +22,7 @@ fn next_run_after(cron: &str, time: Timestamp) -> anyhow::Result<Timestamp> {
 
 /// Makes the database's schedules match the code's: adds the new ones, moves the next run of
 /// those whose cron expression changed, and deletes those that are gone.
-pub(super) async fn sync_schedules(db: &Pool) -> Result<(), InternalError> {
+pub(super) async fn sync_schedules(db: &Pool) -> anyhow::Result<()> {
     // The server's clock, as other job queues use: with clocks out of sync, a run around the
     // server's start could be skipped or come early, and `enqueue_due` sets the next ones right
     let now = Timestamp::now();
@@ -69,7 +69,7 @@ pub(super) async fn sync_schedules(db: &Pool) -> Result<(), InternalError> {
 /// Queues the job of each schedule whose next run has come, and moves the schedule to its next
 /// run after now. The next run comes from the stored cron expression, which a server with newer
 /// code may have changed.
-pub(super) async fn enqueue_due(db: &Pool) -> Result<(), InternalError> {
+pub(super) async fn enqueue_due(db: &Pool) -> anyhow::Result<()> {
     let mut schedules = super::schedules().context("failed to serialize a scheduled job")?;
     let mut transaction = db.begin().await.context("failed to start a transaction")?;
     // Skips the schedules another server is queuing

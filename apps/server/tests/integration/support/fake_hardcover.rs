@@ -5,7 +5,7 @@ use std::{fs, path::Path};
 
 use secrecy::SecretString;
 use serde_json::Value;
-use watch_club::domain::contents::{Hardcover, MetadataProviders};
+use watch_club::domain::contents::metadata::{Hardcover, MetadataProviders};
 use wiremock::{
     Mock, MockServer, ResponseTemplate,
     matchers::{body_string_contains, method, path},

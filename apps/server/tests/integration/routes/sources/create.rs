@@ -113,10 +113,10 @@ async fn answers_why_the_configuration_is_invalid(db: PgPool) {
     url_without_path["url"] = json!("radarr:7878");
     let mut missing_local_root_folder = radarr.configuration();
     missing_local_root_folder["local_root_folder_path"] = json!("/no/such/folder");
-    let app_error = |error: Value| {
+    let app_error = |reason: Value| {
         json!({
             "code": "invalid_servarr_configuration",
-            "error": error,
+            "reason": reason,
             "message": "the app's configuration is invalid",
         })
     };
@@ -127,7 +127,7 @@ async fn answers_why_the_configuration_is_invalid(db: PgPool) {
             json!({ "type": "filesystem", "media_type": "movie", "path": "/no/such/folder" }),
             json!({
                 "code": "invalid_filesystem_configuration",
-                "error": { "code": "not_found" },
+                "reason": { "code": "not_found" },
                 "message": "WatchClub can't read the folder",
             }),
         ),

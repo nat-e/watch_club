@@ -1,9 +1,10 @@
-//! `test_servarr_connection`, which tests the connection to Radarr, Sonarr and Sportarr: the app it
-//! reaches, what it reads from it, and which setting it blames when a call fails.
+//! `servarr::test_connection`, which tests the connection to Radarr, Sonarr and Sportarr: the app
+//! it reaches, what it reads from it, and which setting it blames when a call fails. And
+//! `servarr::test_saved_connection`, which tests it with a Source's saved API key.
 
 use serde_json::json;
-use watch_club::domain::sources::{
-    self, ConnectionError, QualityProfile, ServarrApp, ServarrChoices,
+use watch_club::domain::sources::servarr::{
+    self, QualityProfile, ServarrApp, ServarrChoices, TestConnectionError,
 };
 use wiremock::{
     Mock, MockServer, ResponseTemplate,
@@ -20,8 +21,8 @@ async fn test_connection(
     app: ServarrApp,
     url: &str,
     api_key: &str,
-) -> Result<ServarrChoices, ConnectionError> {
-    sources::test_servarr_connection(app, url, &api_key.into(), &support::http_client()).await
+) -> Result<ServarrChoices, TestConnectionError> {
+    servarr::test_connection(&support::http_client(), app, url, &api_key.into()).await
 }
 
 #[tokio::test]
@@ -70,7 +71,7 @@ async fn calls_sportarr_through_its_own_api() {
     let result = test_connection(ServarrApp::Sportarr, &sonarr.url(), API_KEY).await;
 
     // Sonarr has no API at Sportarr's path
-    assert_eq!(result.err(), Some(ConnectionError::InvalidServarrUrl));
+    assert_eq!(result.err(), Some(TestConnectionError::InvalidUrl));
 }
 
 #[tokio::test]
@@ -109,7 +110,7 @@ async fn refuses_a_url_where_another_app_answers() {
 
     let result = test_connection(ServarrApp::Radarr, &sonarr.url(), API_KEY).await;
 
-    assert_eq!(result.err(), Some(ConnectionError::InvalidServarrUrl));
+    assert_eq!(result.err(), Some(TestConnectionError::InvalidUrl));
 }
 
 #[tokio::test]
@@ -118,11 +119,7 @@ async fn refuses_urls_it_cant_call() {
     for url in ["radarr:7878", "ftp://radarr"] {
         let result = test_connection(ServarrApp::Radarr, url, API_KEY).await;
 
-        assert_eq!(
-            result.err(),
-            Some(ConnectionError::InvalidServarrUrl),
-            "{url}"
-        );
+        assert_eq!(result.err(), Some(TestConnectionError::InvalidUrl), "{url}");
     }
 }
 
@@ -130,7 +127,7 @@ async fn refuses_urls_it_cant_call() {
 async fn refuses_an_api_key_that_cant_go_in_a_request() {
     let result = test_connection(ServarrApp::Radarr, "http://radarr:7878", "line\nbreak").await;
 
-    assert_eq!(result.err(), Some(ConnectionError::InvalidApiKey));
+    assert_eq!(result.err(), Some(TestConnectionError::InvalidApiKey));
 }
 
 #[tokio::test]
@@ -139,7 +136,7 @@ async fn blames_the_api_key_when_the_app_rejects_it() {
 
     let result = test_connection(ServarrApp::Radarr, &radarr.url(), "wrong-key").await;
 
-    assert_eq!(result.err(), Some(ConnectionError::InvalidApiKey));
+    assert_eq!(result.err(), Some(TestConnectionError::InvalidApiKey));
 }
 
 #[tokio::test]
@@ -151,11 +148,7 @@ async fn blames_the_url_when_the_app_isnt_there() {
     for url in ["http://127.0.0.1:1", &elsewhere.uri()] {
         let result = test_connection(ServarrApp::Radarr, url, API_KEY).await;
 
-        assert_eq!(
-            result.err(),
-            Some(ConnectionError::InvalidServarrUrl),
-            "{url}"
-        );
+        assert_eq!(result.err(), Some(TestConnectionError::InvalidUrl), "{url}");
     }
 }
 
@@ -178,9 +171,136 @@ async fn blames_the_url_when_what_answers_isnt_one_of_the_apps() {
 
         assert_eq!(
             result.err(),
-            Some(ConnectionError::InvalidServarrUrl),
+            Some(TestConnectionError::InvalidUrl),
             "{}",
             server.uri()
         );
+    }
+}
+
+mod test_saved_connection {
+    use sqlx::PgPool;
+    use watch_club::{
+        db::Pool,
+        domain::sources::{
+            SourceId,
+            servarr::{ServarrChoices, TestSavedConnectionError},
+        },
+        utils::encryption::EncryptionKey,
+    };
+    use watch_club_test_macros::database_test;
+
+    use super::*;
+    use crate::domain::sources::{
+        FOLDER, create_app_source, create_movies_folder, deleted_source_id,
+    };
+
+    /// Tests the connection to the Source's app at `url`, with this API key, or else its saved one,
+    /// which `encryption_key` decrypts.
+    async fn test_saved_connection(
+        db: &Pool,
+        encryption_key: &EncryptionKey,
+        id: SourceId,
+        url: &str,
+        api_key: Option<&str>,
+    ) -> Result<ServarrChoices, TestSavedConnectionError> {
+        servarr::test_saved_connection(
+            db,
+            encryption_key,
+            &support::http_client(),
+            id,
+            url,
+            api_key.map(Into::into),
+        )
+        .await
+    }
+
+    #[database_test]
+    async fn uses_the_saved_api_key_without_another(db: PgPool) {
+        let db = watch_club::db::instrument(db);
+        let radarr = FakeServarr::radarr().await;
+        let source = create_app_source(&db, &radarr).await;
+
+        let result = test_saved_connection(
+            &db,
+            &support::encryption_key(),
+            source.id(),
+            &radarr.url(),
+            None,
+        )
+        .await;
+
+        assert!(result.is_ok(), "{result:?}");
+    }
+
+    #[database_test]
+    async fn uses_the_api_key_it_gets_rather_than_the_saved_one(db: PgPool) {
+        let db = watch_club::db::instrument(db);
+        let radarr = FakeServarr::radarr().await;
+        let source = create_app_source(&db, &radarr).await;
+
+        let result = test_saved_connection(
+            &db,
+            &support::encryption_key(),
+            source.id(),
+            &radarr.url(),
+            Some("wrong-key"),
+        )
+        .await;
+
+        assert!(
+            matches!(
+                result,
+                Err(TestSavedConnectionError::Connection(
+                    TestConnectionError::InvalidApiKey
+                ))
+            ),
+            "{result:?}"
+        );
+    }
+
+    #[database_test]
+    async fn blames_the_api_key_when_another_key_encrypted_it(db: PgPool) {
+        let db = watch_club::db::instrument(db);
+        let radarr = FakeServarr::radarr().await;
+        let source = create_app_source(&db, &radarr).await;
+
+        let result = test_saved_connection(
+            &db,
+            &support::another_encryption_key(),
+            source.id(),
+            &radarr.url(),
+            None,
+        )
+        .await;
+
+        assert!(
+            matches!(
+                result,
+                Err(TestSavedConnectionError::Connection(
+                    TestConnectionError::InvalidApiKey
+                ))
+            ),
+            "{result:?}"
+        );
+    }
+
+    #[database_test]
+    async fn is_not_found_for_a_folder_or_a_deleted_source(db: PgPool) {
+        let db = watch_club::db::instrument(db);
+        let radarr = FakeServarr::radarr().await;
+        let folder = create_movies_folder(&db, FOLDER).await;
+        let deleted = deleted_source_id(&db).await;
+
+        for id in [folder.id(), deleted] {
+            let result =
+                test_saved_connection(&db, &support::encryption_key(), id, &radarr.url(), None)
+                    .await;
+
+            assert!(
+                matches!(result, Err(TestSavedConnectionError::NotFound)),
+                "{result:?}"
+            );
+        }
     }
 }

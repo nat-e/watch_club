@@ -68,6 +68,8 @@ function Invitation({code}: {code: string}) {
         queryClient.setQueryData(invitationCheckQuery(code).queryKey, {redeemable: false});
         return null;
       case 'invalid_request':
+      case 'payload_too_large':
+      case 'unsupported_media_type':
       case 'internal_error':
         throw error;
     }

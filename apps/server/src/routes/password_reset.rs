@@ -13,12 +13,9 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::{
     ApiContext,
     db::Pool,
-    domain::{
-        InternalError,
-        accounts::{self, Password, PasswordError, ResetPasswordError},
-    },
+    domain::accounts::users::{self, Password, ResetPasswordError},
     error::{self, ApiError, ErrorBody},
-    routes::{Json, Query},
+    routes::{Json, Query, users::ApiPasswordError},
 };
 
 pub(super) fn routes() -> OpenApiRouter<ApiContext> {
@@ -36,7 +33,7 @@ async fn check_password_reset_link(
     State(db): State<Pool>,
     Query(params): Query<PasswordResetTokenParams>,
 ) -> Result<Json<PasswordResetLinkCheck>, ApiError> {
-    let username = accounts::password_reset_username(&db, &params.token).await?;
+    let username = users::password_reset_username(&db, &params.token).await?;
     Ok(Json(PasswordResetLinkCheck { username }))
 }
 
@@ -72,8 +69,8 @@ async fn reset_password(
     State(db): State<Pool>,
     Json(request): Json<ResetPasswordRequest>,
 ) -> Result<StatusCode, ResetPasswordRequestError> {
-    let password = Password::parse(request.password)?;
-    accounts::reset_password(&db, &request.token, password).await?;
+    let password = Password::parse(request.password).map_err(ApiPasswordError::from)?;
+    users::reset_password(&db, &request.token, password).await?;
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -94,32 +91,33 @@ enum ResetPasswordRequestError {
     #[error(transparent)]
     InvalidPassword {
         #[from]
-        reason: PasswordError,
+        reason: ApiPasswordError,
     },
     /// The Password Reset Link expired, was used or replaced, or never existed
     #[error("the Password Reset Link no longer works")]
     LinkNoLongerWorks,
     #[error(transparent)]
     #[serde(skip)]
-    Internal(#[from] InternalError),
+    Internal(#[from] anyhow::Error),
 }
 
 impl From<ResetPasswordError> for ResetPasswordRequestError {
     fn from(error: ResetPasswordError) -> Self {
         match error {
             ResetPasswordError::LinkNoLongerWorks => Self::LinkNoLongerWorks,
-            ResetPasswordError::Internal(error) => Self::Internal(error.into()),
+            ResetPasswordError::Internal(error) => Self::Internal(error),
         }
     }
 }
 
 impl IntoResponse for ResetPasswordRequestError {
     fn into_response(self) -> Response {
-        match self {
+        let status = match self {
             Self::InvalidPassword { .. } | Self::LinkNoLongerWorks => {
-                error::response(StatusCode::UNPROCESSABLE_ENTITY, &self)
+                StatusCode::UNPROCESSABLE_ENTITY
             }
-            Self::Internal(error) => ApiError::from(error).into_response(),
-        }
+            Self::Internal(error) => return ApiError::from(error).into_response(),
+        };
+        error::response(status, &self)
     }
 }

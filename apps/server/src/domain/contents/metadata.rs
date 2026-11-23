@@ -1,12 +1,14 @@
-//! The Metadata Providers, the catalogs that Content comes from. Each has a gateway that calls it
-//! for what WatchClub needs, in WatchClub's terms: a search's results, or a Content's metadata,
-//! which saving writes whatever its Metadata Provider.
+//! Metadata: what the Metadata Providers, the catalogs that Content comes from, say about a
+//! Content, and the clients that ask them. Each client calls its Metadata Provider for what
+//! WatchClub needs, in WatchClub's terms: a search's results, or a Content's metadata, which saving
+//! writes whatever its Metadata Provider.
 
 mod hardcover;
 mod sportarr;
 mod tmdb;
 
 use jiff::civil::Date;
+use secrecy::SecretString;
 use serde::{Deserialize, Serialize};
 
 pub use self::{
@@ -15,9 +17,18 @@ pub use self::{
     tmdb::{Tmdb, TmdbId},
 };
 use super::{
-    ContentTranslations, CreditKind, ExternalContentId, Genre, Image, LookUpError,
-    MediaTranslations, MediaType, MetadataProvider,
+    ContentTranslations, CreditKind, ExternalContentId, Genre, Image, MediaTranslations, MediaType,
 };
+use crate::api_client::HttpClient;
+
+/// A catalog that Content metadata comes from.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, sqlx::Type)]
+#[sqlx(type_name = "metadata_provider", rename_all = "snake_case")]
+pub enum MetadataProvider {
+    Tmdb,
+    Sportarr,
+    Hardcover,
+}
 
 /// The Metadata Providers that the instance finds Content in.
 #[derive(Clone, Debug)]
@@ -31,11 +42,25 @@ pub struct MetadataProviders {
 }
 
 impl MetadataProviders {
-    /// Returns what the Content's Metadata Provider knows of it now, in every language it has.
+    /// Returns the Metadata Providers, signed in to TMDB and Hardcover with the instance's tokens.
+    pub fn new(
+        http_client: &HttpClient,
+        tmdb_token: &SecretString,
+        hardcover_token: &SecretString,
+    ) -> anyhow::Result<Self> {
+        Ok(Self {
+            tmdb: Tmdb::new(http_client, tmdb_token)?,
+            sportarr: Sportarr::new(http_client),
+            hardcover: Hardcover::new(http_client, hardcover_token)?,
+        })
+    }
+
+    /// Returns what the Content's Metadata Provider knows of it now, in every language it has, or
+    /// None when it doesn't know it.
     pub(super) async fn fetch(
         &self,
         external_content_id: &ExternalContentId,
-    ) -> Result<ContentMetadata, LookUpError> {
+    ) -> anyhow::Result<Option<ContentMetadata>> {
         match external_content_id {
             ExternalContentId::Movie(id) => self.tmdb.fetch_movie(*id).await,
             ExternalContentId::TvShow(id) => self.tmdb.fetch_tv_show(*id).await,

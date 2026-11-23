@@ -6,7 +6,7 @@ mod schedules;
 use sqlx::PgPool;
 use watch_club::db::Pool;
 use watch_club::{
-    domain::accounts,
+    domain::accounts::sessions,
     jobs::{self, DeleteExpiredSessions, JobId, JobState},
 };
 use watch_club_test_macros::database_test;
@@ -29,7 +29,7 @@ mod enqueue {
     async fn queues_the_job_for_the_runner(db: PgPool) {
         let db = watch_club::db::instrument(db);
         let user = support::create_user(&db, "ada").await;
-        accounts::sign_in(&db, "ada", PASSWORD.into())
+        sessions::sign_in(&db, "ada", PASSWORD.into())
             .await
             .unwrap();
         support::expire_sessions(&db, user.id).await;

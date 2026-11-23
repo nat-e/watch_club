@@ -15,9 +15,16 @@ use watch_club::{
     config::Config,
     db::{self, Pool},
     domain::{
-        accounts::{self, CreateInstanceAdministratorError, Locale, Password, Username},
-        contents::{self, Hardcover, MetadataProviders, Sportarr, Tmdb},
-        sources::{self, ServarrConfiguration, SourceType},
+        accounts::{
+            instance_administrator::{self, CreateInstanceAdministratorError},
+            preferences::Locale,
+            users::{Password, Username},
+        },
+        contents::{self, metadata::MetadataProviders},
+        sources::{
+            self, SourceType,
+            servarr::{self, ServarrConfiguration},
+        },
     },
     utils::filesystem::AbsoluteFolder,
 };
@@ -46,7 +53,7 @@ async fn seed_instance_administrator(db: &Pool) -> anyhow::Result<()> {
     let password = Password::parse(PASSWORD.into()).expect("the seed's password follows the rules");
 
     // Signs them in too, on a device nobody uses
-    match accounts::create_instance_administrator(db, username, password, Locale::EnUs).await {
+    match instance_administrator::create(db, username, password, Locale::EnUs).await {
         Ok(_) => println!("Sign in as {USERNAME} with the password \"{PASSWORD}\""),
         Err(CreateInstanceAdministratorError::AlreadyExists) => {
             println!("The database already has its Instance Administrator");
@@ -59,11 +66,11 @@ async fn seed_instance_administrator(db: &Pool) -> anyhow::Result<()> {
 /// Saves the dev catalog's Contents that aren't saved yet, from their Metadata Providers. Fails on
 /// the first that can't be saved, such as without the internet.
 async fn seed_catalog(db: &Pool, config: &Config, http_client: &HttpClient) -> anyhow::Result<()> {
-    let metadata_providers = MetadataProviders {
-        tmdb: Tmdb::new(http_client, &config.tmdb_api_token)?,
-        sportarr: Sportarr::new(http_client),
-        hardcover: Hardcover::new(http_client, &config.hardcover_api_token)?,
-    };
+    let metadata_providers = MetadataProviders::new(
+        http_client,
+        &config.tmdb_api_token,
+        &config.hardcover_api_token,
+    )?;
 
     let external_content_ids = catalog::external_content_ids();
     for external_content_id in &external_content_ids {
@@ -74,7 +81,12 @@ async fn seed_catalog(db: &Pool, config: &Config, http_client: &HttpClient) -> a
             Locale::EnUs,
         )
         .await
-        .with_context(|| format!("failed to save the dev catalog's {external_content_id:?}"))?;
+        .with_context(|| format!("failed to save the dev catalog's {external_content_id:?}"))?
+        .with_context(|| {
+            format!(
+                "the Metadata Provider of the dev catalog's {external_content_id:?} doesn't know it"
+            )
+        })?;
     }
     println!(
         "The database has the dev catalog's {} Contents",
@@ -98,7 +110,7 @@ async fn seed_catalog_sources(
         let name = source.app.name();
         let has_source_of_app = existing_sources
             .iter()
-            .any(|existing| existing.configuration.source_type() == SourceType::from(source.app));
+            .any(|existing| existing.source_type() == SourceType::from(source.app));
         if has_source_of_app {
             println!("The database already has a {name} Source");
             continue;
@@ -106,13 +118,8 @@ async fn seed_catalog_sources(
 
         // Tests the connection first, as the form does, which also skips the apps that don't run
         let api_key = SecretString::from(source.api_key);
-        let choices = match sources::test_servarr_connection(
-            source.app,
-            source.url,
-            &api_key,
-            http_client,
-        )
-        .await
+        let choices = match servarr::test_connection(http_client, source.app, source.url, &api_key)
+            .await
         {
             Ok(choices) => choices,
             Err(error) => {
@@ -146,17 +153,22 @@ async fn seed_catalog_sources(
             }
         };
         let configuration = ServarrConfiguration {
-            app: source.app,
             url: source
                 .url
                 .parse()
                 .with_context(|| format!("the dev catalog's {name} has an invalid URL"))?,
-            api_key: config.encryption_key.encrypt(&api_key),
             quality_profile,
             root_folder_path: source.root_folder_path.to_owned(),
             local_root_folder_path: Some(local_root_folder),
         };
-        sources::create_servarr_source(db, configuration).await?;
+        servarr::create(
+            db,
+            &config.encryption_key,
+            source.app,
+            configuration,
+            &api_key,
+        )
+        .await?;
         println!("Added the dev catalog's {name} as a Source");
     }
     Ok(())
