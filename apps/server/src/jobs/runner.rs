@@ -166,8 +166,8 @@ async fn claim_jobs(db: &Pool, queue: Queue, limit: usize) -> anyhow::Result<Vec
     Ok(jobs)
 }
 
-/// Runs a claimed job, and saves how its attempt ended. Arguments that don't read count as a
-/// failed attempt.
+/// Runs a claimed job, and saves how its attempt ended. A job that doesn't read, such as one of a
+/// kind that no longer exists, fails for good: reading it again would fail the same way.
 async fn run_job(context: &JobContext, mut job: ClaimedJob) {
     let args = job.args.take();
     let run = async {
@@ -176,7 +176,9 @@ async fn run_job(context: &JobContext, mut job: ClaimedJob) {
                 let timeout = any_job.timeout().min(MAX_TIMEOUT);
                 run_attempt(timeout, any_job.run(context)).await
             }
-            Err(error) => Err(error.context("failed to read the job").into()),
+            Err(error) => Err(JobError::NonRetryable(
+                error.context("failed to read the job"),
+            )),
         };
         save_outcome(&context.db, &job, outcome).await
     };
