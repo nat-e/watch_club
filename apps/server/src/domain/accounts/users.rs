@@ -442,15 +442,11 @@ pub async fn create_password_reset_link(
     .execute(db)
     .await;
     match created {
-        Ok(_) => {}
         Err(sqlx::Error::Database(error)) if error.is_foreign_key_violation() => {
             return Err(CreatePasswordResetLinkError::NotFound);
         }
-        Err(error) => {
-            let error = anyhow::Error::new(error).context("failed to create a Password Reset Link");
-            return Err(error.into());
-        }
-    }
+        other => other.context("failed to create a Password Reset Link")?,
+    };
 
     tracing::event!(
         name: "accounts.password_reset_link.created",

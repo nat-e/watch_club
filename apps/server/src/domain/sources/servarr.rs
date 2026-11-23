@@ -288,7 +288,7 @@ fn decrypt_api_key(
         tracing::event!(
             name: "sources.api_key.unreadable",
             Level::WARN,
-            exception.message = %error,
+            exception.message = %format_args!("{error:#}"),
             "failed to decrypt a Source's API key",
         );
         TestConnectionError::InvalidApiKey

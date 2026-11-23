@@ -48,7 +48,6 @@ pub async fn create(
     let mut transaction = db.begin().await.context("failed to start a transaction")?;
     let inserted = users::insert(&mut transaction, &username, password_hash, locale, true).await;
     let admin = match inserted {
-        Ok(admin) => admin,
         // Users only exist once Setup created the Instance Administrator, so another one, or a
         // User with the same username, means Setup already ran
         Err(sqlx::Error::Database(error)) if error.is_unique_violation() => {
@@ -60,11 +59,7 @@ pub async fn create(
             );
             return Err(CreateInstanceAdministratorError::AlreadyExists);
         }
-        Err(error) => {
-            let error =
-                anyhow::Error::new(error).context("failed to create the Instance Administrator");
-            return Err(error.into());
-        }
+        other => other.context("failed to create the Instance Administrator")?,
     };
     let token = sessions::create(&mut transaction, admin.id).await?;
     transaction

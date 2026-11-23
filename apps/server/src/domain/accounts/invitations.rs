@@ -157,17 +157,17 @@ pub async fn update(
     .with_operation("UPDATE", "invitations")
     .fetch_optional(db)
     .await;
-    match changed {
-        Ok(Some(row)) => Ok(row.into()),
-        Ok(None) => Err(UpdateInvitationError::NotFound),
+    let row = match changed {
         // The constraint that keeps the uses within the Max Uses, the only one an update can break
         Err(sqlx::Error::Database(error)) if error.is_check_violation() => {
-            Err(UpdateInvitationError::MaxUsesTooLow)
+            return Err(UpdateInvitationError::MaxUsesTooLow);
         }
-        Err(error) => Err(anyhow::Error::new(error)
-            .context("failed to change an Invitation's Max Uses")
-            .into()),
-    }
+        other => other.context("failed to change an Invitation's Max Uses")?,
+    };
+    let Some(row) = row else {
+        return Err(UpdateInvitationError::NotFound);
+    };
+    Ok(row.into())
 }
 
 /// The reason an Invitation wasn't deleted.
@@ -262,14 +262,10 @@ pub async fn redeem(
 
     let inserted = users::insert(&mut transaction, &username, password_hash, locale, false).await;
     let user = match inserted {
-        Ok(user) => user,
         Err(sqlx::Error::Database(error)) if error.is_unique_violation() => {
             return Err(RedeemInvitationError::UsernameTaken);
         }
-        Err(error) => {
-            let error = anyhow::Error::new(error).context("failed to create a User");
-            return Err(error.into());
-        }
+        other => other.context("failed to create a User")?,
     };
     let token = sessions::create(&mut transaction, user.id).await?;
     transaction

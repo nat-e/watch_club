@@ -15,6 +15,7 @@ use std::{
     num::NonZeroU32,
 };
 
+use anyhow::Context;
 use jiff::{SignedDuration, Timestamp, civil::Date};
 use serde::{Deserialize, Serialize};
 use tracing::Level;
@@ -372,7 +373,7 @@ pub async fn get_by_external_id(
     store::save(db, &metadata).await?;
     let saved = store::find_by_external_id(db, &external_content_id, locale)
         .await?
-        .ok_or_else(|| anyhow::anyhow!("the Content just saved is missing"))?;
+        .context("the Content just saved is missing")?;
     Ok(Some(saved.content))
 }
 
