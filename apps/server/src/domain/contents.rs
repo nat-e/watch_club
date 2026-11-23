@@ -361,8 +361,18 @@ pub async fn get_by_external_id(
 ) -> anyhow::Result<Option<Content>> {
     if let Some(saved) = store::find_by_external_id(db, &external_content_id, locale).await? {
         if saved.refreshed_at < Timestamp::now() - REFRESH_AFTER {
-            let content_id = saved.content.id;
-            jobs::enqueue(db, RefreshContent { content_id }).await?;
+            // The saved Content still shows: the next view queues its refresh again
+            let refresh = RefreshContent {
+                content_id: saved.content.id,
+            };
+            if let Err(error) = jobs::enqueue(db, refresh).await {
+                tracing::event!(
+                    name: "contents.refresh.queue_failed",
+                    Level::WARN,
+                    exception.message = %format_args!("{error:#}"),
+                    "failed to queue a Content's refresh",
+                );
+            }
         }
         return Ok(Some(saved.content));
     }

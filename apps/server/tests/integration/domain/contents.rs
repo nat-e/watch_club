@@ -222,6 +222,28 @@ async fn get_by_external_id_returns_a_saved_content_when_tmdb_is_down(db: PgPool
 }
 
 #[database_test]
+async fn get_by_external_id_returns_a_saved_content_when_its_refresh_cant_be_queued(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    let tmdb = FakeTmdb::start().await;
+    tmdb.answer_fixtures().await;
+    let providers = tmdb.metadata_providers();
+    let saved = contents::get_by_external_id(&db, &providers, amelie(), Locale::EnUs)
+        .await
+        .unwrap()
+        .unwrap();
+    make_stale(&db, saved.id).await;
+    // Queuing then fails, as the database has no jobs table
+    sqlx::raw_sql("DROP TABLE jobs").execute(&db).await.unwrap();
+
+    let content = contents::get_by_external_id(&db, &providers, amelie(), Locale::EnUs)
+        .await
+        .unwrap()
+        .unwrap();
+
+    assert_eq!(content, saved);
+}
+
+#[database_test]
 async fn get_by_external_id_is_none_when_tmdb_has_no_such_content(db: PgPool) {
     let db = watch_club::db::instrument(db);
     // Answers 404 to every request
