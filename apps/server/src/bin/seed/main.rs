@@ -1,6 +1,7 @@
 //! Fills the database with what to try the app with: the Instance Administrator, and the dev
 //! catalog's Contents, saved from their Metadata Providers, and the Sources of its Radarr, Sonarr
-//! and Sportarr. Only for development: the primary worktree runs it with
+//! and Sportarr, with an import of the files of those that import. Only for development: the
+//! primary worktree runs it with
 //! `pnpm --filter server seed`, and the other worktrees copy its database. It only adds what's
 //! missing, so it can run again, such as after the catalog changes.
 
@@ -21,6 +22,7 @@ use watch_club::{
             users::{Password, Username},
         },
         contents::{self, metadata::MetadataProviders},
+        media_imports::{self, FilesToImport, StartMediaImportError},
         sources::{
             self, SourceType,
             servarr::{self, ServarrConfiguration},
@@ -95,8 +97,8 @@ async fn seed_catalog(db: &Pool, config: &Config, http_client: &HttpClient) -> a
     Ok(())
 }
 
-/// Adds a Source for each of the dev catalog's apps, unless the database has a Source of that app.
-/// Skips the apps that don't run.
+/// Adds a Source for each of the dev catalog's apps, unless the database has a Source of that app,
+/// and queues an import of its files, which the server runs. Skips the apps that don't run.
 async fn seed_catalog_sources(
     db: &Pool,
     config: &Config,
@@ -161,7 +163,7 @@ async fn seed_catalog_sources(
             root_folder_path: source.root_folder_path.to_owned(),
             local_root_folder_path: Some(local_root_folder),
         };
-        servarr::create(
+        let created = servarr::create(
             db,
             &config.encryption_key,
             source.app,
@@ -170,6 +172,12 @@ async fn seed_catalog_sources(
         )
         .await?;
         println!("Added the dev catalog's {name} as a Source");
+
+        match media_imports::start(db, created.id(), FilesToImport::New).await {
+            Ok(_) => println!("Queued an import of its files, which the server runs"),
+            Err(StartMediaImportError::UnsupportedSourceType) => {}
+            Err(error) => return Err(error.into()),
+        }
     }
     Ok(())
 }

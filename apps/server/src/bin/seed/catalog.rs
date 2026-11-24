@@ -1,6 +1,6 @@
 //! The dev catalog in `dev/catalog/media`, which the seed saves: its Contents, by External ID, and
-//! the Sources of the Radarr, Sonarr and Sportarr that `pnpm catalog` runs. It will import the
-//! catalog's files instead of its Contents once Sources import Media Files.
+//! the Sources of the Radarr, Sonarr and Sportarr that `pnpm catalog` runs. It saves every Content,
+//! as only Radarr's files import yet.
 
 use watch_club::domain::{
     contents::{

@@ -140,14 +140,6 @@ _Avoid_: Category, tag
 How good people found a **Movie** or **TV Show**: the average of their votes out of 10 on its **Metadata Provider**.
 _Avoid_: Score, vote average, grade
 
-**Media**:
-What **Users** play inside a **Content**: a **Movie**'s one Media, each **TV Show Episode**, a **Sports Event**.
-_Avoid_: Video, file, item
-
-**Media File**:
-A file that brings **Media** to the **Instance**, such as a video.
-_Avoid_: Media, video file
-
 **Library**:
 All the **Content** that is available on the **Instance** and has **Media Files**.
 _Avoid_: Catalog, available content, server content
@@ -159,16 +151,28 @@ _Avoid_: Discover
 ### Media
 
 **Media**:
-A playable part of a **Content**, such as a **Movie**, a **TV Show Episode** or an audiobook.
-_Avoid_: Content, Media File, Media Version, media item
+What **Users** play inside a **Content**: a **Movie**'s one Media, each **TV Show Episode**, a **Sports Event**.
+_Avoid_: Content, Media File, Media Version, video, item
+
+**Part**:
+A piece of a **Media**, in watching order, such as a **Sports Event**'s Prelims and Main Card. Most **Media** have one, the whole of it.
+_Avoid_: Segment, chapter, disc, stack, version
 
 **Media Type**:
 The kind of **Media**: movie, TV show episode or sports event. It decides the **Content Type** that the **Media** belongs to.
 _Avoid_: Content Type, file type
 
 **Media File**:
-A video, ebook or audiobook file that WatchClub imports from a **Source**, for everyone on the **Instance**.
-_Avoid_: Media, media item
+A video, ebook or audiobook file that WatchClub imports from a **Source**, for everyone on the **Instance**. It holds one or more **Parts**.
+_Avoid_: Media, video file, media item
+
+**Unmatched**:
+A **Media File** that holds no **Part**, as WatchClub couldn't tell what it is.
+_Avoid_: Orphan, unidentified, unattached
+
+**Media Import**:
+One run that brings a **Source**'s **Media Files** in: it matches each to the **Parts** it holds, and removes those the **Source** no longer lists.
+_Avoid_: Scan, sync, import run
 
 **Source**:
 Where WatchClub imports **Media Files** from: a folder on the server, or a Radarr, Sonarr or Sportarr app, which also downloads the **Content** WatchClub asks it for.
@@ -233,6 +237,9 @@ _Avoid_: Source settings, source options
 - Only the **Instance Administrator** manages **Sources**
 - A **Source** has exactly one **Source Type** and one **Media Type**, which never change. A Filesystem **Source**'s **Media Type** is the one it was created with; Radarr brings movies, Sonarr TV show episodes and Sportarr sports events
 - Deleting a **Source** removes its **Media Files** from WatchClub, but leaves them on disk
+- A **Media File** can hold the **Parts** of several **Media**, such as two **TV Show Episodes**, and copies of a **Media** share its **Parts**. A **Part** stays when no **Media File** holds it anymore
+- The **Instance Administrator** starts a **Media Import** of a **Source**, and WatchClub starts one every hour for each **Source** that imports. Only Radarr **Sources** import yet
+- A **Media Import** handles the new **Media Files**, also the **Unmatched** ones, or all of them
 
 ## Flagged ambiguities
 
