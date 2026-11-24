@@ -7,6 +7,7 @@ mod health;
 mod instance;
 mod invitations;
 mod me;
+mod media_imports;
 mod password_reset;
 mod search;
 mod sources;
@@ -40,6 +41,7 @@ pub(crate) fn routes() -> OpenApiRouter<ApiContext> {
         .merge(search::routes())
         .merge(contents::routes())
         .merge(sources::routes())
+        .merge(media_imports::routes())
         // Unknown API paths aren't found, rather than showing the web app
         .fallback(unknown_endpoint);
     let app = OpenApiRouter::new()

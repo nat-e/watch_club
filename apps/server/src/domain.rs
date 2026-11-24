@@ -6,4 +6,5 @@
 
 pub mod accounts;
 pub mod contents;
+pub mod media_imports;
 pub mod sources;

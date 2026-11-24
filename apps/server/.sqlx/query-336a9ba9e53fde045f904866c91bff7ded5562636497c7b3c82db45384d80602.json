@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE media_imports\n        SET state = 'failed', failure = 'interrupted', finished_at = now()\n        WHERE state = 'running' AND job_started_at < now() - make_interval(secs => $1)\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Float8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "336a9ba9e53fde045f904866c91bff7ded5562636497c7b3c82db45384d80602"
+}

@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        DELETE FROM media_file_parts\n        WHERE media_file_id IN (\n            SELECT id FROM media_files WHERE source_id = $1 AND path = ANY($2)\n        )\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7dd33043b9ffd11b1a9d89599637b7f3d90d2ae50de26904e5c74cdd7f7fe441"
+}

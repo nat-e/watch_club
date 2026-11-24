@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        WITH removed AS (\n            DELETE FROM media_files\n            WHERE source_id = $2\n                AND NOT EXISTS (\n                    SELECT FROM UNNEST($3::text[]) AS listed (path)\n                    WHERE listed.path = media_files.path\n                )\n            RETURNING 1\n        )\n        UPDATE media_imports\n        SET file_count = $4, removed_file_count = (SELECT count(*) FROM removed)\n        WHERE id = $1\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "TextArray",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4568d2b9c5070b54f239a3c65b3ef81fb25a56ee0ae530bf95ed2fca36b828dd"
+}

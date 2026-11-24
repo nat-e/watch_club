@@ -1,0 +1,59 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO media_imports (source_id, trigger, files_to_import)\n        SELECT id, 'scheduled', $2\n        FROM sources\n        WHERE source_type = ANY($1)\n        RETURNING id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "media_imports",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "source_type[]",
+            "kind": {
+              "Array": {
+                "Custom": {
+                  "name": "source_type",
+                  "kind": {
+                    "Enum": [
+                      "filesystem",
+                      "radarr",
+                      "sonarr",
+                      "sportarr"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "Custom": {
+            "name": "files_to_import",
+            "kind": {
+              "Enum": [
+                "new",
+                "new_and_unmatched",
+                "all"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "3b575f505bd9f358e79106ca37edb18b21d55f9504dfdbff4dd61caaed06824d"
+}

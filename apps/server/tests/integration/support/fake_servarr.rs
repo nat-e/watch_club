@@ -1,4 +1,5 @@
-//! A fake Radarr, Sonarr or Sportarr app, which answers the calls that setting up a Source makes.
+//! A fake Radarr, Sonarr or Sportarr app, which answers the calls that setting up a Source makes,
+//! and lists the Movies that a test gives a Radarr.
 
 use secrecy::SecretString;
 use serde_json::{Value, json};
@@ -15,12 +16,17 @@ pub const API_KEY: &str = "servarr-api-key";
 /// The root folder a fake app downloads to
 pub const ROOT_FOLDER: &str = "/movies";
 
+/// The ID of the quality profile of the Sources of `configuration`, `HD-1080p`
+pub const QUALITY_PROFILE_ID: i32 = 4;
+
 /// An app with two quality profiles, `Any` (1) and `HD-1080p` (4), and one root folder,
 /// `ROOT_FOLDER`.
 pub struct FakeServarr {
     pub server: MockServer,
     /// The app it fakes, which tells the type of its Sources
     app: ServarrApp,
+    /// The path of its API under its URL, such as `/api/v3`
+    api_path: &'static str,
     /// The only API key it takes
     api_key: &'static str,
 }
@@ -45,7 +51,12 @@ impl FakeServarr {
     }
 
     /// Starts an app that calls itself `name`, whose API is at `api_path`.
-    async fn start(app: ServarrApp, name: &str, api_path: &str, api_key: &'static str) -> Self {
+    async fn start(
+        app: ServarrApp,
+        name: &str,
+        api_path: &'static str,
+        api_key: &'static str,
+    ) -> Self {
         let server = MockServer::start().await;
         let answers = [
             (
@@ -82,8 +93,19 @@ impl FakeServarr {
         Self {
             server,
             app,
+            api_path,
             api_key,
         }
+    }
+
+    /// Lists these Movies, such as `radarr_movie`s, as Radarr's `GET /movie` does.
+    pub async fn answer_movies(&self, movies: Value) {
+        Mock::given(method("GET"))
+            .and(path(format!("{}/movie", self.api_path)))
+            .and(header("x-api-key", self.api_key))
+            .respond_with(ResponseTemplate::new(200).set_body_json(movies))
+            .mount(&self.server)
+            .await;
     }
 
     pub fn url(&self) -> String {
@@ -106,7 +128,7 @@ impl FakeServarr {
             "type": self.app,
             "url": self.url(),
             "api_key": self.api_key,
-            "quality_profile": { "id": 4, "name": "HD-1080p" },
+            "quality_profile": { "id": QUALITY_PROFILE_ID, "name": "HD-1080p" },
             "root_folder_path": ROOT_FOLDER,
             "local_root_folder_path": null,
         })
@@ -118,11 +140,30 @@ impl FakeServarr {
         ServarrConfiguration {
             url: self.url().parse().unwrap(),
             quality_profile: QualityProfile {
-                id: 4,
+                id: QUALITY_PROFILE_ID,
                 name: "HD-1080p".to_owned(),
             },
             root_folder_path: ROOT_FOLDER.to_owned(),
             local_root_folder_path: None,
         }
     }
+}
+
+/// Returns a Movie as Radarr's `GET /movie` lists it, on the quality profile of the Sources of
+/// `configuration`, with its file at `file_path`, as Radarr sees it, or without a file.
+pub fn radarr_movie(tmdb_id: u32, imdb_id: &str, file_path: Option<&str>) -> Value {
+    let mut movie = json!({
+        "id": tmdb_id,
+        "title": format!("Movie {tmdb_id}"),
+        "tmdbId": tmdb_id,
+        "imdbId": imdb_id,
+        "qualityProfileId": QUALITY_PROFILE_ID,
+        "rootFolderPath": ROOT_FOLDER,
+        "hasFile": file_path.is_some(),
+    });
+    // Radarr leaves it out when the Movie has no file
+    if let Some(file_path) = file_path {
+        movie["movieFile"] = json!({ "id": tmdb_id, "path": file_path });
+    }
+    movie
 }

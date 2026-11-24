@@ -35,7 +35,7 @@ const PAGE_SIZE: u32 = 20;
 const CREATOR_ROLES: [&str; 3] = ["Author", "Illustrator", "Illustrations"];
 
 /// The ID of a Book at Hardcover, a GraphQL `Int`: a signed 32-bit number.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 pub struct HardcoverId(i32);
 
 impl HardcoverId {

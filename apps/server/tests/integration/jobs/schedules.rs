@@ -145,11 +145,18 @@ mod run_available {
             .await
             .unwrap();
 
-        let names = sqlx::query_scalar!("SELECT name FROM job_schedules")
+        let names = sqlx::query_scalar!("SELECT name FROM job_schedules ORDER BY name")
             .fetch_all(&db)
             .await
             .unwrap();
-        assert_eq!(names, ["delete_expired_sessions"]);
+        assert_eq!(
+            names,
+            [
+                "delete_expired_sessions",
+                "delete_old_media_imports",
+                "import_sources"
+            ]
+        );
         assert_eq!(job_kinds(&db).await, Vec::<String>::new());
     }
 }

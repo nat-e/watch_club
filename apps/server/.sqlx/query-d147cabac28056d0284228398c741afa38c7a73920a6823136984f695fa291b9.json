@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO media_files (source_id, path)\n        SELECT $1, path FROM UNNEST($2::text[]) AS path\n        ORDER BY path\n        ON CONFLICT (source_id, path) DO NOTHING\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d147cabac28056d0284228398c741afa38c7a73920a6823136984f695fa291b9"
+}

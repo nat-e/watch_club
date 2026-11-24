@@ -41,4 +41,4 @@ The repo comes with an optional catalog of free-licensed clips to try the app wi
 
 The worktrees share the catalog, so a change made in one worktree shows in all of them. `pnpm catalog:reset` undoes every change.
 
-The three apps start from a snapshot, which for now comes from the Phoenix app's `mix dev.catalog.seed`. WatchClub's seed, `pnpm --filter server seed`, adds the three apps as Sources, and saves the catalog's Contents from TMDB and sportarr.net, until WatchClub imports its files.
+The three apps start from a snapshot, which for now comes from the Phoenix app's `mix dev.catalog.seed`. WatchClub's seed, `pnpm --filter server seed`, adds the three apps as Sources, queues an import of Radarr's files, which the server runs, and saves the catalog's Contents from TMDB and sportarr.net, until WatchClub imports the other apps' files.

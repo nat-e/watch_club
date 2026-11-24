@@ -83,9 +83,20 @@ pub async fn saved_api_key(db: &Pool, source_id: &str) -> EncryptedSecret {
 
 /// Returns the context jobs run with: this database, and Metadata Providers that nothing answers.
 pub fn job_context(db: &Pool) -> JobContext {
+    job_context_with_metadata_providers(db, unreachable_metadata_providers())
+}
+
+/// Returns the context jobs run with on this database, which calls these Metadata Providers, such
+/// as a `FakeTmdb`'s, and decrypts with the tests' `ENCRYPTION_KEY`.
+pub fn job_context_with_metadata_providers(
+    db: &Pool,
+    metadata_providers: MetadataProviders,
+) -> JobContext {
     JobContext {
         db: db.clone(),
-        metadata_providers: unreachable_metadata_providers(),
+        metadata_providers,
+        http_client: http_client(),
+        encryption_key: encryption_key(),
     }
 }
 

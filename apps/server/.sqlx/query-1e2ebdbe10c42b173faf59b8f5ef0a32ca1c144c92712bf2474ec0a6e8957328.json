@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT api_key_encrypted AS \"api_key_encrypted!: EncryptedSecret\" FROM sources WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "api_key_encrypted!: EncryptedSecret",
+        "type_info": "Bytea",
+        "origin": {
+          "Table": {
+            "table": "sources",
+            "name": "api_key_encrypted"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "1e2ebdbe10c42b173faf59b8f5ef0a32ca1c144c92712bf2474ec0a6e8957328"
+}

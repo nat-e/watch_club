@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM media_imports WHERE finished_at < now() - interval '30 days'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "48ee8b82fec03fb9079c8fd4e13126249a38dcdfa6cb2263f68bf6f6e2852555"
+}

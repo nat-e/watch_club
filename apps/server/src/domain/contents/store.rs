@@ -4,6 +4,8 @@
 //! Saving writes each table with one statement, whatever the number of TV Show Episodes, and
 //! leaves the rows that didn't change alone.
 
+use std::collections::HashMap;
+
 use anyhow::Context;
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
@@ -11,13 +13,21 @@ use sqlx::types::Json;
 use sqlx_otel::QueryAnnotateExt;
 
 use super::{
-    Content, ContentId, ContentType, Credit, ExternalContentId, Media, MediaType,
+    Content, ContentId, ContentType, Credit, ExternalContentId, Media, MediaType, SavedMedia,
     metadata::ContentMetadata,
 };
 use crate::{
     db::{Pool, Transaction},
     domain::accounts::preferences::Locale,
 };
+
+/// A saved Content's Media, with when the Content was saved.
+pub(super) struct SavedContentMedia {
+    pub content_id: ContentId,
+    /// The last time it was saved from its Metadata Provider
+    pub refreshed_at: Timestamp,
+    pub media: Vec<SavedMedia>,
+}
 
 /// A saved Content, with its texts in one Locale.
 pub(super) struct SavedContent {
@@ -167,6 +177,79 @@ pub async fn list_media(
             runtime_seconds: row.runtime_seconds,
         })
         .collect())
+}
+
+/// Returns the saved Contents with these External IDs, which can repeat, with their Media, by
+/// External ID. Leaves out those nobody saved yet.
+pub(super) async fn find_media(
+    db: &Pool,
+    external_content_ids: &[ExternalContentId],
+) -> anyhow::Result<HashMap<ExternalContentId, SavedContentMedia>> {
+    let content_types: Vec<_> = external_content_ids
+        .iter()
+        .map(ExternalContentId::content_type)
+        .collect();
+    let metadata_providers: Vec<_> = content_types
+        .iter()
+        .map(|content_type| content_type.metadata_provider())
+        .collect();
+    let external_ids: Vec<_> = external_content_ids
+        .iter()
+        .map(ExternalContentId::external_id)
+        .collect();
+
+    // One row per Media, or one without Media for a Content that has none, such as a Book
+    let rows = sqlx::query!(
+        r#"
+        WITH wanted AS (
+            SELECT DISTINCT *
+            FROM UNNEST($1::content_type[], $2::metadata_provider[], $3::text[])
+                AS wanted (content_type, metadata_provider, external_id)
+        )
+        SELECT c.id, c.content_type, c.main_external_id, c.metadata_refreshed_at,
+            m.id AS "media_id?", m.media_type AS "media_type?", m.group_number, m.number_in_group
+        FROM wanted
+        JOIN contents c ON c.content_type = wanted.content_type
+            AND c.metadata_provider = wanted.metadata_provider
+            AND c.main_external_id = wanted.external_id
+        LEFT JOIN media m ON m.content_id = c.id
+        "#,
+        &content_types as _,
+        &metadata_providers as _,
+        &external_ids as &[String],
+    )
+    .with_operation("SELECT", "contents")
+    .fetch_all(db)
+    .await
+    .context("failed to find the Media of Contents")?;
+
+    let mut found: HashMap<ExternalContentId, SavedContentMedia> =
+        HashMap::with_capacity(external_content_ids.len());
+    for row in rows {
+        let external_content_id = ExternalContentId::parse(row.content_type, &row.main_external_id)
+            .with_context(|| {
+                format!(
+                    "a saved Content has the invalid External ID {}",
+                    row.main_external_id
+                )
+            })?;
+        let content = found
+            .entry(external_content_id)
+            .or_insert_with(|| SavedContentMedia {
+                content_id: row.id,
+                refreshed_at: row.metadata_refreshed_at.to_jiff(),
+                media: Vec::new(),
+            });
+        if let (Some(id), Some(media_type)) = (row.media_id, row.media_type) {
+            content.media.push(SavedMedia {
+                id,
+                media_type,
+                group_number: row.group_number,
+                number_in_group: row.number_in_group,
+            });
+        }
+    }
+    Ok(found)
 }
 
 /// Returns the External ID of the Content with this ID, or None when there's no such Content.

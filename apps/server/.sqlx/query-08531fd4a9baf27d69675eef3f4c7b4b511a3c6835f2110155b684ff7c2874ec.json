@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT f.path, c.main_external_id AS \"tmdb_id?\"\n        FROM media_files f\n        LEFT JOIN media_file_parts fp ON fp.media_file_id = f.id\n        LEFT JOIN media_parts p ON p.id = fp.media_part_id AND p.number = 1\n        LEFT JOIN media m ON m.id = p.media_id\n        LEFT JOIN contents c ON c.id = m.content_id\n        WHERE f.source_id = $1\n        ORDER BY f.path\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "path",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "media_files",
+            "name": "path"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "tmdb_id?",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "contents",
+            "name": "main_external_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "08531fd4a9baf27d69675eef3f4c7b4b511a3c6835f2110155b684ff7c2874ec"
+}

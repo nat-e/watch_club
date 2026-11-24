@@ -19,7 +19,7 @@ use watch_club::{
             metadata::{HardcoverId, MetadataProviders, SportarrId, TmdbId},
         },
     },
-    jobs::{self, JobContext},
+    jobs,
 };
 use watch_club_test_macros::database_test;
 use wiremock::{
@@ -355,10 +355,8 @@ async fn refresh_saves_what_changed_and_deletes_the_episodes_tmdb_no_longer_list
     refreshed_tmdb
         .answer_in("/tv/87108", Locale::FrFr, french)
         .await;
-    let context = JobContext {
-        db: db.clone(),
-        metadata_providers: refreshed_tmdb.metadata_providers(),
-    };
+    let context =
+        support::job_context_with_metadata_providers(&db, refreshed_tmdb.metadata_providers());
     contents::get_by_external_id(&db, &context.metadata_providers, chernobyl(), Locale::EnUs)
         .await
         .unwrap()

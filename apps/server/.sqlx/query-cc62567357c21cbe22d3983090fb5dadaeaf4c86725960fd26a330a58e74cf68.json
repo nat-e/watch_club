@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE media_imports\n        SET matched_file_count = matched_file_count + $2,\n            unmatched_file_count = unmatched_file_count + $3,\n            failed_file_count = failed_file_count + $4\n        WHERE id = $1\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cc62567357c21cbe22d3983090fb5dadaeaf4c86725960fd26a330a58e74cf68"
+}

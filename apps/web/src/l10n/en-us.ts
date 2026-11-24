@@ -48,6 +48,75 @@ export default {
   mediaBrowser: {
     title: 'Media browser',
   },
+  mediaImports: {
+    dialog: {
+      description: 'Start a new import of {{source}} from:',
+      filesToImport: 'Process',
+      run: 'Run import',
+      title: 'Run media import',
+    },
+    empty: {
+      description:
+        'Nothing imported from this source yet. Run an import to add its files to WatchClub.',
+      title: 'No imports yet',
+    },
+    failed_one: '{{count}} failed',
+    failed_other: '{{count}} failed',
+    failures: {
+      internalError: 'Something went wrong. Try again later.',
+      interrupted: 'The import stopped before it finished. Run it again.',
+      invalidApiKey: '{{app}} refused its API key. Edit the source to enter a new one.',
+      invalidServarrUrl: 'Could not connect to {{app}} at its URL. Check that it runs.',
+    },
+    filesToImport: {
+      all: {
+        description: 'Reads every file again and matches it again.',
+        name: 'All files',
+        shortName: 'All',
+      },
+      new: {
+        description: 'Only files not imported yet.',
+        name: 'New files only',
+        shortName: 'New',
+      },
+      newAndUnmatched: {
+        description: "Also retries files that couldn't be matched.",
+        name: 'New and unmatched files',
+        shortName: 'New and unmatched',
+      },
+    },
+    findingFiles: 'Finding files…',
+    history: 'Import history',
+    import: 'Import…',
+    matched_one: '{{count}} matched',
+    matched_other: '{{count}} matched',
+    noFiles: 'No files to process',
+    progress_one: '{{handled}} of {{count}} file',
+    progress_other: '{{handled}} of {{count}} files',
+    removed_one: '{{count}} removed',
+    removed_other: '{{count}} removed',
+    started: 'Import started',
+    states: {
+      completed: 'Completed',
+      failed: 'Failed',
+      running: 'In progress',
+      waiting: 'Pending',
+    },
+    table: {
+      duration: 'Duration',
+      files: 'Files',
+      started: 'Started',
+      status: 'Status',
+      trigger: 'Trigger',
+    },
+    triggers: {
+      manual: 'Manual',
+      scheduled: 'Scheduled',
+    },
+    unmatched_one: '{{count}} unmatched',
+    unmatched_other: '{{count}} unmatched',
+    viewHistory: 'View history',
+  },
   newAccount: {
     chooseUsername: 'Choose a username',
     submit: 'Create account',

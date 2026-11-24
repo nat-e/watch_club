@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT name FROM job_schedules",
+  "query": "SELECT name FROM job_schedules ORDER BY name",
   "describe": {
     "columns": [
       {
@@ -22,5 +22,5 @@
       false
     ]
   },
-  "hash": "6063c5b0113088dd13439aecb1a132d6c18a9729956b491dbc10362594a72435"
+  "hash": "a55cda84b6eebe156003f8377398ed5bff3fb5837abc9da64bb8ff46ef872eae"
 }
