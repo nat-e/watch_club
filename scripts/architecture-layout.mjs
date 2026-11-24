@@ -1,8 +1,8 @@
 // Writes the layouts of the System Context, Container and Component diagrams in docs/architecture,
 // aligned on a grid, from the views LikeC4 computes now. LikeC4 uses these saved layouts rather than
-// its own, and `pnpm check` fails once a view no longer matches its layout: run it after changing
-// what one of these diagrams shows, and give a new element its place here.
-import {writeFileSync} from 'node:fs';
+// its own. Git ignores them: `pnpm fix`, `pnpm check` and `pnpm c4` write them first. Give a new
+// element of these diagrams its place here.
+import {mkdirSync, writeFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
 import {LikeC4} from 'likec4';
@@ -16,6 +16,7 @@ const GROUP_GAP = 200;
 const ARROWHEAD = 10;
 
 const model = fileURLToPath(new URL('../docs/architecture/', import.meta.url));
+mkdirSync(`${model}.likec4`, {recursive: true});
 const likec4 = await LikeC4.fromWorkspace(model, {logger: false});
 const views = (await likec4.layoutedModel()).$data.views;
 await likec4.dispose();
