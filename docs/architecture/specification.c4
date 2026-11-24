@@ -1,0 +1,50 @@
+// The kinds of elements the model is made of, which the diagrams' legend shows.
+specification {
+  element person {
+    notation 'Person'
+    style {
+      shape person
+      color green
+    }
+  }
+
+  element system {
+    notation 'Software system'
+  }
+
+  element externalSystem {
+    notation 'System WatchClub calls, which others run'
+    style {
+      color gray
+    }
+  }
+
+  element container {
+    notation 'Container: an app, or a program that runs on its own'
+  }
+
+  element database {
+    notation 'Database'
+    style {
+      shape storage
+    }
+  }
+
+  element component {
+    notation 'Component: a part of a container'
+    style {
+      color sky
+    }
+  }
+
+  deploymentNode environment {
+    notation 'Environment'
+  }
+
+  deploymentNode node {
+    notation 'Device, machine or Docker container'
+  }
+
+  // What docs/data-model.md describes, but isn't built yet, which the views draw in amber
+  tag planned
+}

@@ -10,9 +10,18 @@ See [docs/dev.md](docs/dev.md).
 
 ## Checks
 
-`pnpm check` runs every check that CI runs: Biome, rustfmt, Clippy, the TypeScript type checks, the translations, and that `packages/api/openapi.json` matches the server's API. `pnpm test` runs the tests. Run both before opening a pull request. `pnpm fix` formats the code.
+`pnpm check` runs every check that CI runs: Biome, rustfmt, Clippy, the TypeScript type checks, the translations, the architecture model, and that `packages/api/openapi.json` matches the server's API. `pnpm test` runs the tests. Run both before opening a pull request. `pnpm fix` formats the code.
 
 CI also builds the Docker image, starts it and checks that the app responds.
+
+## Documentation
+
+- [`docs/data-model.md`](docs/data-model.md) describes each domain: its terms, which the code, the docs and the interface use; its rules; and its tables. Update it with each migration.
+- [`docs/architecture`](docs/architecture) describes how WatchClub is built, as a [LikeC4](https://likec4.dev) model. Its README shows the diagrams, and `pnpm c4` opens them with their details. After changing the model, run `pnpm fix` to update the README. `scripts/architecture-layout.mjs` lays out the System Context, Container and Component diagrams: a new element there needs its place in it.
+- [`docs/decisions`](docs/decisions) records the decisions that shape WatchClub, one numbered file each, in the format of the first one. Write one for a decision that would be hard to undo, or that a reviewer would ask about. When a decision replaces another, mark the old one as superseded.
+- The other files of [`docs`](docs) are guides, such as [setting up](docs/dev.md).
+
+A change to the architecture starts with its docs: the data model, the architecture model, and a decision when it makes one. They come in the first commit of its pull request, so the plan is reviewed before the code.
 
 ## Translations
 

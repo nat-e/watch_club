@@ -1,0 +1,27 @@
+// Where an Instance runs, as the README says to install it.
+deployment {
+  instance = environment 'An Instance' {
+    devices = node "Users' devices" {
+      browser = node 'Browser' {
+        instanceOf watchclub.web
+      }
+      phone = node 'Phone' {
+        instanceOf watchclub.mobile
+      }
+    }
+
+    machine = node 'Machine' {
+      watchclubContainer = node 'Docker container' {
+        description 'Image `ghcr.io/nat-e/watch_club:rust`, on port 4000'
+        technology 'Docker'
+        icon tech:docker
+        instanceOf watchclub.server
+      }
+    }
+
+    postgres = node 'Postgres server' {
+      description 'At `DATABASE_URL`'
+      instanceOf watchclub.database
+    }
+  }
+}

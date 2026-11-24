@@ -1,0 +1,171 @@
+// The diagrams, in the order the README shows them: from the whole system down to the server's
+// components, then the flows, then the deployment.
+views {
+  style element.tag = #planned {
+    color amber
+  }
+
+  // A helper, smaller than the systems WatchClub needs
+  style observability {
+    color muted
+    size small
+  }
+
+  view index {
+    title 'System Context diagram for WatchClub'
+    description '''
+      Who uses WatchClub, and the systems it calls. Dashed frames group what's inside them, and an
+      arrow to a frame stands for arrows to what's inside. The small grey box is optional.
+    '''
+    include user, administrator, watchclub, metadataProviders, metadataProviders.*, externalSources, externalSources.*, observability
+    // One arrow to each group: the apps' downloads of posters are left out
+    exclude watchclub.web -> metadataProviders, watchclub.mobile -> metadataProviders
+    // One label for the arrows that stand for several relationships
+    include user -> watchclub with {
+      title 'browses, searches and opens Content'
+    }
+    include watchclub -> observability with {
+      title 'sends logs, traces, metrics and errors'
+      technology 'OTLP, Sentry SDK'
+    }
+    rank same { watchclub, observability }
+  }
+
+  view containers of watchclub {
+    title 'Container diagram for WatchClub'
+    description '''
+      The apps share their logic in `packages/core`. They also download posters from the Metadata
+      Providers, and send their errors to Sentry. Amber shows what isn't built yet. Dashed frames
+      group what's inside them, and an arrow to a frame stands for arrows to what's inside. The
+      small grey box is optional.
+    '''
+    include *, metadataProviders.*, externalSources.*
+    // One arrow to each group, from the server: the apps' arrows are in the description
+    exclude watchclub.web -> metadataProviders, watchclub.mobile -> metadataProviders
+    exclude watchclub.web -> observability, watchclub.mobile -> observability
+    include watchclub.server -> observability with {
+      title 'sends logs, traces, metrics and errors'
+      technology 'OTLP, Sentry SDK'
+    }
+    include watchclub.server -> watchclub.database with {
+      title 'stores its data and its job queue'
+      technology 'SQL, SQLx'
+    }
+  }
+
+  view server of watchclub.server {
+    title 'Component diagram for WatchClub – Server'
+    description '''
+      The API and the jobs are the entry points. Each domain has its module in
+      `apps/server/src/domain`, and its folder in `packages/core/src`. Amber shows what isn't built
+      yet. Dashed frames group what's inside them, and an arrow to a frame stands for arrows to
+      what's inside.
+    '''
+    include *, watchclub.server.domains.*, metadataProviders.*, externalSources.*
+  }
+
+  dynamic view redeem-invitation {
+    title 'Dynamic diagram for WatchClub: Redeem an Invitation'
+    description '''
+      The Instance Administrator shares an Invitation's link, and a new person creates their User
+      with it.
+    '''
+    variant sequence
+
+    administrator -> watchclub.web 'creates an Invitation, and shares its link'
+    watchclub.web -> watchclub.server.api 'creates the Invitation'
+    watchclub.server.api -> watchclub.server.domains.accounts 'creates the Invitation'
+    watchclub.server.domains.accounts -> watchclub.database 'saves it' {
+      technology 'SQL, SQLx'
+    }
+    user -> watchclub.web 'opens the link, and chooses a Username and a password'
+    watchclub.web -> watchclub.server.api 'redeems the Invitation'
+    watchclub.server.api -> watchclub.server.domains.accounts 'redeems the Invitation'
+    watchclub.server.domains.accounts -> watchclub.database 'creates the User, counts one use, and starts a session' {
+      technology 'SQL, SQLx'
+    }
+    watchclub.web <- watchclub.server.api 'signs the User in, with a session cookie'
+  }
+
+  dynamic view open-content {
+    title 'Dynamic diagram for WatchClub: Open a Content page'
+    description '''
+      A User opens a Movie's page. The first time anyone opens it, WatchClub saves it from TMDB,
+      so later views don't wait for TMDB.
+    '''
+    variant sequence
+
+    user -> watchclub.web 'opens a Movie'
+    watchclub.web -> watchclub.server.api 'asks for the Movie'
+    watchclub.server.api -> watchclub.server.domains.contents "gets it in the User's Locale"
+    watchclub.server.domains.contents -> watchclub.database 'reads the saved Movie' {
+      technology 'SQL, SQLx'
+    }
+    alt {
+      when 'Nobody opened it before' {
+        watchclub.server.domains.contents -> metadataProviders.tmdb 'fetches it, in every Locale' {
+          technology 'JSON over HTTPS'
+        }
+        watchclub.server.domains.contents -> watchclub.database 'saves it, with its Media' {
+          technology 'SQL, SQLx'
+        }
+      }
+      when 'It was saved over a day ago' {
+        watchclub.server.domains.contents -> watchclub.server.jobs 'queues a refresh'
+      }
+    }
+    watchclub.web <- watchclub.server.api "the Movie, in the User's Locale"
+    watchclub.web -> metadataProviders.tmdb 'downloads its poster' {
+      technology 'HTTPS'
+    }
+  }
+
+  dynamic view add-radarr-source {
+    title 'Dynamic diagram for WatchClub: Add a Radarr Source'
+    description '''
+      The Instance Administrator connects a Radarr app, and chooses how it downloads Movies.
+      Sonarr and Sportarr Sources work the same way.
+    '''
+    variant sequence
+
+    administrator -> watchclub.web "enters the app's address and API key"
+    watchclub.web -> watchclub.server.api 'tests the connection'
+    watchclub.server.api -> watchclub.server.domains.sources 'tests the connection'
+    watchclub.server.domains.sources -> externalSources.radarr 'checks the app and the API key, and lists its quality profiles and root folders' {
+      technology 'JSON over HTTP'
+    }
+    watchclub.web <- watchclub.server.api 'the quality profiles and root folders'
+    administrator -> watchclub.web 'chooses a quality profile and a root folder'
+    watchclub.web -> watchclub.server.api 'creates the Source'
+    watchclub.server.api -> watchclub.server.domains.sources 'creates the Source'
+    watchclub.server.domains.sources -> watchclub.database 'saves it, with its API key encrypted' {
+      technology 'SQL, SQLx'
+    }
+  }
+
+  dynamic view recommend-content {
+    #planned
+    title 'Dynamic diagram for WatchClub: Recommend Content'
+    description '''
+      A User recommends a Content to other Users, which starts a Conversation that shows in each
+      Participant's Inbox. Amber shows what isn't built yet: here, Conversations.
+    '''
+    variant sequence
+
+    user -> watchclub.web 'recommends a Content to other Users, with some text'
+    watchclub.web -> watchclub.server.api 'recommends the Content'
+    watchclub.server.api -> watchclub.server.domains.conversations 'starts a Conversation'
+    watchclub.server.domains.conversations -> watchclub.database 'saves the Conversation, its Participants and its first Message' {
+      technology 'SQL, SQLx'
+    }
+  }
+
+  deployment view deployment {
+    title 'Deployment'
+    description '''
+      An Instance: WatchClub's Docker image, with a Postgres database. Users open the web app in
+      a browser, or the mobile app on their phones.
+    '''
+    include instance.**
+  }
+}

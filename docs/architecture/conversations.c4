@@ -1,0 +1,9 @@
+// Conversations: Users recommend Content to each other and discuss it. Not built yet.
+model {
+  extend watchclub.server.domains {
+    conversations = component 'Conversations' {
+      #planned
+      description 'Recommended Content and the Messages about it'
+    }
+  }
+}

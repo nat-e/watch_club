@@ -1,0 +1,16 @@
+// Contents: the Movies, TV Shows, Sports Events and Books that Users search for and open.
+model {
+  extend watchclub.server.domains {
+    contents = component 'Contents' {
+      description 'Content metadata, saved from the Metadata Providers'
+      link ../../apps/server/src/domain/contents.rs 'Server code'
+      link ../../packages/core/src/contents 'Apps code'
+      link ./domains/contents.md 'Code'
+    }
+  }
+
+  watchclub.server.domains.contents -> watchclub.server.jobs 'queues a refresh'
+  watchclub.server.domains.contents -> metadataProviders 'searches and fetches Content metadata' {
+    technology 'JSON and GraphQL over HTTPS'
+  }
+}

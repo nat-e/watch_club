@@ -6,10 +6,11 @@
     "build": "turbo run build",
     "test": "turbo run test",
     "postinstall": ".harness/internal/generate_harness.py",
-    "check": "pnpm check:harness && biome check --error-on-warnings . && pnpm check:l10n && turbo run check",
+    "check": "pnpm check:harness && biome check --error-on-warnings . && pnpm check:l10n && scripts/architecture.sh --check && turbo run check",
     "check:harness": ".harness/internal/generate_harness.py && ruff check .harness && ruff format --check .harness",
     "check:l10n": "i18next-cli lint && i18next-cli status && i18next-cli extract --ci --dry-run",
-    "fix": "i18next-cli extract && biome check --write . && ruff check --fix .harness && ruff format .harness && turbo run format",
+    "fix": "i18next-cli extract && biome check --write . && ruff check --fix .harness && ruff format .harness && scripts/architecture.sh && turbo run format",
+    "c4": "node scripts/architecture-layout.mjs && env -u PORT likec4 start docs/architecture",
     "generate": "turbo run generate",
     "dev:shared": "docker compose --file \"$(git rev-parse --path-format=absolute --git-common-dir)/../docker-compose.dev.yml\" up --detach --wait",
     "catalog": "scripts/catalog.sh",
@@ -17,6 +18,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.6",
-    "i18next-cli": "^1.87.0"
+    "i18next-cli": "^1.87.0",
+    "likec4": "^1.61.0"
   }
 }

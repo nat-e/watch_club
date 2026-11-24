@@ -1,0 +1,43 @@
+// Sources: where WatchClub imports Media Files from.
+model {
+  extend watchclub.server.domains {
+    sources = component 'Sources' {
+      description 'Source setup and Media File import'
+      link ../../apps/server/src/domain/sources.rs 'Server code'
+      link ../../packages/core/src/sources 'Apps code'
+      link ./domains/sources.md 'Code'
+    }
+  }
+
+  // Named apart from the Server's component, which views scoped to the Server would find first
+  externalSources = externalSystem 'Sources' {
+    description 'Where Media Files come from'
+
+    radarr = externalSystem 'Radarr' {
+      technology 'JSON API'
+      description 'Movie download and monitoring'
+    }
+
+    sonarr = externalSystem 'Sonarr' {
+      technology 'JSON API'
+      description 'TV Show download and monitoring'
+    }
+
+    sportarr = externalSystem 'Sportarr' {
+      technology 'JSON API'
+      description 'Sports Event download and monitoring'
+    }
+
+    filesystem = externalSystem 'Filesystem' {
+      description 'Folders of Media Files'
+      style {
+        shape storage
+      }
+    }
+  }
+
+  watchclub.server.domains.sources -> externalSources 'will request Content and import Media Files' {
+    technology 'JSON over HTTP, file system'
+    description 'For now, only tests the connection'
+  }
+}
