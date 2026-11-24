@@ -41,3 +41,5 @@ CREATE TABLE media_imports (
 
 -- Lists a Source's imports, the latest first
 CREATE INDEX media_imports_source_id ON media_imports (source_id, started_at DESC);
+-- Lets the hourly import find the imports a stopped server left running, among the few running
+CREATE INDEX media_imports_running ON media_imports (job_started_at) WHERE state = 'running';

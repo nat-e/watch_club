@@ -2,8 +2,8 @@ import type {MediaImport, MediaImportState, MediaImportTrigger, Source} from '@w
 import {formatRelativeTime} from '@watchclub/core/l10n';
 import {
   durationSeconds,
-  handledFileCount,
-  isInProgress,
+  type FileOutcome,
+  summarizeFiles,
 } from '@watchclub/core/sources/media-imports';
 import * as icons from 'lucide-react';
 import {useTranslation} from 'react-i18next';
@@ -117,61 +117,58 @@ function MediaImportRow({source, mediaImport}: {source: Source; mediaImport: Med
   );
 }
 
+/** The look of the number of files with each outcome. */
+const OUTCOME_CLASS_NAMES: Record<FileOutcome, string> = {
+  matched: '',
+  unmatched: '',
+  failed: 'text-destructive',
+  removed: 'text-muted-foreground',
+};
+
 /**
- * The files an import handles, and how far it got: their number once its Source listed them, a
- * progress bar while it runs, and what it found.
+ * The files an import handles, and how far it got: a progress bar while it runs, and what became of
+ * its files.
  */
 function ImportedFiles({mediaImport}: {mediaImport: MediaImport}) {
   const {t} = useTranslation('web');
   const choiceTexts = useFilesToImportTexts();
-  const inProgress = isInProgress(mediaImport);
-  const fileCount = mediaImport.file_count;
-  const handled = handledFileCount(mediaImport);
+  const {isListing, isEmpty, progress, outcomes} = summarizeFiles(mediaImport);
 
-  const outcomes = [
-    {
-      count: mediaImport.matched_file_count,
-      text: t($ => $.web.mediaImports.matched, {count: mediaImport.matched_file_count}),
-      className: '',
-    },
-    {
-      count: mediaImport.unmatched_file_count,
-      text: t($ => $.web.mediaImports.unmatched, {count: mediaImport.unmatched_file_count}),
-      className: '',
-    },
-    {
-      count: mediaImport.failed_file_count,
-      text: t($ => $.web.mediaImports.failed, {count: mediaImport.failed_file_count}),
-      className: 'text-destructive',
-    },
-    {
-      count: mediaImport.removed_file_count,
-      text: t($ => $.web.mediaImports.removed, {count: mediaImport.removed_file_count}),
-      className: 'text-muted-foreground',
-    },
-  ].filter(outcome => outcome.count > 0);
+  function outcomeText(outcome: FileOutcome, count: number): string {
+    switch (outcome) {
+      case 'matched':
+        return t($ => $.web.mediaImports.matched, {count});
+      case 'unmatched':
+        return t($ => $.web.mediaImports.unmatched, {count});
+      case 'failed':
+        return t($ => $.web.mediaImports.failed, {count});
+      case 'removed':
+        return t($ => $.web.mediaImports.removed, {count});
+    }
+  }
 
   return (
     <div className="flex flex-col items-start gap-2">
       <Badge variant="secondary">{choiceTexts[mediaImport.files_to_import].shortName}</Badge>
-      {fileCount === null && inProgress && (
+      {isListing && (
         <p className="text-muted-foreground">{t($ => $.web.mediaImports.findingFiles)}</p>
       )}
-      {fileCount === 0 && outcomes.length === 0 && (
-        <p className="text-muted-foreground">{t($ => $.web.mediaImports.noFiles)}</p>
-      )}
-      {fileCount !== null && fileCount > 0 && inProgress && (
-        <Progress value={(100 * handled) / fileCount} className="w-40">
+      {isEmpty && <p className="text-muted-foreground">{t($ => $.web.mediaImports.noFiles)}</p>}
+      {progress !== null && (
+        <Progress value={(100 * progress.handled) / progress.total} className="w-40">
           <span className="text-muted-foreground tabular-nums">
-            {t($ => $.web.mediaImports.progress, {handled, count: fileCount})}
+            {t($ => $.web.mediaImports.progress, {
+              handled: progress.handled,
+              count: progress.total,
+            })}
           </span>
         </Progress>
       )}
       {outcomes.length > 0 && (
         <ul className="flex flex-col tabular-nums">
-          {outcomes.map(outcome => (
-            <li key={outcome.text} className={outcome.className}>
-              {outcome.text}
+          {outcomes.map(({outcome, count}) => (
+            <li key={outcome} className={OUTCOME_CLASS_NAMES[outcome]}>
+              {outcomeText(outcome, count)}
             </li>
           ))}
         </ul>

@@ -64,7 +64,7 @@ export default {
     failed_other: '{{count}} failed',
     failures: {
       internalError: 'Something went wrong. Try again later.',
-      interrupted: 'The server stopped during the import. Run it again.',
+      interrupted: 'The import stopped before it finished. Run it again.',
       invalidApiKey: '{{app}} refused its API key. Edit the source to enter a new one.',
       invalidServarrUrl: 'Could not connect to {{app}} at its URL. Check that it runs.',
     },

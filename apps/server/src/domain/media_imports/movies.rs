@@ -4,7 +4,7 @@
 
 use std::collections::HashMap;
 
-use jiff::{SignedDuration, Timestamp};
+use jiff::SignedDuration;
 use tracing::Level;
 
 use super::{Holds, ImportedFile, PartReference};
@@ -12,8 +12,8 @@ use crate::{
     db::Pool,
     domain::{
         contents::{
-            self, ExternalContentId, MediaType, SavedContentMedia,
-            metadata::{MetadataProviders, TmdbId},
+            self, ExternalContentId, MediaLookup, MediaType, SavedMedia,
+            metadata::MetadataProviders,
         },
         sources::servarr::MovieFile,
     },
@@ -23,8 +23,8 @@ use crate::{
 const REFRESH_AFTER: SignedDuration = SignedDuration::from_mins(15);
 
 /// Returns what each file holds: Part 1 of its Movie, which it saves from TMDB first when it isn't
-/// saved or was saved over 15 minutes ago. Calls TMDB for each Movie once, and one call at a time,
-/// as one Movie can take several.
+/// saved or was saved over 15 minutes ago. Calls TMDB for each Movie once, one call at a time, as
+/// one Movie can take several.
 pub(super) async fn match_files<'a>(
     db: &Pool,
     metadata_providers: &MetadataProviders,
@@ -34,43 +34,55 @@ pub(super) async fn match_files<'a>(
         .iter()
         .map(|file| ExternalContentId::Movie(file.tmdb_id))
         .collect();
-    let saved = contents::find_media(db, &external_content_ids).await?;
+    let mut movies =
+        contents::find_or_save_media(db, metadata_providers, &external_content_ids, REFRESH_AFTER)
+            .await?;
 
-    // The Movie that each TMDB ID from Radarr turned out to be: None when TMDB knows nothing of it,
-    // and an error when saving it failed
-    let mut movies: HashMap<TmdbId, anyhow::Result<Option<ExternalContentId>>> = HashMap::new();
+    // TMDB no longer knows some TMDB IDs that Radarr has, such as after deleting a duplicate: their
+    // Movies are found by their IMDb IDs instead
+    let mut replacements = HashMap::new();
     for file in files {
-        if movies.contains_key(&file.tmdb_id) {
+        let id = ExternalContentId::Movie(file.tmdb_id);
+        let (Some(MediaLookup::Unknown), Some(imdb_id)) = (movies.get(&id), &file.imdb_id) else {
+            continue;
+        };
+        // A copy of a Movie already looked up
+        if replacements.contains_key(&id) {
             continue;
         }
-        let saved = saved.get(&ExternalContentId::Movie(file.tmdb_id));
-        let movie = save_movie(db, metadata_providers, file, saved).await;
-        if let Err(error) = &movie {
-            tracing::event!(
-                name: "media_imports.movie.failed",
-                Level::WARN,
-                content.external_id = %file.tmdb_id,
-                exception.message = %format_args!("{error:#}"),
-                "a Media Import failed to save a Movie, whose files stay as they were",
-            );
+        match metadata_providers.tmdb.find_movie_by_imdb_id(imdb_id).await {
+            Ok(Some(tmdb_id)) => {
+                replacements.insert(id, ExternalContentId::Movie(tmdb_id));
+            }
+            Ok(None) => {}
+            Err(error) => {
+                movies.insert(id, MediaLookup::Failed(error));
+            }
         }
-        movies.insert(file.tmdb_id, movie);
+    }
+    let replacement_ids: Vec<_> = replacements.values().cloned().collect();
+    let replacement_movies =
+        contents::find_or_save_media(db, metadata_providers, &replacement_ids, REFRESH_AFTER)
+            .await?;
+
+    for (id, lookup) in movies.iter().chain(&replacement_movies) {
+        if let MediaLookup::Failed(error) = lookup {
+            report_failure(id, error);
+        }
     }
 
-    // Read again, as saving added Movies and could change their Media
-    let found: Vec<_> = movies
-        .values()
-        .filter_map(|movie| movie.as_ref().ok().and_then(Option::clone))
-        .collect();
-    let saved = contents::find_media(db, &found).await?;
     Ok(files
         .iter()
         .map(|file| {
-            let holds = match &movies[&file.tmdb_id] {
-                Err(_) => Holds::Unknown,
-                Ok(None) => Holds::Nothing,
-                // Missing when it was deleted meanwhile
-                Ok(Some(movie)) => saved.get(movie).map_or(Holds::Unknown, movie_parts),
+            let id = ExternalContentId::Movie(file.tmdb_id);
+            let lookup = match replacements.get(&id) {
+                Some(replacement) => &replacement_movies[replacement],
+                None => &movies[&id],
+            };
+            let holds = match lookup {
+                MediaLookup::Found(media) => movie_parts(media),
+                MediaLookup::Unknown => Holds::Nothing,
+                MediaLookup::Failed(_) => Holds::Unknown,
             };
             ImportedFile {
                 path: &file.path,
@@ -80,48 +92,10 @@ pub(super) async fn match_files<'a>(
         .collect())
 }
 
-/// Saves the file's Movie from TMDB, unless it was saved in the last 15 minutes, and returns its
-/// External ID: the TMDB ID that Radarr gives, or else the one TMDB has for its IMDb ID. None when
-/// TMDB knows neither.
-async fn save_movie(
-    db: &Pool,
-    metadata_providers: &MetadataProviders,
-    file: &MovieFile,
-    saved: Option<&SavedContentMedia>,
-) -> anyhow::Result<Option<ExternalContentId>> {
-    let id = ExternalContentId::Movie(file.tmdb_id);
-    if let Some(saved) = saved {
-        if saved.refreshed_at < Timestamp::now() - REFRESH_AFTER {
-            // Keeps it as it is when TMDB no longer knows it, and the file still matches it
-            contents::refresh(db, metadata_providers, saved.content_id).await?;
-        }
-        return Ok(Some(id));
-    }
-    if contents::save(db, metadata_providers, &id).await?.is_some() {
-        return Ok(Some(id));
-    }
-
-    // TMDB no longer knows the TMDB ID that Radarr has, such as after deleting a duplicate
-    let Some(imdb_id) = &file.imdb_id else {
-        return Ok(None);
-    };
-    let Some(tmdb_id) = metadata_providers
-        .tmdb
-        .find_movie_by_imdb_id(imdb_id)
-        .await?
-    else {
-        return Ok(None);
-    };
-    let id = ExternalContentId::Movie(tmdb_id);
-    Ok(contents::save(db, metadata_providers, &id)
-        .await?
-        .map(|_| id))
-}
-
-/// Returns what a file of the Movie holds: Part 1 of its Media, or nothing when it has none.
-fn movie_parts(movie: &SavedContentMedia) -> Holds {
-    let parts: Vec<_> = movie
-        .media
+/// Returns what a file of the Movie with these Media holds: Part 1 of its Media, or nothing when it
+/// has none.
+fn movie_parts(media: &[SavedMedia]) -> Holds {
+    let parts: Vec<_> = media
         .iter()
         .filter(|media| media.media_type == MediaType::Movie)
         .map(|media| PartReference {
@@ -134,4 +108,15 @@ fn movie_parts(movie: &SavedContentMedia) -> Holds {
     } else {
         Holds::Parts(parts)
     }
+}
+
+/// Logs that the import failed to save the Movie, whose files stay as they were.
+fn report_failure(id: &ExternalContentId, error: &anyhow::Error) {
+    tracing::event!(
+        name: "media_imports.movie.failed",
+        Level::WARN,
+        content.external_id = %id.external_id(),
+        exception.message = %format_args!("{error:#}"),
+        "a Media Import failed to save a Movie, whose files stay as they were",
+    );
 }

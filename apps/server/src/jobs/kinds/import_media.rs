@@ -21,9 +21,7 @@ impl Job for ImportMedia {
     // Once: a retry would count the files of the failed attempt again. The import saves how it
     // failed, and the next hourly import goes on from where it stopped
     const MAX_ATTEMPTS: i16 = 1;
-    // The most the runner allows, for the first import of a large library, which saves each of its
-    // Movies from TMDB
-    const TIMEOUT: Duration = Duration::from_mins(59);
+    const TIMEOUT: Duration = media_imports::RUN_TIME_LIMIT;
 
     async fn run(self, context: &JobContext) -> Result<(), JobError> {
         // On the heap: saving Contents makes a large future, which would make every job's as large

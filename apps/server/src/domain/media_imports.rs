@@ -12,7 +12,10 @@
 mod movies;
 mod store;
 
-use std::fmt::{self, Display, Formatter};
+use std::{
+    fmt::{self, Display, Formatter},
+    time::Duration,
+};
 
 use anyhow::Context;
 use jiff::Timestamp;
@@ -40,6 +43,11 @@ const IMPORTING_SOURCE_TYPES: [SourceType; 1] = [SourceType::Radarr];
 
 /// The number of files an import matches and saves at once
 const BATCH_SIZE: usize = 500;
+
+/// The longest an import runs, which is the most the job runner allows: long enough for the first
+/// import of a large library, which saves each of its Movies from TMDB. An import still running
+/// after it stopped without saving how it ended, such as when the server stopped.
+pub const RUN_TIME_LIMIT: Duration = Duration::from_mins(59);
 
 /// The unique ID of a Media Import.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, sqlx::Type, ToSchema)]
@@ -233,7 +241,7 @@ pub async fn start(
 /// schedule does. Marks the imports that a stopped server left running as failed first.
 #[tracing::instrument(skip_all)]
 pub async fn start_scheduled(db: &Pool) -> anyhow::Result<()> {
-    let interrupted = store::fail_interrupted(db).await?;
+    let interrupted = store::fail_interrupted(db, RUN_TIME_LIMIT).await?;
     if interrupted > 0 {
         tracing::event!(
             name: "media_imports.interrupted",

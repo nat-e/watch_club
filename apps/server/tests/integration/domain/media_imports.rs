@@ -6,7 +6,11 @@ use sqlx::PgPool;
 use watch_club::{
     db::Pool,
     domain::{
-        contents::metadata::MetadataProviders,
+        accounts::preferences::Locale,
+        contents::{
+            self, ExternalContentId,
+            metadata::{MetadataProviders, TmdbId},
+        },
         media_imports::{
             self, FilesToImport, MediaImport, MediaImportFailure, MediaImportState,
             MediaImportTrigger, StartMediaImportError,
@@ -223,6 +227,52 @@ async fn finds_a_movie_by_its_imdb_id_when_tmdb_no_longer_knows_its_tmdb_id(db: 
         saved_files(&db, source_id).await,
         [(MOVIE_PATH.to_owned(), Some(MOVIE_ID.to_string()))]
     );
+}
+
+#[database_test]
+async fn doesnt_save_again_a_movie_found_by_its_imdb_id_that_was_just_saved(db: PgPool) {
+    let db = watch_club::db::instrument(db);
+    let radarr = radarr_with(json!([radarr_movie(
+        UNKNOWN_MOVIE_ID,
+        MOVIE_IMDB_ID,
+        Some(MOVIE_PATH)
+    )]))
+    .await;
+    let tmdb = FakeTmdb::start().await;
+    Mock::given(method("GET"))
+        .and(path(format!("/movie/{MOVIE_ID}")))
+        .respond_with(ResponseTemplate::new(200).set_body_json(fixture("movie_details")))
+        .expect(1)
+        .mount(&tmdb.server)
+        .await;
+    Mock::given(method("GET"))
+        .and(path(format!("/find/{MOVIE_IMDB_ID}")))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_body_json(json!({ "movie_results": [{ "id": MOVIE_ID }] })),
+        )
+        .mount(&tmdb.server)
+        .await;
+    let source_id = create_source(&db, &radarr).await;
+    contents::get_by_external_id(
+        &db,
+        &tmdb.metadata_providers(),
+        ExternalContentId::Movie(TmdbId::new(MOVIE_ID)),
+        Locale::EnUs,
+    )
+    .await
+    .unwrap()
+    .unwrap();
+
+    let media_import = import(
+        &db,
+        tmdb.metadata_providers(),
+        source_id,
+        FilesToImport::All,
+    )
+    .await;
+
+    assert_eq!(counts(&media_import), (Some(1), 1, 0, 0, 0));
 }
 
 #[database_test]

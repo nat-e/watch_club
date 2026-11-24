@@ -1,11 +1,6 @@
 import type {MediaImport, Source} from '@watchclub/api';
 import {describe, expect, it} from 'vitest';
-import {
-  durationSeconds,
-  handledFileCount,
-  importsFiles,
-  isInProgress,
-} from '../../src/sources/media-imports';
+import {durationSeconds, importsFiles, summarizeFiles} from '../../src/sources/media-imports';
 
 /** A completed import of 5 files, which took 75 seconds. */
 const COMPLETED: MediaImport = {
@@ -46,18 +41,58 @@ describe('importsFiles', () => {
   });
 });
 
-describe('isInProgress', () => {
-  it('is true while the import waits or runs', () => {
-    expect(isInProgress({...COMPLETED, state: 'waiting'})).toBe(true);
-    expect(isInProgress({...COMPLETED, state: 'running'})).toBe(true);
-    expect(isInProgress(COMPLETED)).toBe(false);
-    expect(isInProgress({...COMPLETED, state: 'failed', failure: 'interrupted'})).toBe(false);
+describe('summarizeFiles', () => {
+  it('lists the outcomes with files, in order', () => {
+    expect(summarizeFiles(COMPLETED)).toEqual({
+      isListing: false,
+      isEmpty: false,
+      progress: null,
+      outcomes: [
+        {outcome: 'matched', count: 3},
+        {outcome: 'unmatched', count: 1},
+        {outcome: 'failed', count: 1},
+        {outcome: 'removed', count: 2},
+      ],
+    });
   });
-});
 
-describe('handledFileCount', () => {
-  it('counts the matched, Unmatched and failed files, not the removed ones', () => {
-    expect(handledFileCount(COMPLETED)).toBe(5);
+  it('shows the progress of a running import, out of the files it handles', () => {
+    const running: MediaImport = {
+      ...COMPLETED,
+      state: 'running',
+      // biome-ignore-start lint/style/useNamingConvention: the API's fields are snake_case
+      failed_file_count: 0,
+      removed_file_count: 0,
+      finished_at: null,
+      // biome-ignore-end lint/style/useNamingConvention: the API's fields are snake_case
+    };
+
+    expect(summarizeFiles(running).progress).toEqual({handled: 4, total: 5});
+  });
+
+  it('says when the Source is still listing the files', () => {
+    // biome-ignore lint/style/useNamingConvention: the API's fields are snake_case
+    const waiting: MediaImport = {...COMPLETED, state: 'waiting', file_count: null};
+
+    expect(summarizeFiles(waiting).isListing).toBe(true);
+    expect(summarizeFiles(waiting).progress).toBeNull();
+  });
+
+  it('says when the import had no file to handle or remove', () => {
+    const empty: MediaImport = {
+      ...COMPLETED,
+      // biome-ignore-start lint/style/useNamingConvention: the API's fields are snake_case
+      file_count: 0,
+      matched_file_count: 0,
+      unmatched_file_count: 0,
+      failed_file_count: 0,
+      removed_file_count: 0,
+      // biome-ignore-end lint/style/useNamingConvention: the API's fields are snake_case
+    };
+
+    expect(summarizeFiles(empty).isEmpty).toBe(true);
+    // biome-ignore lint/style/useNamingConvention: the API's fields are snake_case
+    expect(summarizeFiles({...empty, removed_file_count: 1}).isEmpty).toBe(false);
   });
 });
 

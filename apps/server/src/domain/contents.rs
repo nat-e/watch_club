@@ -11,6 +11,7 @@ pub mod metadata;
 mod store;
 
 use std::{
+    collections::HashMap,
     fmt::{self, Display, Formatter},
     num::NonZeroU32,
 };
@@ -29,7 +30,7 @@ use self::metadata::{HardcoverId, MetadataProvider, MetadataProviders, SportarrI
 pub use self::{
     image::{Image, ImageSource},
     localizations::{ContentTranslations, Language, MediaTranslations, Translations},
-    store::{find_media, list_media},
+    store::list_media,
 };
 use super::accounts::preferences::Locale;
 use crate::{
@@ -292,13 +293,15 @@ pub struct Media {
     pub runtime_seconds: Option<i32>,
 }
 
-/// A saved Content's Media, which Media Imports match files to, with when the Content was saved.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct SavedContentMedia {
-    pub content_id: ContentId,
-    /// The last time the Content was saved from its Metadata Provider
-    pub refreshed_at: Timestamp,
-    pub media: Vec<SavedMedia>,
+/// What `find_or_save_media` found of a Content.
+#[derive(Debug)]
+pub enum MediaLookup {
+    /// The Content is saved, with these Media
+    Found(Vec<SavedMedia>),
+    /// Its Metadata Provider doesn't know it, and nobody saved it
+    Unknown,
+    /// Saving it failed, such as with its Metadata Provider down
+    Failed(anyhow::Error),
 }
 
 /// A saved Media, with what tells it apart in its Content: its type, and its group and number in
@@ -408,6 +411,65 @@ pub async fn get_by_external_id(
     Ok(Some(saved.content))
 }
 
+/// Returns the Media of each of these Contents, which can repeat, by External ID, once each is saved:
+/// first saves from their Metadata Provider, one Content at a time, those that aren't saved, or were
+/// saved over `refresh_after` ago. One that its Metadata Provider no longer knows stays as it is.
+#[tracing::instrument(skip_all, fields(content.count = external_content_ids.len()))]
+pub async fn find_or_save_media(
+    db: &Pool,
+    metadata_providers: &MetadataProviders,
+    external_content_ids: &[ExternalContentId],
+    refresh_after: SignedDuration,
+) -> anyhow::Result<HashMap<ExternalContentId, MediaLookup>> {
+    let saved = store::find_media(db, external_content_ids).await?;
+
+    // What saving each Content that needed it led to: None when it's saved now
+    let mut lookups: HashMap<ExternalContentId, Option<MediaLookup>> =
+        HashMap::with_capacity(external_content_ids.len());
+    for external_content_id in external_content_ids {
+        if lookups.contains_key(external_content_id) {
+            continue;
+        }
+        let saving = match saved.get(external_content_id) {
+            Some(content) if content.refreshed_at >= Timestamp::now() - refresh_after => Ok(true),
+            Some(content) => refresh(db, metadata_providers, content.content_id)
+                .await
+                .map(|()| true),
+            None => save(db, metadata_providers, external_content_id)
+                .await
+                .map(|content_id| content_id.is_some()),
+        };
+        let lookup = match saving {
+            Ok(true) => None,
+            Ok(false) => Some(MediaLookup::Unknown),
+            Err(error) => Some(MediaLookup::Failed(error)),
+        };
+        lookups.insert(external_content_id.clone(), lookup);
+    }
+
+    // Read again, as saving added Contents and could change their Media
+    let saved_ids: Vec<_> = lookups
+        .iter()
+        .filter(|(_, lookup)| lookup.is_none())
+        .map(|(external_content_id, _)| external_content_id.clone())
+        .collect();
+    let mut saved = store::find_media(db, &saved_ids).await?;
+    Ok(lookups
+        .into_iter()
+        .map(|(external_content_id, lookup)| {
+            let lookup = lookup.unwrap_or_else(|| {
+                // Missing when it was deleted meanwhile
+                saved
+                    .remove(&external_content_id)
+                    .map_or(MediaLookup::Unknown, |content| {
+                        MediaLookup::Found(content.media)
+                    })
+            });
+            (external_content_id, lookup)
+        })
+        .collect())
+}
+
 /// Saves the Content as its Metadata Provider has it now, with its Media, and returns its ID, or None
 /// when its Metadata Provider doesn't know it.
 #[tracing::instrument(
@@ -417,7 +479,7 @@ pub async fn get_by_external_id(
         content.external_id = %external_content_id.external_id(),
     ),
 )]
-pub async fn save(
+async fn save(
     db: &Pool,
     metadata_providers: &MetadataProviders,
     external_content_id: &ExternalContentId,

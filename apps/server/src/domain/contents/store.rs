@@ -13,13 +13,21 @@ use sqlx::types::Json;
 use sqlx_otel::QueryAnnotateExt;
 
 use super::{
-    Content, ContentId, ContentType, Credit, ExternalContentId, Media, MediaType,
-    SavedContentMedia, SavedMedia, metadata::ContentMetadata,
+    Content, ContentId, ContentType, Credit, ExternalContentId, Media, MediaType, SavedMedia,
+    metadata::ContentMetadata,
 };
 use crate::{
     db::{Pool, Transaction},
     domain::accounts::preferences::Locale,
 };
+
+/// A saved Content's Media, with when the Content was saved.
+pub(super) struct SavedContentMedia {
+    pub content_id: ContentId,
+    /// The last time it was saved from its Metadata Provider
+    pub refreshed_at: Timestamp,
+    pub media: Vec<SavedMedia>,
+}
 
 /// A saved Content, with its texts in one Locale.
 pub(super) struct SavedContent {
@@ -173,8 +181,7 @@ pub async fn list_media(
 
 /// Returns the saved Contents with these External IDs, which can repeat, with their Media, by
 /// External ID. Leaves out those nobody saved yet.
-#[tracing::instrument(skip_all, fields(content.count = external_content_ids.len()))]
-pub async fn find_media(
+pub(super) async fn find_media(
     db: &Pool,
     external_content_ids: &[ExternalContentId],
 ) -> anyhow::Result<HashMap<ExternalContentId, SavedContentMedia>> {
@@ -216,7 +223,8 @@ pub async fn find_media(
     .await
     .context("failed to find the Media of Contents")?;
 
-    let mut found: HashMap<ExternalContentId, SavedContentMedia> = HashMap::new();
+    let mut found: HashMap<ExternalContentId, SavedContentMedia> =
+        HashMap::with_capacity(external_content_ids.len());
     for row in rows {
         let external_content_id = ExternalContentId::parse(row.content_type, &row.main_external_id)
             .with_context(|| {

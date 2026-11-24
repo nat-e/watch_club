@@ -87,7 +87,8 @@ pub struct ServarrConfiguration {
 
 impl ServarrConfiguration {
     /// Returns where WatchClub sees the file at `path`, as the app sees it, or None when the file
-    /// isn't in the Source's root folder.
+    /// isn't in the Source's root folder. Doesn't support an app on Windows, whose paths, such as
+    /// `D:\Movies\…`, are never in the root folder.
     pub fn local_path(&self, path: &str) -> Option<String> {
         let root_folder = self.root_folder_path.trim_end_matches('/');
         // Also checks that the root folder is a whole folder of the path: `/movies` isn't one of

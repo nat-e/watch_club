@@ -9,6 +9,9 @@ import * as api from '@watchclub/api';
 /** The choices of the files an import handles, in the order screens list them. */
 export const FILES_TO_IMPORT: readonly api.FilesToImport[] = ['new', 'new_and_unmatched', 'all'];
 
+/** The outcomes of files, in the order screens list them. */
+const FILE_OUTCOMES: readonly FileOutcome[] = ['matched', 'unmatched', 'failed', 'removed'];
+
 /** Returns whether the Source imports its files: only Radarr Sources do yet. */
 export function importsFiles(source: api.Source): boolean {
   return source.type === 'radarr';
@@ -39,18 +42,42 @@ export const startMediaImportMutation = mutationOptions({
   },
 });
 
-/** Returns whether the import is still going: waiting for its turn, or running. */
-export function isInProgress(mediaImport: api.MediaImport): boolean {
-  return mediaImport.state === 'waiting' || mediaImport.state === 'running';
+/** What became of some of an import's files. */
+export type FileOutcome = 'matched' | 'unmatched' | 'failed' | 'removed';
+
+/** What an import did with its Source's files so far, as screens show it. */
+export interface ImportedFilesSummary {
+  /** Whether its Source is still listing its files */
+  isListing: boolean;
+  /** Whether it found no file to handle or to remove */
+  isEmpty: boolean;
+  /** The files it handled out of those it handles, while it runs; null otherwise */
+  progress: {handled: number; total: number} | null;
+  /** The number of files with each outcome, leaving out those with none */
+  outcomes: Array<{outcome: FileOutcome; count: number}>;
 }
 
-/** Returns the number of files the import handled so far, whatever it found. */
-export function handledFileCount(mediaImport: api.MediaImport): number {
-  return (
-    mediaImport.matched_file_count +
-    mediaImport.unmatched_file_count +
-    mediaImport.failed_file_count
+/** Returns what the import did with its Source's files so far. */
+export function summarizeFiles(mediaImport: api.MediaImport): ImportedFilesSummary {
+  const isInProgress = mediaImport.state === 'waiting' || mediaImport.state === 'running';
+  const total = mediaImport.file_count;
+  const counts: Record<FileOutcome, number> = {
+    matched: mediaImport.matched_file_count,
+    unmatched: mediaImport.unmatched_file_count,
+    failed: mediaImport.failed_file_count,
+    removed: mediaImport.removed_file_count,
+  };
+  const outcomes = FILE_OUTCOMES.map(outcome => ({outcome, count: counts[outcome]})).filter(
+    ({count}) => count > 0,
   );
+  const handled = counts.matched + counts.unmatched + counts.failed;
+
+  return {
+    isListing: isInProgress && total === null,
+    isEmpty: total === 0 && outcomes.length === 0,
+    progress: isInProgress && total !== null && total > 0 ? {handled, total} : null,
+    outcomes,
+  };
 }
 
 /** Returns how long the import took, in whole seconds, or null while it's going. */

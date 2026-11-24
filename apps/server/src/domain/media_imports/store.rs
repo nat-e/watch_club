@@ -2,7 +2,7 @@
 //! `media_file_parts`, or none when it's Unmatched. Saving a batch of files writes each table with
 //! one statement, whatever the number of files.
 
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 
 use anyhow::Context;
 use jiff_sqlx::Timestamp;
@@ -175,16 +175,16 @@ pub(super) async fn finish(
     Ok(())
 }
 
-/// Marks the imports that a stopped server left running as failed, and returns how many.
-pub(super) async fn fail_interrupted(db: &Pool) -> anyhow::Result<u64> {
-    // The job runner stops a job after 59 minutes, so one that started over an hour ago stopped
-    // without saving how it ended
+/// Marks the imports still running after `run_time_limit` as failed, as they stopped without saving
+/// how they ended, and returns how many.
+pub(super) async fn fail_interrupted(db: &Pool, run_time_limit: Duration) -> anyhow::Result<u64> {
     let interrupted = sqlx::query!(
         r#"
         UPDATE media_imports
         SET state = 'failed', failure = 'interrupted', finished_at = now()
-        WHERE state = 'running' AND job_started_at < now() - interval '1 hour'
-        "#
+        WHERE state = 'running' AND job_started_at < now() - make_interval(secs => $1)
+        "#,
+        run_time_limit.as_secs_f64(),
     )
     .with_operation("UPDATE", "media_imports")
     .execute(db)
@@ -278,10 +278,11 @@ pub(super) async fn save_files(
     source_id: SourceId,
     files: &[ImportedFile<'_>],
 ) -> anyhow::Result<()> {
-    let mut paths = Vec::new();
-    let mut link_paths = Vec::new();
-    let mut link_media_ids = Vec::new();
-    let mut link_numbers = Vec::new();
+    // Most files hold one Part
+    let mut paths = Vec::with_capacity(files.len());
+    let mut link_paths = Vec::with_capacity(files.len());
+    let mut link_media_ids = Vec::with_capacity(files.len());
+    let mut link_numbers = Vec::with_capacity(files.len());
     let (mut matched, mut unmatched, mut failed) = (0, 0, 0);
     for file in files {
         match &file.holds {
@@ -304,10 +305,13 @@ pub(super) async fn save_files(
 
     let mut transaction = db.begin().await.context("failed to start a transaction")?;
 
+    // Each insert and lock goes in the same order, so that imports that overlap, or share Parts,
+    // wait for each other rather than deadlock
     sqlx::query!(
         r#"
         INSERT INTO media_parts (media_id, number)
-        SELECT DISTINCT * FROM UNNEST($1::uuid[], $2::integer[])
+        SELECT DISTINCT * FROM UNNEST($1::uuid[], $2::integer[]) AS part (media_id, number)
+        ORDER BY media_id, number
         ON CONFLICT (media_id, number) DO NOTHING
         "#,
         &link_media_ids as &[MediaId],
@@ -322,6 +326,7 @@ pub(super) async fn save_files(
         r#"
         INSERT INTO media_files (source_id, path)
         SELECT $1, path FROM UNNEST($2::text[]) AS path
+        ORDER BY path
         ON CONFLICT (source_id, path) DO NOTHING
         "#,
         source_id as SourceId,
@@ -331,6 +336,23 @@ pub(super) async fn save_files(
     .execute(&mut transaction)
     .await
     .context("failed to save Media Files")?;
+
+    // Until the transaction ends, so that an import that overlaps doesn't replace the same files'
+    // Parts at the same time, which would keep both imports' Parts
+    sqlx::query!(
+        r#"
+        SELECT id FROM media_files
+        WHERE source_id = $1 AND path = ANY($2)
+        ORDER BY path
+        FOR UPDATE
+        "#,
+        source_id as SourceId,
+        &paths as &[&str],
+    )
+    .with_operation("SELECT", "media_files")
+    .fetch_all(&mut transaction)
+    .await
+    .context("failed to lock Media Files")?;
 
     sqlx::query!(
         r#"
