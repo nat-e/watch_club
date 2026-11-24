@@ -12,6 +12,9 @@
 // The kinds of jobs, one per file
 mod kinds {
     pub(super) mod delete_expired_sessions;
+    pub(super) mod delete_old_media_imports;
+    pub(super) mod import_media;
+    pub(super) mod import_sources;
     pub(super) mod refresh_content;
 }
 mod observability;
@@ -27,10 +30,17 @@ use sqlx::PgExecutor;
 use uuid::Uuid;
 
 pub use self::{
-    kinds::{delete_expired_sessions::DeleteExpiredSessions, refresh_content::RefreshContent},
+    kinds::{
+        delete_expired_sessions::DeleteExpiredSessions,
+        delete_old_media_imports::DeleteOldMediaImports, import_media::ImportMedia,
+        import_sources::ImportSources, refresh_content::RefreshContent,
+    },
     runner::{run, run_available},
 };
-use crate::{db::Pool, domain::contents::metadata::MetadataProviders};
+use crate::{
+    api_client::HttpClient, db::Pool, domain::contents::metadata::MetadataProviders,
+    utils::encryption::EncryptionKey,
+};
 
 /// Work that runs in the background: a struct with the job's arguments, which also sets its
 /// settings.
@@ -58,12 +68,16 @@ pub trait Job: Serialize + DeserializeOwned {
     fn run(self, context: &JobContext) -> impl Future<Output = Result<(), JobError>> + Send;
 }
 
-/// What jobs share: the database and the Metadata Providers, as the requests have them in
-/// `ApiContext`.
+/// What jobs share: the database, the Metadata Providers, and what calling Sources' apps takes, as
+/// the requests have them in `ApiContext`.
 #[derive(Clone, Debug)]
 pub struct JobContext {
     pub db: Pool,
     pub metadata_providers: MetadataProviders,
+    /// The connections that the calls to Sources' apps share
+    pub http_client: HttpClient,
+    /// The key that decrypts the Sources' API keys
+    pub encryption_key: EncryptionKey,
 }
 
 /// The reason a job didn't complete. A job with nothing left to do, such as when what it works on
@@ -128,6 +142,9 @@ pub struct JobId(Uuid);
 #[derive(Debug)]
 enum AnyJob {
     DeleteExpiredSessions(DeleteExpiredSessions),
+    DeleteOldMediaImports(DeleteOldMediaImports),
+    ImportMedia(ImportMedia),
+    ImportSources(ImportSources),
     RefreshContent(RefreshContent),
 }
 
@@ -138,6 +155,11 @@ impl AnyJob {
             DeleteExpiredSessions::KIND => {
                 Self::DeleteExpiredSessions(serde_json::from_value(args)?)
             }
+            DeleteOldMediaImports::KIND => {
+                Self::DeleteOldMediaImports(serde_json::from_value(args)?)
+            }
+            ImportMedia::KIND => Self::ImportMedia(serde_json::from_value(args)?),
+            ImportSources::KIND => Self::ImportSources(serde_json::from_value(args)?),
             RefreshContent::KIND => Self::RefreshContent(serde_json::from_value(args)?),
             _ => bail!("unknown kind of job: {kind}"),
         })
@@ -146,6 +168,9 @@ impl AnyJob {
     fn timeout(&self) -> Duration {
         match self {
             Self::DeleteExpiredSessions(_) => DeleteExpiredSessions::TIMEOUT,
+            Self::DeleteOldMediaImports(_) => DeleteOldMediaImports::TIMEOUT,
+            Self::ImportMedia(_) => ImportMedia::TIMEOUT,
+            Self::ImportSources(_) => ImportSources::TIMEOUT,
             Self::RefreshContent(_) => RefreshContent::TIMEOUT,
         }
     }
@@ -153,6 +178,9 @@ impl AnyJob {
     async fn run(self, context: &JobContext) -> Result<(), JobError> {
         match self {
             Self::DeleteExpiredSessions(job) => job.run(context).await,
+            Self::DeleteOldMediaImports(job) => job.run(context).await,
+            Self::ImportMedia(job) => job.run(context).await,
+            Self::ImportSources(job) => job.run(context).await,
             Self::RefreshContent(job) => job.run(context).await,
         }
     }
@@ -161,10 +189,14 @@ impl AnyJob {
 /// Returns the cron expression of each kind with a `SCHEDULE`, with the job to queue on it, by
 /// kind. List each such kind here.
 fn schedules() -> serde_json::Result<BTreeMap<&'static str, (&'static str, NewJob)>> {
-    [scheduled::<DeleteExpiredSessions>()]
-        .into_iter()
-        .flatten()
-        .collect()
+    [
+        scheduled::<DeleteExpiredSessions>(),
+        scheduled::<DeleteOldMediaImports>(),
+        scheduled::<ImportSources>(),
+    ]
+    .into_iter()
+    .flatten()
+    .collect()
 }
 
 fn scheduled<J: Job + Default>()

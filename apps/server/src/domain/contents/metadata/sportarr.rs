@@ -40,7 +40,7 @@ const BACKDROP_WIDTH: u32 = 1280;
 const BACKDROP_HEIGHT: u32 = 720;
 
 /// The ID of a Sports Event at sportarr.net, such as `ev-028133`.
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Deserialize)]
 pub struct SportarrId(String);
 
 impl SportarrId {

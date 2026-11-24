@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO media_imports (\n                source_id, trigger, files_to_import, state, started_at, finished_at\n            )\n            VALUES (\n                $1, 'scheduled', 'new', $2::text::media_import_state, now() - $3::text::interval,\n                now() - $4::text::interval\n            )\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "dfdc0bdd273fbd3f15b7c37b4afe1d720ecdc9c418ee5b2414f858a540529c82"
+}

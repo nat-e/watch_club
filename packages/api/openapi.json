@@ -3359,6 +3359,377 @@
         ]
       }
     },
+    "/api/sources/{id}/media-imports": {
+      "get": {
+        "summary": "Returns the Source's imports, the latest first. A Source that doesn't exist has none.",
+        "operationId": "list_media_imports",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The Source's ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/SourceId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MediaImport"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request was not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the Instance Administrator can do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "forbidden"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session_cookie": [
+              "instance_administrator"
+            ]
+          },
+          {
+            "session_token": [
+              "instance_administrator"
+            ]
+          }
+        ]
+      },
+      "post": {
+        "summary": "Starts an import of the Source's files, which runs in the background.",
+        "operationId": "start_media_import",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The Source's ID",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/SourceId"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartMediaImportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaImport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request was malformed or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "invalid_request"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The request was not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the Instance Administrator can do this.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "forbidden"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "There's no such Source",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_StartMediaImportRequestError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "payload_too_large"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body isn't JSON.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "unsupported_media_type"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The Source's type doesn't import yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody_StartMediaImportRequestError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Something went wrong. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "internal_error"
+                      ]
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "The failure in English, for developers rather than users"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session_cookie": [
+              "instance_administrator"
+            ]
+          },
+          {
+            "session_token": [
+              "instance_administrator"
+            ]
+          }
+        ]
+      }
+    },
     "/api/sources/{id}/test-servarr-connection": {
       "post": {
         "summary": "Tests the connection to the app of a Radarr, Sonarr or Sportarr Source, at the URL and with the\nAPI key in the request, or else the Source's saved one, then returns the app's quality profiles\nand root folders.",
@@ -5124,6 +5495,57 @@
         ],
         "description": "The body of every error response: the error's `code` and details, and a message."
       },
+      "ErrorBody_StartMediaImportRequestError": {
+        "allOf": [
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "not_found"
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "description": "Only Radarr Sources import yet",
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "unsupported_source_type"
+                    ]
+                  }
+                }
+              }
+            ],
+            "description": "The failures of a request to start an import."
+          },
+          {
+            "type": "object",
+            "required": [
+              "message"
+            ],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The failure in English, for developers rather than users"
+              }
+            }
+          }
+        ],
+        "description": "The body of every error response: the error's `code` and details, and a message."
+      },
       "ErrorBody_TestSavedSourceServarrConnectionRequestError": {
         "allOf": [
           {
@@ -5313,6 +5735,15 @@
             "description": "The Content's ID at the Metadata Provider of its type, such as its TMDB ID"
           }
         }
+      },
+      "FilesToImport": {
+        "type": "string",
+        "description": "The files of its Source a Media Import handles.",
+        "enum": [
+          "new",
+          "new_and_unmatched",
+          "all"
+        ]
       },
       "FolderError": {
         "oneOf": [
@@ -5679,6 +6110,123 @@
         "type": "string",
         "format": "uuid",
         "description": "The unique ID of a Media."
+      },
+      "MediaImport": {
+        "type": "object",
+        "description": "A Media Import, as its Source's history shows it.",
+        "required": [
+          "id",
+          "trigger",
+          "files_to_import",
+          "state",
+          "failure",
+          "file_count",
+          "matched_file_count",
+          "unmatched_file_count",
+          "failed_file_count",
+          "removed_file_count",
+          "started_at",
+          "finished_at"
+        ],
+        "properties": {
+          "failed_file_count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The files it failed to handle so far, which stay as they were"
+          },
+          "failure": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/MediaImportFailure",
+                "description": "Why it failed, when it did"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "file_count": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "description": "The files it handles, once its Source listed them"
+          },
+          "files_to_import": {
+            "$ref": "#/components/schemas/FilesToImport"
+          },
+          "finished_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When it completed or failed"
+          },
+          "id": {
+            "$ref": "#/components/schemas/MediaImportId"
+          },
+          "matched_file_count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The files it matched to their Content so far"
+          },
+          "removed_file_count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The Media Files it removed, as its Source no longer lists them"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When a person or the schedule started it"
+          },
+          "state": {
+            "$ref": "#/components/schemas/MediaImportState"
+          },
+          "trigger": {
+            "$ref": "#/components/schemas/MediaImportTrigger"
+          },
+          "unmatched_file_count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The files it saved as Unmatched so far"
+          }
+        }
+      },
+      "MediaImportFailure": {
+        "type": "string",
+        "description": "The reason a Media Import failed.",
+        "enum": [
+          "invalid_servarr_url",
+          "invalid_api_key",
+          "internal_error",
+          "interrupted"
+        ]
+      },
+      "MediaImportId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "The unique ID of a Media Import."
+      },
+      "MediaImportState": {
+        "type": "string",
+        "description": "The state of a Media Import.",
+        "enum": [
+          "waiting",
+          "running",
+          "completed",
+          "failed"
+        ]
+      },
+      "MediaImportTrigger": {
+        "type": "string",
+        "description": "What started a Media Import.",
+        "enum": [
+          "manual",
+          "scheduled"
+        ]
       },
       "MediaType": {
         "type": "string",
@@ -6415,6 +6963,52 @@
         "type": "string",
         "format": "uuid",
         "description": "The unique ID of a Source."
+      },
+      "StartMediaImportRequest": {
+        "type": "object",
+        "description": "The files of its Source an import handles.",
+        "required": [
+          "files_to_import"
+        ],
+        "properties": {
+          "files_to_import": {
+            "$ref": "#/components/schemas/FilesToImport"
+          }
+        }
+      },
+      "StartMediaImportRequestError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "not_found"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Only Radarr Sources import yet",
+            "required": [
+              "code"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "unsupported_source_type"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "The failures of a request to start an import."
       },
       "TestSavedSourceServarrConnectionRequestError": {
         "oneOf": [

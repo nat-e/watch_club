@@ -29,7 +29,7 @@ use self::metadata::{HardcoverId, MetadataProvider, MetadataProviders, SportarrI
 pub use self::{
     image::{Image, ImageSource},
     localizations::{ContentTranslations, Language, MediaTranslations, Translations},
-    store::list_media,
+    store::{find_media, list_media},
 };
 use super::accounts::preferences::Locale;
 use crate::{
@@ -150,7 +150,7 @@ pub enum SearchScope {
 
 /// The External ID of a Content at the Metadata Provider of its type, with the type, as TMDB numbers
 /// Movies and TV Shows apart. A Metadata Provider can change it, such as when it deletes a duplicate.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize)]
 #[serde(into = "ExternalContentIdJson")]
 pub enum ExternalContentId {
     Movie(TmdbId),
@@ -292,6 +292,25 @@ pub struct Media {
     pub runtime_seconds: Option<i32>,
 }
 
+/// A saved Content's Media, which Media Imports match files to, with when the Content was saved.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SavedContentMedia {
+    pub content_id: ContentId,
+    /// The last time the Content was saved from its Metadata Provider
+    pub refreshed_at: Timestamp,
+    pub media: Vec<SavedMedia>,
+}
+
+/// A saved Media, with what tells it apart in its Content: its type, and its group and number in
+/// it, such as a TV Show Episode's season and episode.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct SavedMedia {
+    pub id: MediaId,
+    pub media_type: MediaType,
+    pub group_number: Option<i32>,
+    pub number_in_group: Option<i32>,
+}
+
 /// A Content that matches a search, with its texts in the User's language when its Metadata
 /// Provider has them.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema)]
@@ -377,14 +396,37 @@ pub async fn get_by_external_id(
         return Ok(Some(saved.content));
     }
 
-    let Some(metadata) = metadata_providers.fetch(&external_content_id).await? else {
+    if save(db, metadata_providers, &external_content_id)
+        .await?
+        .is_none()
+    {
         return Ok(None);
-    };
-    store::save(db, &metadata).await?;
+    }
     let saved = store::find_by_external_id(db, &external_content_id, locale)
         .await?
         .context("the Content just saved is missing")?;
     Ok(Some(saved.content))
+}
+
+/// Saves the Content as its Metadata Provider has it now, with its Media, and returns its ID, or None
+/// when its Metadata Provider doesn't know it.
+#[tracing::instrument(
+    skip_all,
+    fields(
+        content.type = ?external_content_id.content_type(),
+        content.external_id = %external_content_id.external_id(),
+    ),
+)]
+pub async fn save(
+    db: &Pool,
+    metadata_providers: &MetadataProviders,
+    external_content_id: &ExternalContentId,
+) -> anyhow::Result<Option<ContentId>> {
+    let Some(metadata) = metadata_providers.fetch(external_content_id).await? else {
+        return Ok(None);
+    };
+    let content_id = store::save(db, &metadata).await?;
+    Ok(Some(content_id))
 }
 
 /// Saves the Content again, as its Metadata Provider has it now. When its Metadata Provider no

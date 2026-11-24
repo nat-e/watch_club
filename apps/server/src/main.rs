@@ -53,6 +53,8 @@ async fn serve(config: Config) -> anyhow::Result<()> {
     let jobs_context = JobContext {
         db: db.clone(),
         metadata_providers: metadata_providers.clone(),
+        http_client: http_client.clone(),
+        encryption_key: config.encryption_key.clone(),
     };
     let runner = tokio::spawn(jobs::run(jobs_context, shutdown.clone()));
     tracing::event!(

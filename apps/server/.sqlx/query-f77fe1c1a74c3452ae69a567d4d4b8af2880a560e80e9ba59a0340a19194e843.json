@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO media_parts (media_id, number)\n        SELECT DISTINCT * FROM UNNEST($1::uuid[], $2::integer[])\n        ON CONFLICT (media_id, number) DO NOTHING\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Int4Array"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f77fe1c1a74c3452ae69a567d4d4b8af2880a560e80e9ba59a0340a19194e843"
+}

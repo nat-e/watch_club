@@ -1,5 +1,6 @@
 //! The client of Radarr's, Sonarr's and Sportarr's APIs, which have the same calls to set up a
-//! Source. It calls the app as told: `test_connection` decides what its failures mean.
+//! Source, and of the calls each app has for its own files. It calls the app as told: its callers
+//! decide what its failures mean.
 
 use secrecy::SecretString;
 use serde::Deserialize;
@@ -47,6 +48,16 @@ impl ServarrClient {
         let root_folders: Vec<RootFolder> = self.api.get_required("/rootfolder", &[], &[]).await?;
         Ok(root_folders.into_iter().map(|folder| folder.path).collect())
     }
+
+    /// Returns every Movie of a Radarr app, with its file if it has one. Radarr lists them all at
+    /// once, without pages.
+    pub(super) async fn list_movies(&self) -> Result<Vec<RadarrMovie>, reqwest::Error> {
+        // Without the covers it would otherwise look up on its disk for each Movie, which slows the
+        // answer of large libraries
+        self.api
+            .get_required("/movie", &[], &[("excludeLocalCovers", "true")])
+            .await
+    }
 }
 
 /// An app's description of itself, from `GET /system/status`.
@@ -61,4 +72,24 @@ struct SystemStatus {
 #[derive(Deserialize)]
 struct RootFolder {
     path: String,
+}
+
+/// A Movie in Radarr, from `GET /movie`.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct RadarrMovie {
+    pub tmdb_id: u32,
+    /// Empty, or missing, when Radarr doesn't know it
+    #[serde(default)]
+    pub imdb_id: Option<String>,
+    pub quality_profile_id: i32,
+    /// Its file, when Radarr has one
+    pub movie_file: Option<RadarrMovieFile>,
+}
+
+/// The file of a Movie in Radarr.
+#[derive(Deserialize)]
+pub(super) struct RadarrMovieFile {
+    /// Where Radarr sees it
+    pub path: String,
 }

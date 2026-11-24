@@ -15,6 +15,10 @@
 'credit_kind' = "::watch_club::domain::contents::CreditKind"
 'genre' = "::watch_club::domain::contents::Genre"
 'source_type' = "::watch_club::domain::sources::SourceType"
+'media_import_trigger' = "::watch_club::domain::media_imports::MediaImportTrigger"
+'files_to_import' = "::watch_club::domain::media_imports::FilesToImport"
+'media_import_state' = "::watch_club::domain::media_imports::MediaImportState"
+'media_import_failure' = "::watch_club::domain::media_imports::MediaImportFailure"
 
 [macros.table-overrides.'users']
 'id' = "::watch_club::domain::accounts::users::UserId"
@@ -63,3 +67,13 @@
 'path' = "::watch_club::utils::filesystem::AbsoluteFolder"
 'local_root_folder_path' = "::watch_club::utils::filesystem::AbsoluteFolder"
 'api_key_encrypted' = "::watch_club::utils::encryption::EncryptedSecret"
+
+[macros.table-overrides.'media_parts']
+'media_id' = "::watch_club::domain::contents::MediaId"
+
+[macros.table-overrides.'media_files']
+'source_id' = "::watch_club::domain::sources::SourceId"
+
+[macros.table-overrides.'media_imports']
+'id' = "::watch_club::domain::media_imports::MediaImportId"
+'source_id' = "::watch_club::domain::sources::SourceId"

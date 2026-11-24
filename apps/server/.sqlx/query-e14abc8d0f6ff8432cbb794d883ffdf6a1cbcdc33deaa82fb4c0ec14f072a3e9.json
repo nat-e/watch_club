@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO media_file_parts (media_file_id, media_part_id)\n        SELECT f.id, p.id\n        FROM UNNEST($2::text[], $3::uuid[], $4::integer[]) AS link (path, media_id, number)\n        JOIN media_files f ON f.source_id = $1 AND f.path = link.path\n        JOIN media_parts p ON p.media_id = link.media_id AND p.number = link.number\n        ON CONFLICT DO NOTHING\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "TextArray",
+        "UuidArray",
+        "Int4Array"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e14abc8d0f6ff8432cbb794d883ffdf6a1cbcdc33deaa82fb4c0ec14f072a3e9"
+}

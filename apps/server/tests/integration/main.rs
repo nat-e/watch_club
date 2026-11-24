@@ -15,6 +15,7 @@ mod domain {
         mod users;
     }
     mod contents;
+    mod media_imports;
     mod sources;
 }
 mod jobs;
@@ -48,6 +49,10 @@ mod routes {
         mod change_password;
         mod get;
         mod update_preferences;
+    }
+    mod media_imports {
+        mod list;
+        mod start;
     }
     mod password_reset {
         mod check;

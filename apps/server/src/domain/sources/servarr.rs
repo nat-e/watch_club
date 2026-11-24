@@ -1,7 +1,7 @@
 //! Radarr, Sonarr and Sportarr Sources: their app, their Source Configuration, creating and updating
-//! them, and the connection test that checks the app at a URL takes an API key and lists the
-//! quality profiles and root folders the Instance Administrator chooses from. `client` calls the
-//! app.
+//! them, the connection test that checks the app at a URL takes an API key and lists the quality
+//! profiles and root folders the Instance Administrator chooses from, and the files a Source has.
+//! `client` calls the app.
 
 mod client;
 
@@ -13,12 +13,12 @@ use sqlx_otel::QueryAnnotateExt;
 use tracing::Level;
 use utoipa::ToSchema;
 
-use self::client::ServarrClient;
+use self::client::{RadarrMovie, ServarrClient};
 use super::{Source, SourceId, SourceType, UpdateSourceError};
 use crate::{
     api_client::{ApiCredentialsError, ApiUrl, ApiUrlError, HttpClient},
     db::Pool,
-    domain::contents::MediaType,
+    domain::contents::{MediaType, metadata::TmdbId},
     utils::{
         encryption::{EncryptedSecret, EncryptionKey},
         filesystem::AbsoluteFolder,
@@ -85,6 +85,32 @@ pub struct ServarrConfiguration {
     pub local_root_folder_path: Option<AbsoluteFolder>,
 }
 
+impl ServarrConfiguration {
+    /// Returns where WatchClub sees the file at `path`, as the app sees it, or None when the file
+    /// isn't in the Source's root folder.
+    pub fn local_path(&self, path: &str) -> Option<String> {
+        let root_folder = self.root_folder_path.trim_end_matches('/');
+        // Also checks that the root folder is a whole folder of the path: `/movies` isn't one of
+        // `/movies-4k/…`
+        let relative_path = path.strip_prefix(root_folder)?.strip_prefix('/')?;
+        let local_root_folder = self
+            .local_root_folder_path
+            .as_ref()
+            .map_or(root_folder, AbsoluteFolder::as_str);
+        Some(format!("{local_root_folder}/{relative_path}"))
+    }
+}
+
+/// The file of a Movie that a Radarr Source has, with the Movie's IDs.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct MovieFile {
+    /// Where WatchClub sees it on the server
+    pub path: String,
+    pub tmdb_id: TmdbId,
+    /// The Movie's IMDb ID, such as `tt0133093`, when Radarr knows it
+    pub imdb_id: Option<String>,
+}
+
 /// The quality profiles and root folders of a Radarr, Sonarr or Sportarr app, which the Instance
 /// Administrator chooses a Source's from.
 #[derive(Debug, PartialEq, Eq, Serialize, ToSchema)]
@@ -112,6 +138,18 @@ pub enum TestConnectionError {
 pub enum TestSavedConnectionError {
     /// There's no Radarr, Sonarr or Sportarr Source with the ID
     #[error("no such Radarr, Sonarr or Sportarr Source")]
+    NotFound,
+    #[error(transparent)]
+    Connection(#[from] TestConnectionError),
+    #[error(transparent)]
+    Internal(#[from] anyhow::Error),
+}
+
+/// The reason a Source's files weren't listed.
+#[derive(Debug, thiserror::Error)]
+pub enum ListFilesError {
+    /// There's no Radarr Source with the ID, such as one deleted meanwhile
+    #[error("no such Radarr Source")]
     NotFound,
     #[error(transparent)]
     Connection(#[from] TestConnectionError),
@@ -276,6 +314,57 @@ pub async fn test_saved_connection(
         None => decrypt_api_key(encryption_key, &saved.api_key_encrypted)?,
     };
     Ok(test_connection(http_client, app, url, &api_key).await?)
+}
+
+/// Returns the files of the Movies that the Radarr Source with this ID has: those in its root
+/// folder and on its quality profile, at the paths WatchClub sees them at.
+#[tracing::instrument(skip_all, fields(source.id = %id))]
+pub async fn list_movie_files(
+    db: &Pool,
+    encryption_key: &EncryptionKey,
+    http_client: &HttpClient,
+    id: SourceId,
+) -> Result<Vec<MovieFile>, ListFilesError> {
+    let source = super::get(db, id).await?;
+    let Some(Source::Servarr {
+        app: app @ ServarrApp::Radarr,
+        configuration,
+        ..
+    }) = source
+    else {
+        return Err(ListFilesError::NotFound);
+    };
+    let api_key = sqlx::query_scalar!(
+        r#"SELECT api_key_encrypted AS "api_key_encrypted!: EncryptedSecret" FROM sources WHERE id = $1"#,
+        id as SourceId,
+    )
+    .with_operation("SELECT", "sources")
+    .fetch_optional(db)
+    .await
+    .context("failed to find the API key of a Source")?
+    .ok_or(ListFilesError::NotFound)?;
+    let api_key = decrypt_api_key(encryption_key, &api_key)?;
+
+    let client = ServarrClient::new(http_client, app, &configuration.url, &api_key)
+        .map_err(TestConnectionError::from)?;
+    let movies = client.list_movies().await.map_err(report_failed_call)?;
+
+    Ok(movies
+        .into_iter()
+        .filter(|movie| movie.quality_profile_id == configuration.quality_profile.id)
+        .filter_map(|movie| movie_file(&configuration, movie))
+        .collect())
+}
+
+/// Returns the Movie's file, where WatchClub sees it, or None when it has none in the Source's root
+/// folder.
+fn movie_file(configuration: &ServarrConfiguration, movie: RadarrMovie) -> Option<MovieFile> {
+    let path = configuration.local_path(&movie.movie_file?.path)?;
+    Some(MovieFile {
+        path,
+        tmdb_id: TmdbId::new(movie.tmdb_id),
+        imdb_id: movie.imdb_id.filter(|imdb_id| !imdb_id.is_empty()),
+    })
 }
 
 /// Returns the saved API key, decrypted to call the app. Refuses it when another key encrypted it,

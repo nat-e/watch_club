@@ -1,11 +1,12 @@
 //! TMDB, The Movie Database: the Metadata Provider of Movies and TV Shows.
 //!
 //! The client, and what its modules share, such as the sizes of TMDB's images: `search` searches
-//! TMDB, `details` reads a Movie's or a TV Show's details, `tv_show` a TV Show's Episodes, and
-//! `credits` who made a Content and who's in it.
+//! TMDB, `find` finds a Movie by its IMDb ID, `details` reads a Movie's or a TV Show's details,
+//! `tv_show` a TV Show's Episodes, and `credits` who made a Content and who's in it.
 
 mod credits;
 mod details;
+mod find;
 mod search;
 mod tv_show;
 
@@ -45,7 +46,7 @@ const STILL_WIDTHS: [u32; 3] = [92, 185, 300];
 
 /// The ID of a Movie or a TV Show at TMDB, which numbers Movies and TV Shows apart: a Movie and a TV
 /// Show can have the same.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct TmdbId(u32);
 
 impl TmdbId {

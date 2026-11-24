@@ -1,0 +1,174 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        WITH wanted AS (\n            SELECT DISTINCT *\n            FROM UNNEST($1::content_type[], $2::metadata_provider[], $3::text[])\n                AS wanted (content_type, metadata_provider, external_id)\n        )\n        SELECT c.id, c.content_type, c.main_external_id, c.metadata_refreshed_at,\n            m.id AS \"media_id?\", m.media_type AS \"media_type?\", m.group_number, m.number_in_group\n        FROM wanted\n        JOIN contents c ON c.content_type = wanted.content_type\n            AND c.metadata_provider = wanted.metadata_provider\n            AND c.main_external_id = wanted.external_id\n        LEFT JOIN media m ON m.content_id = c.id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "contents",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "content_type",
+        "type_info": {
+          "Custom": {
+            "name": "content_type",
+            "kind": {
+              "Enum": [
+                "movie",
+                "tv_show",
+                "sports_event",
+                "book"
+              ]
+            }
+          }
+        },
+        "origin": {
+          "Table": {
+            "table": "contents",
+            "name": "content_type"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "main_external_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "contents",
+            "name": "main_external_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "metadata_refreshed_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "contents",
+            "name": "metadata_refreshed_at"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "media_id?",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "media",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "media_type?",
+        "type_info": {
+          "Custom": {
+            "name": "media_type",
+            "kind": {
+              "Enum": [
+                "movie",
+                "tv_show_episode",
+                "sports_event"
+              ]
+            }
+          }
+        },
+        "origin": {
+          "Table": {
+            "table": "media",
+            "name": "media_type"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "group_number",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "media",
+            "name": "group_number"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "number_in_group",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "media",
+            "name": "number_in_group"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "content_type[]",
+            "kind": {
+              "Array": {
+                "Custom": {
+                  "name": "content_type",
+                  "kind": {
+                    "Enum": [
+                      "movie",
+                      "tv_show",
+                      "sports_event",
+                      "book"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "Custom": {
+            "name": "metadata_provider[]",
+            "kind": {
+              "Array": {
+                "Custom": {
+                  "name": "metadata_provider",
+                  "kind": {
+                    "Enum": [
+                      "tmdb",
+                      "sportarr",
+                      "hardcover"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "17823f80ab33ccc241504e3e1080a0e46d1e10a198e8f50b9af5f0e8183e5b28"
+}
