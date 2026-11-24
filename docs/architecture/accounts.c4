@@ -1,0 +1,10 @@
+// Accounts: Users, how they join and sign in, and their User Preferences.
+model {
+  extend watchclub.server.domains {
+    accounts = component 'Accounts' {
+      description 'Users, sessions and Invitations'
+      link ../../apps/server/src/domain/accounts.rs 'Server code'
+      link ../../packages/core/src/accounts 'Apps code'
+    }
+  }
+}

@@ -1,0 +1,167 @@
+// WatchClub: who uses it, its apps and server, and the systems it calls. Each domain of the server
+// has its own file, such as contents.c4, with its component and the systems it uses.
+model {
+  user = person 'User' {
+    description 'Watches and discusses Content'
+  }
+
+  administrator = person 'Instance Administrator' {
+    description 'The User who administers the Instance'
+  }
+
+  watchclub = system 'WatchClub' {
+    description 'Self-hosted media server for small private groups'
+
+    web = container 'Web app' {
+      technology 'React, TanStack Router, Vite'
+      description 'Served by the server. User and Instance Administrator interfaces'
+      icon tech:react
+      style {
+        shape browser
+      }
+      link ../../apps/web 'Code'
+    }
+
+    mobile = container 'Mobile app' {
+      technology 'Expo, React Native'
+      description 'Released binary, the User enters the Instance URL. User interface only'
+      icon tech:expo
+      style {
+        shape mobile
+      }
+      link ../../apps/mobile 'Code'
+    }
+
+    castReceiver = container 'Chromecast receiver' {
+      #planned
+      technology 'Google Cast Web Receiver'
+      description 'Plays Media on a TV. Hosted on GitHub Pages'
+      icon md:cast
+    }
+
+    server = container 'Server' {
+      technology 'Rust, axum'
+      description 'API and background jobs'
+      icon tech:rust
+      link ../../apps/server 'Code'
+
+      api = component 'API' {
+        technology 'axum, utoipa'
+        description 'JSON API for the clients, described in OpenAPI'
+        link ../../apps/server/src/routes.rs 'Code'
+      }
+
+      jobs = component 'Jobs' {
+        technology 'Postgres queue'
+        description 'Background and scheduled work, with retries'
+        link ../../apps/server/src/jobs.rs 'Code'
+
+        -> watchclub.database 'queues and runs jobs' {
+          technology 'SQL, SQLx'
+        }
+      }
+
+      // Each domain has its own file, such as contents.c4
+      domains = component 'Domains' {
+        description 'Business logic, one module per domain'
+        link ../../apps/server/src/domain.rs 'Code'
+      }
+
+      api -> domains 'calls use cases'
+      jobs -> domains 'calls use cases'
+      domains -> watchclub.database 'reads and writes' {
+        technology 'SQL, SQLx'
+      }
+    }
+
+    database = database 'Database' {
+      technology 'Postgres'
+      icon tech:postgresql
+      link ../data-model.md 'Data model'
+      link ../../apps/server/migrations 'Migrations'
+    }
+  }
+
+  metadataProviders = externalSystem 'Metadata Providers' {
+    description 'Where Content metadata comes from'
+
+    tmdb = externalSystem 'TMDB' {
+      technology 'JSON API'
+      description 'Movies and TV Shows'
+      link https://www.themoviedb.org
+    }
+
+    sportarr = externalSystem 'sportarr.net' {
+      technology 'JSON API'
+      description 'Sports Events'
+      link https://sportarr.net
+    }
+
+    hardcover = externalSystem 'Hardcover' {
+      technology 'GraphQL API'
+      description 'Books'
+      link https://hardcover.app
+    }
+  }
+
+  observability = externalSystem 'Observability tools' {
+    description 'OpenTelemetry, Sentry'
+
+    sentry = externalSystem 'Sentry' {
+      description 'Errors'
+      icon tech:sentry
+    }
+
+    openTelemetry = externalSystem 'OpenTelemetry tool' {
+      description 'Logs, traces and metrics'
+      icon tech:opentelemetry-icon
+    }
+  }
+
+  user -> watchclub.web 'browses, searches and opens Content'
+  user -> watchclub.mobile 'browses, searches and opens Content, on a phone'
+  user -> watchclub.castReceiver 'watches Media on a TV' {
+    #planned
+  }
+  administrator -> watchclub.web 'manages Users, Invitations and Sources'
+
+  watchclub.web -> watchclub.server.api 'makes API calls to' {
+    technology 'JSON over HTTP, client generated from OpenAPI'
+    description 'Session cookie'
+  }
+  watchclub.mobile -> watchclub.server.api 'makes API calls to' {
+    technology 'JSON over HTTP, client generated from OpenAPI'
+    description 'Bearer token'
+  }
+  watchclub.web -> watchclub.castReceiver 'casts Media' {
+    #planned
+    technology 'Google Cast'
+  }
+  watchclub.mobile -> watchclub.castReceiver 'casts Media' {
+    #planned
+    technology 'Google Cast'
+  }
+  watchclub.castReceiver -> watchclub.server.api 'loads and plays Media' {
+    #planned
+    technology 'HLS and WebSocket over HTTPS'
+  }
+  watchclub.web -> metadataProviders 'downloads posters and pictures' {
+    technology 'HTTPS'
+  }
+  watchclub.mobile -> metadataProviders 'downloads posters and pictures' {
+    technology 'HTTPS'
+  }
+
+  watchclub.server -> observability.sentry 'reports errors' {
+    technology 'Sentry SDK'
+  }
+  watchclub.web -> observability.sentry 'sends errors' {
+    technology 'Sentry SDK'
+  }
+  watchclub.mobile -> observability.sentry 'sends errors' {
+    technology 'Sentry SDK'
+  }
+  watchclub.server -> observability.openTelemetry 'sends traces, metrics and logs' {
+    technology 'OTLP'
+  }
+}
