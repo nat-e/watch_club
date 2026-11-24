@@ -1,10 +1,13 @@
 import {useMutation} from '@tanstack/react-query';
+import {Link} from '@tanstack/react-router';
 import type {Source} from '@watchclub/api';
+import {importsFiles} from '@watchclub/core/sources/media-imports';
 import {isServarrSource, sourceDeletionMutation} from '@watchclub/core/sources/sources';
 import * as icons from 'lucide-react';
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
+import {ImportDialog} from '@/components/sources/import-dialog';
 import {SourceDialog} from '@/components/sources/source-dialog';
 import {useMediaTypeNames} from '@/components/sources/texts';
 import {
@@ -29,14 +32,17 @@ import {
 
 /**
  * A Source on the Sources page: its folder or its app's address, its Media Type, and the quality
- * profile and root folder of its requests, with a menu to edit or delete it.
+ * profile and root folder of its requests, with a menu to edit or delete it. A Source that imports
+ * its files has a button that starts an import, and a link to its import history in its menu.
  */
 export function SourceCard({source}: {source: Source}) {
   const {t} = useTranslation('web');
   const mediaTypeNames = useMediaTypeNames();
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const place = isServarrSource(source) ? source.url : source.path;
+  const canImport = importsFiles(source);
 
   return (
     <li className="flex items-start gap-3 rounded-lg border bg-card p-4">
@@ -58,6 +64,18 @@ export function SourceCard({source}: {source: Source}) {
           )}
         </div>
       </div>
+      {canImport && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setIsImporting(true);
+          }}
+        >
+          <icons.PlayIcon />
+          {t($ => $.web.mediaImports.import)}
+        </Button>
+      )}
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
@@ -79,6 +97,14 @@ export function SourceCard({source}: {source: Source}) {
             <icons.PencilIcon />
             {t($ => $.web.sources.edit)}
           </DropdownMenuItem>
+          {canImport && (
+            <DropdownMenuItem
+              render={<Link to="/admin/sources/$id/imports" params={{id: source.id}} />}
+            >
+              <icons.HistoryIcon />
+              {t($ => $.web.mediaImports.viewHistory)}
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"
@@ -92,6 +118,14 @@ export function SourceCard({source}: {source: Source}) {
         </DropdownMenuContent>
       </DropdownMenu>
       <SourceDialog source={source} open={isEditing} onOpenChange={setIsEditing} />
+      {canImport && (
+        <ImportDialog
+          source={source}
+          place={place}
+          open={isImporting}
+          onOpenChange={setIsImporting}
+        />
+      )}
       <DeleteSourceDialog
         source={source}
         place={place}

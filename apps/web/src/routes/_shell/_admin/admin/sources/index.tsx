@@ -6,7 +6,7 @@ import {Page} from '@/components/layouts/page';
 import {SourceTypeSection} from '@/components/sources/source-type-section';
 
 /** Sources, where the Instance Administrator manages where WatchClub imports Media Files from. */
-export const Route = createFileRoute('/_shell/_admin/admin/sources')({
+export const Route = createFileRoute('/_shell/_admin/admin/sources/')({
   loader: ({context}) => context.queryClient.ensureQueryData(sourcesQuery),
   component: Sources,
 });

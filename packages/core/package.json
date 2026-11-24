@@ -16,6 +16,7 @@
     "./instance": "./src/instance.ts",
     "./l10n": "./src/l10n.ts",
     "./query-client": "./src/query-client.ts",
+    "./sources/media-imports": "./src/sources/media-imports.ts",
     "./sources/sources": "./src/sources/sources.ts",
     "./theme.css": "./src/theme.css"
   },
