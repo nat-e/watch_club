@@ -42,11 +42,11 @@ export const startMediaImportMutation = mutationOptions({
   },
 });
 
-/** What became of some of an import's files. */
+/** The outcome of an import's files, such as matched or removed. */
 export type FileOutcome = 'matched' | 'unmatched' | 'failed' | 'removed';
 
-/** What an import did with its Source's files so far, as screens show it. */
-export interface ImportedFilesSummary {
+/** A summary of an import's files so far, as screens show it. */
+interface ImportedFilesSummary {
   /** Whether its Source is still listing its files */
   isListing: boolean;
   /** Whether it found no file to handle or to remove */
