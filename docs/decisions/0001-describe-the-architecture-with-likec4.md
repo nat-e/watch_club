@@ -18,7 +18,7 @@ One [LikeC4](https://likec4.dev) model, in [`docs/architecture`](../architecture
 - Each domain of the server has its file, such as `contents.c4`. The views, in reading order, are in `views.c4`.
 - `pnpm fix` draws the views as Mermaid diagrams in `docs/architecture/README.md`, which GitHub shows. `pnpm check`, which CI runs, validates the model and fails when the README doesn't match it.
 - `pnpm c4` opens the views in LikeC4's viewer, with each element's description and technology, and the flows step by step.
-- The database's tables are in the data model, as Mermaid diagrams written by hand: C4 leaves the code level to other notations, such as entity-relationship diagrams.
+- C4 leaves the code level to other notations. Each domain's code is in `docs/architecture/domains`, such as `accounts.md`: its modules, with the structs and functions that help understand them, as a tree written by hand. The database's tables are in the data model, as Mermaid diagrams written by hand.
 - Decisions that shape WatchClub go in `docs/decisions`, one numbered file each, in the format of this one.
 
 A change to the architecture starts with its docs: the data model, the architecture model, and a decision when it makes one. They come in the first commit of its pull request, so we review the plan before the code.

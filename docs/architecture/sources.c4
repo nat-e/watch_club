@@ -5,6 +5,7 @@ model {
       description 'Source setup and Media File import'
       link ../../apps/server/src/domain/sources.rs 'Server code'
       link ../../packages/core/src/sources 'Apps code'
+      link ./domains/sources.md 'Code'
     }
   }
 

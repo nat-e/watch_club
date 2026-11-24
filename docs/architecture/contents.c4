@@ -5,6 +5,7 @@ model {
       description 'Content metadata, saved from the Metadata Providers'
       link ../../apps/server/src/domain/contents.rs 'Server code'
       link ../../packages/core/src/contents 'Apps code'
+      link ./domains/contents.md 'Code'
     }
   }
 

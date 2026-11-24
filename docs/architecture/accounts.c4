@@ -5,6 +5,7 @@ model {
       description 'Users, sessions and Invitations'
       link ../../apps/server/src/domain/accounts.rs 'Server code'
       link ../../packages/core/src/accounts 'Apps code'
+      link ./domains/accounts.md 'Code'
     }
   }
 }
