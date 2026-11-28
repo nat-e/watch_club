@@ -4,15 +4,18 @@ defmodule WatchClub.Accounts.UserLocale do
   use Ash.Type.Enum,
     values: [
       :en_US,
-      :fr_FR
+      :fr_FR,
+      :pl_PL
     ]
 
   def translated_label(:en_US), do: dgettext("locales", "English (US)")
   def translated_label(:fr_FR), do: dgettext("locales", "French")
+  def translated_label(:pl_PL), do: dgettext("locales", "Polish")
 
   @doc "The Locale's language, as a Track Language."
   def track_language(:en_US), do: :en
   def track_language(:fr_FR), do: :fr
+  def track_language(:pl_PL), do: :pl
 
   def default, do: values() |> List.first()
 

@@ -1,0 +1,73 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: pl\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
+
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
+#, elixir-autogen, elixir-format
+msgid "Actions"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
+#, elixir-autogen, elixir-format
+msgid "Actions for %{username}"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
+#, elixir-autogen, elixir-format
+msgid "Delete user"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
+#, elixir-autogen, elixir-format
+msgid "Member since"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
+#, elixir-autogen, elixir-format
+msgid "User"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "User deleted"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Users"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
+#, elixir-autogen, elixir-format
+msgid "Reset password"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Delete %{username}? They can't sign in anymore, and their watch history and playlists are deleted. Their messages and requests stay, shown as from a deleted user. You can't undo this."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/users_table.ex
+#, elixir-autogen, elixir-format
+msgid "Instance administrator"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Invite friends to %{name} and manage who has access."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Reset link copied. Send it to %{username}: it works for 3 days."
+msgstr ""

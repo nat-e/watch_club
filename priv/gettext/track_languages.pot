@@ -20,3 +20,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "French"
 msgstr ""
+
+#: lib/watch_club/accounts/track_language.ex
+#, elixir-autogen, elixir-format
+msgid "Polish"
+msgstr ""

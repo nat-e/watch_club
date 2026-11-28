@@ -109,7 +109,8 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert [
                %MovieLocalization{iso_639_1: "en", iso_3166_1: "US"},
-               %MovieLocalization{iso_639_1: "fr", iso_3166_1: "FR"}
+               %MovieLocalization{iso_639_1: "fr", iso_3166_1: "FR"},
+               %MovieLocalization{iso_639_1: "pl", iso_3166_1: "PL"}
              ] =
                MovieLocalization
                |> Ash.Query.filter(movie_id == ^content.id)
@@ -718,6 +719,7 @@ defmodule WatchClub.Contents.ContentTest do
 
       assert_receive {:fetched_movie_metadata, "en-US"}
       assert_receive {:fetched_movie_metadata, "fr-FR"}
+      assert_receive {:fetched_movie_metadata, "pl-PL"}
       refute_receive {:fetched_movie_metadata, _}, 0
 
       assert_received {[:watch_club, :contents, :metadata_fetch, :stop], ^ref,

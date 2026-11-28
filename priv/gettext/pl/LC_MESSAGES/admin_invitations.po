@@ -1,0 +1,137 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: pl\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
+
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
+#, elixir-autogen, elixir-format
+msgid "Copy invitation link"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
+#, elixir-autogen, elixir-format
+msgid "Expires"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
+#, elixir-autogen, elixir-format
+msgid "Invitation actions"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Invitation created"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Unlimited"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
+#, elixir-autogen, elixir-format
+msgid "Uses"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Code"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Create"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
+#, elixir-autogen, elixir-format
+msgid "Delete"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
+#, elixir-autogen, elixir-format
+msgid "Edit"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Invitation updated"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Maximum number of accounts this invitation can create. Leave empty for unlimited."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Save"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "The code cannot be changed once created."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
+#, elixir-autogen, elixir-format
+msgid "Active invitations"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Delete invitation"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Edit invitation"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Invitation deleted"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Invitation link copied. Send it to your friends."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page.ex
+#, elixir-autogen, elixir-format
+msgid "Invite friends"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Maximum uses"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "New invitation"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
+#, elixir-autogen, elixir-format
+msgid "No active invitations"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Nobody can sign up with %{code} anymore. Accounts already created with it stay."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Share the link with friends so they can create their account. It works for 7 days."
+msgstr ""

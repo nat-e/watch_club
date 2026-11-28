@@ -1,0 +1,85 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: pl\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
+
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "My Requests"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "No requests yet"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
+#, elixir-autogen, elixir-format
+msgid "Stop getting notified"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
+#, elixir-autogen, elixir-format
+msgid "Stop getting notified about %{title}"
+msgstr ""
+
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "%{percent}% downloaded"
+msgstr ""
+
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Not found, we'll keep looking for it"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "On the way"
+msgstr ""
+
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Out on %{date}"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Ready to watch"
+msgstr ""
+
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Not found, still looking"
+msgstr ""
+
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "%{ready} of %{count} episode ready"
+msgid_plural "%{ready} of %{count} episodes ready"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Download stuck"
+msgstr ""
+
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Request the movies and TV shows you'd like to watch. You can follow them here until they're ready."
+msgstr ""
+
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "The download is stuck. Let %{admin} know."
+msgstr ""
