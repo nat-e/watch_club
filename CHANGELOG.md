@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.18](https://github.com/nat-e/watch_club/compare/v0.1.17...v0.1.18) (2026-11-28)
+
+
+### Features
+
+* **i18n:** add Polish ([#176](https://github.com/nat-e/watch_club/issues/176)) ([58a550c](https://github.com/nat-e/watch_club/commit/58a550c2af725affc7884c5128f90bb7dfbf75dd))
+
+
+### Bug Fixes
+
+* **deps:** update dependency ash to v3.38.1 [security] ([#175](https://github.com/nat-e/watch_club/issues/175)) ([2534109](https://github.com/nat-e/watch_club/commit/2534109af0e652f89c86a2cc617926c91929f08e))
+* **deps:** update dependency phoenix to v1.8.17 [security] ([#169](https://github.com/nat-e/watch_club/issues/169)) ([51ef421](https://github.com/nat-e/watch_club/commit/51ef42123a5a0c5c819808efc5c2335c9337619e))
+* **deps:** update dependency phoenix_live_view to v1.2.14 [security] ([#170](https://github.com/nat-e/watch_club/issues/170)) ([b61201f](https://github.com/nat-e/watch_club/commit/b61201f19db63182fea649fd2961e1015f3645ec))
+
 ## [0.1.17](https://github.com/nat-e/watch_club/compare/v0.1.16...v0.1.17) (2026-11-20)
 
 
