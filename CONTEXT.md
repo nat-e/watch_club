@@ -203,8 +203,12 @@ A frame of a **Video** that decodes on its own, where playback can cut the **Vid
 _Avoid_: I-frame, sync sample, cue point
 
 **File Fingerprint**:
-A hash of a **Video** file's size and of its first and last 64 KB, which tells WatchClub that the file changed.
+A hash of a **Video** file's size and of its first and last 64 KB, which tells WatchClub that the file's content changed.
 _Avoid_: File hash, checksum, audio fingerprint
+
+**File Stamp**:
+A hash of the size, change time and modification time of a **Media**'s file and, for a **Video**, of the subtitle files next to it, which tells a **Media Import** that they changed without reading them.
+_Avoid_: Checksum, file hash, File Fingerprint
 
 **Scrubbing Thumbnails**:
 The small pictures of a **Video** that the **Player** shows over its progress bar while the **User** seeks.
@@ -347,12 +351,12 @@ The kind of upstream system a **Media Source** represents. One of `filesystem`, 
 _Avoid_: Media Import Source Type, source kind, provider type
 
 **Media Import**:
-One execution of a **Media Source**'s scan-and-ingest cycle. A **Media Import** records the scan phase (started, finished, how many files it found to process) and is the umbrella for the per-file ingest work it enqueues. It counts those files by outcome: matched, unmatched, unreadable (ffprobe couldn't read it or its **Keyframes**, so it got no **Media**) or failed. A webhook-triggered single-file ingest is not a **Media Import**.
+One execution of a **Media Source**'s scan-and-ingest cycle. It processes the new files and those whose **File Stamp** changed, and removes the **Media** of files that are gone. A **Media Import** records the scan phase (started, finished, how many files it found to process) and is the umbrella for the per-file ingest work it enqueues. It counts those files by outcome: matched, unmatched, unreadable (ffprobe couldn't read it or its **Keyframes**, so it got no **Media**) or failed. A webhook-triggered single-file ingest is not a **Media Import**.
 _Avoid_: Media Source Import, Import Run, Media Scan Run, scan job, scan execution, sync
 
-**Files to Process**:
-Which files a **Media Import** processes: New files only, New and unmatched files, or All files. Processing a file reads its technical details and its **File Fingerprint**, and matches it again. A webhook-triggered single-file ingest always processes its file.
-_Avoid_: Refresh metadata, force refresh, rescan existing media
+**Read Every File Again**:
+A **Media Import**'s choice to process every file, unchanged ones included, instead of only the new and changed ones. Processing a file reads its technical details, its **File Fingerprint** and its **File Stamp**, and matches it again. A webhook-triggered single-file ingest always processes its file.
+_Avoid_: Files to Process, refresh metadata, force refresh, rescan existing media
 
 **Media Import Status**:
 The overall progress or outcome of a **Media Import**.
@@ -695,7 +699,8 @@ _Avoid_: Group, aggregate, card, item
 - **Media Imports** and webhooks keep a **Manual Match** and still read its file's technical details again
 - Removing a **Manual Match** makes the **Video** **Unmatched Media**, until a **Media Import** or a webhook matches it again
 - WatchClub builds a **Video**'s **Scrubbing Thumbnails** when its file is new, its **File Fingerprint** changed or they're missing, or when the **Instance Administrator** regenerates them
-- The **Instance Administrator** regenerates the **Scrubbing Thumbnails** and **Markers** of one **Video** from the Media Browser, or of every **Video** a **Media Import** processes, with New and unmatched files or All files
+- The **Instance Administrator** regenerates the **Scrubbing Thumbnails** and **Markers** of one **Video** from the Media Browser, or of every **Video** of a **Media Source** with a **Media Import**
+- Processing a **Video** again keeps its **Audio Tracks** and **Text Tracks** still in the file, so a **Playback** keeps the ones it picked
 
 ### Markers
 
@@ -733,16 +738,16 @@ _Avoid_: Group, aggregate, card, item
 - A **Media Import** is started from one **Media Source**
 - A **Media Import** starts in the Processing status
 - A **Media Import** records whether it was triggered manually or by a schedule, but not which **Instance Administrator** triggered it
-- Every 15 minutes, WatchClub starts a **Media Import** of New files only for each `radarr`, `sonarr` and `sportarr` **Media Source** that has no Processing one, to catch the files of lost webhooks. It deletes such a scheduled **Media Import** when it ends Completed or Failed without adding **Media**
+- Every 15 minutes, WatchClub starts a **Media Import** for each **Media Source** that has no Processing one. It catches the files of lost webhooks, the files replaced in place, the subtitle files added or removed next to a **Video**, and the deleted files. It deletes such a scheduled **Media Import** when it ends Completed or Failed without adding **Media**
 - A past **Media Import** remains after its **Media Source** is deleted
 - A **Media Import** keeps a snapshot of the **Media Source** that ran
-- A **Media Import** processes New files only by default
+- A **Media Import** processes the new and changed files by default, and every file when it is told to **Read Every File Again**
 - A **Media Import** has one **Media Import Status**: Processing, Completed, Failed, or Cancelled
 - A **Media Source** can have at most one Processing **Media Import** at a time
 - A **Media Import** is best-effort per file
 - A **Media Import** is a two-phase operation: a scan phase that discovers candidate files, then an ingest phase that runs once per candidate to create or refresh **Media**
 - The ingest phase can also be triggered directly by a webhook from a `radarr` or `sonarr` **Media Source** for a single file, without re-running the scan phase and without recording a **Media Import**
-- Webhook-triggered ingest always processes its file, as All files would
+- Webhook-triggered ingest always processes its file, as Read Every File Again would
 - When a `radarr` or `sonarr` **Media Source**'s upstream system deletes a movie or series with its files, WatchClub deletes that **Media Source**'s **Media** of its **Content** at once, without waiting for the files to be gone
 - Scan phases differ by **Media Source Type**: a filesystem scan walks the configured location; an `radarr` or `sonarr` scan calls the **Media Source**'s API to enumerate its catalog
 - A **Failed** **Media Import** is one that cannot finish processing its source
@@ -761,13 +766,12 @@ _Avoid_: Group, aggregate, card, item
 - A **Media Import** may create a missing **Movie** or **Book** before creating **Media** for it
 - When a **Media Import** identifies a video file as an episode of an unknown **TV Show**, it creates the **TV Show** and all known regular **TV Show Episodes** together before creating the **Video**
 - A **Media Import** refreshes the **Content** of each file it matches when its metadata is older than 15 minutes
-- A file whose **TV Show Episode** is still missing after that becomes **Unmatched Media**, which a **Media Import** with New and unmatched files matches again
+- A file whose **TV Show Episode** is still missing after that becomes **Unmatched Media**, which a **Media Import** matches again when its file changes or when it is told to **Read Every File Again**
 - **Media Imports** exclude specials when creating **TV Show Episodes**
 - A **Media Import** does not create a single **TV Show Episode** on its own
-- With New files only, a **Media Import** skips the files that already have **Media**, even when the same path would now match different **Content** or **Media Type**
-- With New and unmatched files, a **Media Import** also processes the **Unmatched Media**
-- With All files, a **Media Import** processes every file: it reads the technical details of existing **Media** again and matches it again, unless it has a **Manual Match**
-- A filesystem **Media Import** deletes **Media** whose path is no longer present under the configuration’s filesystem location
+- A **Media Import** skips the files whose **File Stamp** hasn't changed, even when the same path would now match different **Content** or **Media Type**. A **Media** saved without a **File Stamp** gets one, without its file being processed
+- When it reads every file again, a **Media Import** processes every file: it reads the technical details of existing **Media** again and matches it again, unless it has a **Manual Match**
+- A **Media Import** deletes the **Media** of a file that its **Media Source** no longer lists and that is no longer on disk. A **Media Source** that lists no file loses no **Media**, as when its folder can't be reached
 - Moving a file deletes the old **Media** and creates new **Media** at the new path
 - Overlapping filesystem imports can run at the same time
 

@@ -226,6 +226,7 @@ classDiagram
     MediaType type
     uuid content_id
     boolean manually_matched?
+    string file_stamp
     «unique» media_source_id + path
   }
   class MediaType {
@@ -282,6 +283,7 @@ classDiagram
     string title
     integer channels
     boolean default?
+    «unique» video_id + stream_index
   }
   class TextTrack {
     uuid id
@@ -293,6 +295,8 @@ classDiagram
     string title
     boolean default?
     boolean forced?
+    «unique» video_id + stream_index
+    «unique» video_id + sidecar_path
   }
   class Ebook {
     uuid id «same as Media»
@@ -393,7 +397,8 @@ classDiagram
     uuid id
     uuid media_source_id
     MediaImportStatus status
-    FilesToProcess files_to_process
+    boolean read_every_file_again?
+    boolean regenerate_thumbnails_and_markers?
     boolean triggered_manually?
     datetime finished_at
   }
@@ -403,12 +408,6 @@ classDiagram
     completed
     failed
     cancelled
-  }
-  class FilesToProcess {
-    <<enumeration>>
-    new
-    new_and_unmatched
-    all
   }
   FilesystemMediaSource "0..1" --> "1" MediaSource
   ServarrMediaSource "0..1" --> "1" MediaSource
