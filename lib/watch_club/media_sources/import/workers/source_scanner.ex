@@ -6,7 +6,7 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
   saved without a File Stamp gets one, without processing its file.
 
   It removes the Media of the files gone: the source no longer lists them, and they're no longer on
-  disk. A file the source stops listing keeps its Media while it's on disk, because Sonarr and a
+  disk. A file it can't read keeps its Media as it is. A file the source stops listing keeps its Media while it's on disk, because Sonarr and a
   folder walk skip what they fail to read. A source that lists no file removes nothing, as when its
   folder can't be reached.
 
@@ -49,10 +49,7 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
 
     %Import{media_source: %Source{} = source} =
       media_import =
-      Ash.get!(Import, id,
-        load: [media_source: [:implementation, :medias]],
-        actor: SystemActor.actor()
-      )
+      Ash.get!(Import, id, load: [media_source: [:implementation]], actor: SystemActor.actor())
 
     Logger.metadata(
       read_every_file_again?: media_import.read_every_file_again?,
@@ -63,23 +60,16 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
     candidates =
       media_import |> Scanner.for_source_type(source.source_type).scan() |> Enum.to_list()
 
-    medias = Map.new(source.medias, &{&1.path, stamp_if_missing!(&1)})
+    # Loaded once the source has listed its files, which can take minutes, so that the Media
+    # webhooks moved or removed meanwhile are seen as they are now
+    medias =
+      Media
+      |> Ash.Query.filter(media_source_id == ^source.id)
+      |> Ash.Query.select([:id, :path, :type, :file_stamp])
+      |> Ash.read!(actor: SystemActor.actor())
+      |> Map.new(&{&1.path, stamp_if_missing!(&1)})
 
-    candidates_enqueued =
-      candidates
-      |> Stream.filter(fn candidate ->
-        case Map.fetch(medias, candidate.path) do
-          {:ok, media} ->
-            media_import.read_every_file_again? or
-              media.file_stamp != FileStamp.read(candidate.path, candidate.media_type)
-
-          :error ->
-            true
-        end
-      end)
-      |> enqueue_candidates(media_import)
-
-    remove_gone_medias!(source.medias, candidates)
+    remove_gone_medias!(source, medias, candidates)
 
     if media_import.regenerate_thumbnails_and_markers? do
       Video
@@ -89,6 +79,11 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
         bulk_options: [strategy: [:stream]]
       )
     end
+
+    candidates_enqueued =
+      candidates
+      |> Stream.filter(&to_process?(&1, Map.get(medias, &1.path), media_import))
+      |> enqueue_candidates(media_import)
 
     MediaSources.finish_media_import_scan!(media_import, candidates_enqueued,
       actor: SystemActor.actor()
@@ -100,7 +95,16 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
     )
   end
 
-  # A Media saved before File Stamps existed gets its own, without processing its file
+  defp to_process?(_candidate, nil, _media_import), do: true
+  defp to_process?(_candidate, _media, %Import{read_every_file_again?: true}), do: true
+
+  # A file it can't read now keeps its Media as it is
+  defp to_process?(candidate, media, _media_import) do
+    stamp = FileStamp.read(candidate.path, candidate.media_type)
+    stamp != nil and stamp != media.file_stamp
+  end
+
+  # A Media without a File Stamp gets one, without processing its file
   defp stamp_if_missing!(%Media{file_stamp: nil} = media) do
     case FileStamp.read(media.path, media.type) do
       nil -> media
@@ -110,16 +114,30 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
 
   defp stamp_if_missing!(%Media{} = media), do: media
 
-  defp remove_gone_medias!(_medias, []), do: :ok
+  defp remove_gone_medias!(_source, _medias, []), do: :ok
 
-  defp remove_gone_medias!(medias, candidates) do
+  defp remove_gone_medias!(source, medias, candidates) do
     listed = MapSet.new(candidates, & &1.path)
 
-    for media <- medias,
-        not MapSet.member?(listed, media.path),
-        File.stat(media.path) == {:error, :enoent} do
-      MediaCatalog.destroy_media!(media, actor: SystemActor.actor())
-      Logger.info("Media deleted: #{media.path}", event: :import_media_deleted, path: media.path)
+    gone_paths =
+      for {path, _media} <- medias,
+          not MapSet.member?(listed, path),
+          File.stat(path) == {:error, :enoent},
+          do: path
+
+    if gone_paths != [] do
+      Logger.info("Removing the Media of #{length(gone_paths)} files gone",
+        event: :import_media_deleted,
+        paths: gone_paths
+      )
+
+      # By path, so a Media that a webhook moved or removed since is left alone
+      Media
+      |> Ash.Query.filter(media_source_id == ^source.id and path in ^gone_paths)
+      |> MediaCatalog.destroy_media!(
+        actor: SystemActor.actor(),
+        bulk_options: [strategy: [:stream], notify?: true]
+      )
     end
 
     :ok

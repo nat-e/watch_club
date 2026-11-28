@@ -6,6 +6,7 @@ defmodule WatchClub.MediaSources.ImportTest do
 
   alias WatchClub.Ffmpeg.ProbeMock
   alias WatchClub.Integrations.Servarr.Client
+  alias WatchClub.Markers.Workers.DetectMarkers
   alias WatchClub.MediaCatalog.Media
   alias WatchClub.MediaCatalog.Workers.GenerateTrickplay
   alias WatchClub.MediaSources.Import
@@ -142,6 +143,28 @@ defmodule WatchClub.MediaSources.ImportTest do
       assert Media |> Ash.Query.filter(id == ^media.id) |> Ash.exists?(authorize?: false)
     end
 
+    test "keeps the Media of a listed file it can't read as it is" do
+      %{admin: admin, media_source: media_source, paths: paths} = scanned_files()
+      unreadable = Path.join(Path.dirname(paths.new), "unreadable.mkv")
+
+      media =
+        generate(
+          video_media(nil,
+            media_source_id: media_source.id,
+            path: unreadable,
+            file_stamp: "stamp"
+          )
+        )
+
+      stub(ScannerMock, :scan, fn _media_import -> [Candidate.new(unreadable, :movie)] end)
+
+      start_media_import!(media_source.id, actor: admin)
+      Oban.drain_queue(queue: :media_source_scans)
+
+      assert ingested_paths() == []
+      assert Media |> Ash.Query.filter(id == ^media.id) |> Ash.exists?(authorize?: false)
+    end
+
     test "removes no Media when the source lists no file" do
       %{admin: admin, media_source: media_source} = scanned_files()
       media = generate(video_media(nil, media_source_id: media_source.id))
@@ -170,6 +193,9 @@ defmodule WatchClub.MediaSources.ImportTest do
       for video <- videos do
         assert_enqueued(worker: GenerateTrickplay, args: %{video_id: video.id})
       end
+
+      [matched] = Enum.reject(videos, &is_nil(&1.content_id))
+      assert_enqueued(worker: DetectMarkers, args: %{movie_id: matched.content_id})
     end
 
     test "counts the files it processes by outcome" do

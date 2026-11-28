@@ -6,7 +6,8 @@ defmodule WatchClub.MediaSources.Import.FileStamp do
 
   The change time is the system's, which apps can't set, while Radarr and Sonarr can give a new
   file the modification time of the old one. A new hard link or new permissions change it too,
-  which only processes the file once more.
+  which only processes the file once more. Times are in whole seconds, so a rewrite of the same size
+  within the second the file was stamped goes unnoticed.
   """
 
   alias WatchClub.MediaSources.Import.Ingestor.ExtractStructure.Sidecars

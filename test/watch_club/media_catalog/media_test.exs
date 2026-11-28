@@ -463,6 +463,21 @@ defmodule WatchClub.MediaCatalog.MediaTest do
     end
   end
 
+  describe "stamp_media/*" do
+    test "saves the File Stamp of a Media without one" do
+      media = generate(video_media(nil))
+
+      assert %Media{file_stamp: "stamp"} =
+               stamp_media!(media, "stamp", actor: SystemActor.actor())
+    end
+
+    test "rejects the Instance Administrator" do
+      generate(video_media(nil))
+      |> stamp_media("stamp", actor: generate(administrator()))
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
+    end
+  end
+
   describe "regenerate_thumbnails_and_markers/*" do
     test "rebuilds the Scrubbing Thumbnails and Markers of an unchanged file" do
       movie = seed_movie()

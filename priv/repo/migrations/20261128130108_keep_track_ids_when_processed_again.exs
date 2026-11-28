@@ -8,6 +8,18 @@ defmodule WatchClub.Repo.Migrations.KeepTrackIdsWhenProcessedAgain do
   use Ecto.Migration
 
   def up do
+    # Keeps the newest of any duplicate tracks, which the unique indexes would reject
+    execute """
+    DELETE FROM audio_tracks a USING audio_tracks b
+    WHERE a.video_id = b.video_id AND a.stream_index = b.stream_index AND a.id < b.id
+    """
+
+    execute """
+    DELETE FROM text_tracks a USING text_tracks b
+    WHERE a.video_id = b.video_id AND a.id < b.id
+      AND (a.stream_index = b.stream_index OR a.sidecar_path = b.sidecar_path)
+    """
+
     create unique_index(:audio_tracks, [:video_id, :stream_index],
              name: "audio_tracks_unique_stream_index_index"
            )
