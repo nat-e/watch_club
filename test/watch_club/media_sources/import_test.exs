@@ -143,20 +143,20 @@ defmodule WatchClub.MediaSources.ImportTest do
       assert Media |> Ash.Query.filter(id == ^media.id) |> Ash.exists?(authorize?: false)
     end
 
-    test "keeps the Media of a listed file it can't read as it is" do
+    test "keeps the Media of a listed file missing from disk as it is" do
       %{admin: admin, media_source: media_source, paths: paths} = scanned_files()
-      unreadable = Path.join(Path.dirname(paths.new), "unreadable.mkv")
+      missing = Path.join(Path.dirname(paths.new), "missing.mkv")
 
       media =
         generate(
           video_media(nil,
             media_source_id: media_source.id,
-            path: unreadable,
+            path: missing,
             file_stamp: "stamp"
           )
         )
 
-      stub(ScannerMock, :scan, fn _media_import -> [Candidate.new(unreadable, :movie)] end)
+      stub(ScannerMock, :scan, fn _media_import -> [Candidate.new(missing, :movie)] end)
 
       start_media_import!(media_source.id, actor: admin)
       Oban.drain_queue(queue: :media_source_scans)

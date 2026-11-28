@@ -3,10 +3,11 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
   Performs the scan phase of an `Import`. The source's scanner lists its files as Candidates, and
   the scan enqueues one `CandidateIngestor` job per file to process: the files without Media, and
   those whose File Stamp changed, or every file when the Import reads every file again. A Media
-  saved without a File Stamp gets one, without processing its file.
+  saved without a File Stamp gets one, without processing its file. A listed file it can't read
+  keeps its Media as it is.
 
   It removes the Media of the files gone: the source no longer lists them, and they're no longer on
-  disk. A file it can't read keeps its Media as it is. A file the source stops listing keeps its Media while it's on disk, because Sonarr and a
+  disk. A file the source stops listing keeps its Media while it's on disk, because Sonarr and a
   folder walk skip what they fail to read. A source that lists no file removes nothing, as when its
   folder can't be reached.
 
@@ -128,7 +129,7 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
     if gone_paths != [] do
       Logger.info("Removing the Media of #{length(gone_paths)} files gone",
         event: :import_media_deleted,
-        paths: gone_paths
+        paths: Enum.take(gone_paths, 20)
       )
 
       # By path, so a Media that a webhook moved or removed since is left alone
