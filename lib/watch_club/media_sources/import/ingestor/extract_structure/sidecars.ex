@@ -4,8 +4,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.Sidecars do
   alongside a video candidate and appends them to its `MediaStructure.text_tracks`.
   `TextTracks` then reads their language and markers from their titles.
 
-  Only called from the video branch of `ExtractStructure`; never called from
-  the pipeline orchestrator.
+  `FileStamp` lists them too, so a new, changed or removed sidecar changes the video's File Stamp.
   """
 
   alias WatchClub.MediaSources.Import.Candidate
@@ -15,51 +14,46 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.Sidecars do
   @subtitle_extensions MapSet.new([".ass", ".srt", ".ssa", ".sub", ".vtt"])
 
   def append(%Candidate{} = candidate) do
-    sidecars = discover(candidate)
+    video_basename = Path.basename(candidate.path, Path.extname(candidate.path))
+
+    sidecars =
+      for path <- paths(candidate.path) do
+        extension = path |> Path.extname() |> String.downcase()
+        subtitle_basename = Path.basename(path, Path.extname(path))
+        suffix = String.replace_prefix(subtitle_basename, video_basename, "")
+
+        %TextTrack{sidecar_path: path, codec: codec_for_extension(extension)}
+        |> struct!(parse_suffix(suffix))
+      end
+
     structure = candidate.media_structure
     %{candidate | media_structure: %{structure | text_tracks: structure.text_tracks ++ sidecars}}
   end
 
-  defp discover(candidate) do
-    directory = Path.dirname(candidate.path)
-    video_basename = Path.basename(candidate.path, Path.extname(candidate.path))
+  @doc "The normalized paths of the subtitle files next to the video at `video_path`, sorted."
+  def paths(video_path) do
+    directory = Path.dirname(video_path)
+    video_basename = Path.basename(video_path, Path.extname(video_path))
 
     case File.ls(directory) do
       {:ok, entries} ->
-        entries
-        |> Enum.sort()
-        |> Enum.flat_map(fn entry ->
-          directory
-          |> Path.join(entry)
-          |> sidecar_text_track(video_basename)
-        end)
+        for entry <- Enum.sort(entries),
+            path = Path.join(directory, entry),
+            sidecar?(path, video_basename),
+            do: Paths.normalize(path)
 
       {:error, _reason} ->
         []
     end
   end
 
-  defp sidecar_text_track(path, video_basename) do
+  defp sidecar?(path, video_basename) do
     extension = path |> Path.extname() |> String.downcase()
-    basename = Path.basename(path)
-    subtitle_basename = Path.basename(path, Path.extname(path))
 
-    with false <- String.starts_with?(basename, "."),
-         true <- MapSet.member?(@subtitle_extensions, extension),
-         true <- matching_sidecar?(subtitle_basename, video_basename),
-         {:ok, %{type: :regular}} <- File.lstat(path) do
-      suffix = String.replace_prefix(subtitle_basename, video_basename, "")
-
-      [
-        %TextTrack{
-          sidecar_path: Paths.normalize(path),
-          codec: codec_for_extension(extension)
-        }
-        |> struct!(parse_suffix(suffix))
-      ]
-    else
-      _ -> []
-    end
+    not String.starts_with?(Path.basename(path), ".") and
+      MapSet.member?(@subtitle_extensions, extension) and
+      matching_sidecar?(Path.basename(path, Path.extname(path)), video_basename) and
+      match?({:ok, %{type: :regular}}, File.lstat(path))
   end
 
   defp matching_sidecar?(subtitle_basename, video_basename) do

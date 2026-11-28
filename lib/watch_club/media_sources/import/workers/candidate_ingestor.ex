@@ -33,21 +33,17 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
   alias WatchClub.MediaSources.{Import, Servarr}
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.MatchResult
+  alias WatchClub.MediaSources.Import.FileStamp
   alias WatchClub.MediaSources.Import.Ingestor.{ExtractStructure, MatchContent, SaveMedia}
   alias WatchClub.SystemActor
 
   @doc """
   Builds an ingest job into the Media Source of the Media Import or the webhook's Servarr app.
-  A scan `Candidate` is tagged with its Media Import, at default priority, and carries its choice
-  to regenerate Scrubbing Thumbnails and Markers. A webhook `Candidate` has no Media Import, and a
-  higher priority than scan jobs.
+  A scan `Candidate` is tagged with its Media Import, at default priority. A webhook `Candidate`
+  has no Media Import, and a higher priority than scan jobs.
   """
   def new_job(%Import{id: id} = media_import, %Candidate{} = candidate) do
-    %{
-      candidate
-      | media_source_id: media_import.media_source_id,
-        regenerate_thumbnails_and_markers?: media_import.regenerate_thumbnails_and_markers?
-    }
+    %{candidate | media_source_id: media_import.media_source_id}
     |> Candidate.to_map()
     |> Map.put(:media_import_id, id)
     |> new(tags: ["media_import:#{id}"], priority: 1)
@@ -95,6 +91,8 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestor do
 
   # The file's outcome, its reason, and what explains it
   defp ingest(%Candidate{} = candidate) do
+    candidate = %{candidate | file_stamp: FileStamp.read(candidate.path, candidate.media_type)}
+
     case ExtractStructure.apply(candidate) do
       {:ok, candidate} ->
         %Candidate{match_result: %MatchResult{result: result, reason: reason}} =

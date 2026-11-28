@@ -5,7 +5,7 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaSourceCard do
   (path or URL+root), and a single ellipsis menu. Bottom row carries the
   import schedule and the last-import status.
 
-  Load the Media Source's `latest_import`, `implementation` and `scheduled_imports?`.
+  Load the Media Source's `latest_import` and `implementation`.
   """
   use WatchClubWeb, :component
 
@@ -103,11 +103,8 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaSourceCard do
           <span class="text-text-subtle">
             {dgettext("admin_media_imports", "Schedule")}
           </span>
-          <span :if={@media_source.scheduled_imports?} class="ml-tight text-text">
+          <span class="ml-tight text-text">
             {dgettext("admin_media_imports", "Every 15 minutes")}
-          </span>
-          <span :if={!@media_source.scheduled_imports?} class="ml-tight text-text">
-            {dgettext("admin_media_imports", "Manual only")}
           </span>
         </div>
         <.last_import_summary latest_import={@media_source.latest_import} locale={@locale} />

@@ -1,7 +1,7 @@
 defmodule WatchClubWeb.Admin.MediaSources.RunImportModalLive do
   @moduledoc """
-  Confirm modal for triggering a `Media Import`, where the Instance Administrator chooses which
-  files it processes and, for Videos, whether it regenerates their Scrubbing Thumbnails and
+  Confirm modal for triggering a `Media Import`, where the Instance Administrator chooses whether
+  it reads every file again and, for Videos, whether it regenerates their Scrubbing Thumbnails and
   Markers.
   """
   use WatchClubWeb, :live_component
@@ -51,47 +51,49 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModalLive do
         >
           <input type="hidden" name={@form[:media_source_id].name} value={@media_source.id} />
 
-          <div class="flex flex-col gap-related">
-            <.label id="run-import-files-label">
-              {dgettext("admin_media_imports", "Process")}
-            </.label>
-            <.radio_group
-              field={@form[:files_to_process]}
-              aria-labelledby="run-import-files-label"
-              variant="card"
-            >
-              <:item
-                :for={{value, label, description} <- files_to_process_options()}
-                value={value}
-                class="flex items-center gap-related p-group"
-              >
-                <.stack space="tight" class="min-w-0 flex-1">
-                  <span class="text-sm font-semibold text-text">{label}</span>
-                  <span class="text-xs text-text-muted">{description}</span>
-                </.stack>
-                <Lucideicons.check class="size-icon-sm shrink-0 text-accent opacity-0 transition-opacity group-has-checked/radio-card:opacity-100" />
-              </:item>
-            </.radio_group>
-          </div>
+          <p class="text-sm text-text-muted">
+            {dgettext(
+              "admin_media_imports",
+              "We process new and changed files, subtitles included, and remove the media of deleted files."
+            )}
+          </p>
+
+          <label class="flex items-start gap-related">
+            <.checkbox
+              id="run-import-read-every-file"
+              field={@form[:read_every_file_again?]}
+              class="mt-0.5"
+            />
+            <.stack space="tight" class="min-w-0">
+              <span class="text-sm font-semibold text-text">
+                {dgettext("admin_media_imports", "Read every file again")}
+              </span>
+              <span class="text-xs text-text-muted">
+                {dgettext(
+                  "admin_media_imports",
+                  "Even files that haven't changed. Each file is matched again, but manual matches are kept."
+                )}
+              </span>
+            </.stack>
+          </label>
 
           <label
             :if={@media_source.media_type in [:movie, :tv_show_episode, :sports_event]}
-            class="group/regenerate flex items-start gap-related has-disabled:cursor-not-allowed"
+            class="flex items-start gap-related"
           >
             <.checkbox
               id="run-import-regenerate"
               field={@form[:regenerate_thumbnails_and_markers?]}
-              disabled={@form[:files_to_process].value == :new}
               class="mt-0.5"
             />
-            <.stack space="tight" class="min-w-0 group-has-disabled/regenerate:opacity-40">
+            <.stack space="tight" class="min-w-0">
               <span class="text-sm font-semibold text-text">
                 {dgettext("admin_media_imports", "Regenerate thumbnails and markers")}
               </span>
               <span class="text-xs text-text-muted">
                 {dgettext(
                   "admin_media_imports",
-                  "Even for files that haven't changed. New files always get them."
+                  "For every video, even unchanged ones. New files always get them."
                 )}
               </span>
             </.stack>
@@ -121,12 +123,6 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModalLive do
 
   @impl true
   def handle_event("change", %{"run_import" => params}, socket) do
-    # New files always get them, so the box turns off with its choice
-    params =
-      if params["files_to_process"] == "new",
-        do: Map.delete(params, "regenerate_thumbnails_and_markers?"),
-        else: params
-
     {:noreply, assign(socket, :form, AshPhoenix.Form.validate(socket.assigns.form, params))}
   end
 
@@ -146,19 +142,5 @@ defmodule WatchClubWeb.Admin.MediaSources.RunImportModalLive do
   def handle_event("close", _params, socket) do
     socket.assigns.on_close.()
     {:noreply, socket}
-  end
-
-  defp files_to_process_options do
-    [
-      {:new, dgettext("admin_media_imports", "New files only"),
-       dgettext("admin_media_imports", "Only files not imported yet.")},
-      {:new_and_unmatched, dgettext("admin_media_imports", "New and unmatched files"),
-       dgettext("admin_media_imports", "Also retries files that couldn't be matched.")},
-      {:all, dgettext("admin_media_imports", "All files"),
-       dgettext(
-         "admin_media_imports",
-         "Reads every file again and matches it again. Manual matches are kept."
-       )}
-    ]
   end
 end

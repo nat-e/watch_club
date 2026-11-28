@@ -6,12 +6,16 @@ defmodule WatchClub.MediaSources.ImportTest do
 
   alias WatchClub.Ffmpeg.ProbeMock
   alias WatchClub.Integrations.Servarr.Client
+  alias WatchClub.MediaCatalog.Media
+  alias WatchClub.MediaCatalog.Workers.GenerateTrickplay
   alias WatchClub.MediaSources.Import
-  alias WatchClub.MediaSources.Import.{Candidate, ScannerMock}
+  alias WatchClub.MediaSources.Import.{Candidate, FileStamp, ScannerMock}
   alias WatchClub.MediaSources.Import.Candidate.MovieIdentity
   alias WatchClub.MediaSources.Import.Scanner.Filesystem
   alias WatchClub.MediaSources.Import.Workers.CandidateIngestor
   alias WatchClub.SystemActor
+
+  require Ash.Query
 
   setup :set_mox_global
   setup :verify_on_exit!
@@ -54,22 +58,23 @@ defmodule WatchClub.MediaSources.ImportTest do
                get_media_import_by_id!(media_import.id, actor: admin)
     end
 
-    test "processes only the files without Media by default" do
+    test "processes the files without Media and those whose File Stamp changed" do
       %{admin: admin, media_source: media_source, paths: paths} = scanned_files()
 
       start_media_import!(media_source.id, actor: admin)
       Oban.drain_queue(queue: :media_source_scans)
 
-      assert ingested_paths() == [paths.new]
+      assert ingested_paths() == Enum.sort([paths.new, paths.changed])
     end
 
-    test "processes the files without Media and the Unmatched Media with :new_and_unmatched" do
+    test "processes a Video again when a subtitle file is added next to it" do
       %{admin: admin, media_source: media_source, paths: paths} = scanned_files()
+      File.write!(String.replace_suffix(paths.unchanged, ".mkv", ".fr.srt"), "stub")
 
-      start_media_import!(media_source.id, %{files_to_process: :new_and_unmatched}, actor: admin)
+      start_media_import!(media_source.id, actor: admin)
       Oban.drain_queue(queue: :media_source_scans)
 
-      assert ingested_paths() == Enum.sort([paths.new, paths.unmatched])
+      assert paths.unchanged in ingested_paths()
     end
 
     test "processes the video files of a filesystem Media Source of Sports Events" do
@@ -88,31 +93,82 @@ defmodule WatchClub.MediaSources.ImportTest do
       assert ingested_paths() == [path]
     end
 
-    test "processes every file with :all" do
+    test "processes every file when it reads every file again" do
       %{admin: admin, media_source: media_source, paths: paths} = scanned_files()
 
-      start_media_import!(media_source.id, %{files_to_process: :all}, actor: admin)
+      start_media_import!(media_source.id, %{read_every_file_again?: true}, actor: admin)
       Oban.drain_queue(queue: :media_source_scans)
 
-      assert ingested_paths() == Enum.sort(Map.values(paths))
+      assert ingested_paths() == Enum.sort([paths.new, paths.unchanged, paths.changed])
     end
 
-    test "has each file it processes regenerate its Scrubbing Thumbnails and Markers when asked" do
+    test "stamps a Media saved without a File Stamp, without processing its file" do
       %{admin: admin, media_source: media_source, paths: paths} = scanned_files()
 
-      start_media_import!(
-        media_source.id,
-        %{files_to_process: :all, regenerate_thumbnails_and_markers?: true},
+      media =
+        generate(
+          video_media(nil, media_source_id: media_source.id, path: paths.new, file_stamp: nil)
+        )
+
+      start_media_import!(media_source.id, actor: admin)
+      Oban.drain_queue(queue: :media_source_scans)
+
+      assert ingested_paths() == [paths.changed]
+
+      assert Ash.reload!(media, authorize?: false).file_stamp ==
+               FileStamp.read(paths.new, :movie)
+    end
+
+    test "removes the Media of a file the source no longer lists and that is gone from disk" do
+      %{admin: admin, media_source: media_source, paths: paths} = scanned_files()
+      gone = generate(video_media(nil, media_source_id: media_source.id))
+
+      start_media_import!(media_source.id, actor: admin)
+      Oban.drain_queue(queue: :media_source_scans)
+
+      refute Media |> Ash.Query.filter(id == ^gone.id) |> Ash.exists?(authorize?: false)
+      assert ingested_paths() == Enum.sort([paths.new, paths.changed])
+    end
+
+    test "keeps the Media of a file the source no longer lists while it's on disk" do
+      %{admin: admin, media_source: media_source, paths: paths} = scanned_files()
+      unlisted = Path.join(Path.dirname(paths.new), "unlisted.mkv")
+      File.write!(unlisted, "stub")
+      media = generate(video_media(nil, media_source_id: media_source.id, path: unlisted))
+
+      start_media_import!(media_source.id, actor: admin)
+      Oban.drain_queue(queue: :media_source_scans)
+
+      assert Media |> Ash.Query.filter(id == ^media.id) |> Ash.exists?(authorize?: false)
+    end
+
+    test "removes no Media when the source lists no file" do
+      %{admin: admin, media_source: media_source} = scanned_files()
+      media = generate(video_media(nil, media_source_id: media_source.id))
+      stub(ScannerMock, :scan, fn _media_import -> [] end)
+
+      start_media_import!(media_source.id, actor: admin)
+      Oban.drain_queue(queue: :media_source_scans)
+
+      assert Media |> Ash.Query.filter(id == ^media.id) |> Ash.exists?(authorize?: false)
+    end
+
+    test "regenerates the Scrubbing Thumbnails and Markers of every Video of its Media Source when asked" do
+      %{admin: admin, media_source: media_source} = scanned_files()
+
+      videos =
+        Media
+        |> Ash.Query.filter(media_source_id == ^media_source.id)
+        |> Ash.read!(authorize?: false)
+
+      start_media_import!(media_source.id, %{regenerate_thumbnails_and_markers?: true},
         actor: admin
       )
 
       Oban.drain_queue(queue: :media_source_scans)
 
-      for path <- Map.values(paths) do
-        assert_enqueued(
-          worker: CandidateIngestor,
-          args: %{path: path, regenerate_thumbnails_and_markers?: true}
-        )
+      for video <- videos do
+        assert_enqueued(worker: GenerateTrickplay, args: %{video_id: video.id})
       end
     end
 
@@ -207,23 +263,24 @@ defmodule WatchClub.MediaSources.ImportTest do
   end
 
   describe "start_scheduled_media_imports/*" do
-    test "starts a Media Import of New files only of each radarr, sonarr and sportarr Media Source" do
+    test "starts a Media Import of the new and changed files of each Media Source" do
       admin = generate(administrator())
-      generate(filesystem_media_source(actor: admin))
 
-      servarr_ids =
-        for flavor <- [:radarr, :sonarr, :sportarr],
-            do: generate(radarr_media_source(actor: admin, flavor: flavor)).id
+      media_source_ids =
+        [generate(filesystem_media_source(actor: admin)).id] ++
+          for flavor <- [:radarr, :sonarr, :sportarr],
+              do: generate(radarr_media_source(actor: admin, flavor: flavor)).id
 
       start_scheduled_media_imports!(actor: SystemActor.actor())
 
       media_imports = list_media_imports!(actor: admin)
 
-      assert Enum.sort(Enum.map(media_imports, & &1.media_source_id)) == Enum.sort(servarr_ids)
+      assert Enum.sort(Enum.map(media_imports, & &1.media_source_id)) ==
+               Enum.sort(media_source_ids)
 
       assert Enum.all?(
                media_imports,
-               &match?(%Import{files_to_process: :new, triggered_manually?: false}, &1)
+               &match?(%Import{read_every_file_again?: false, triggered_manually?: false}, &1)
              )
     end
 
@@ -313,23 +370,38 @@ defmodule WatchClub.MediaSources.ImportTest do
     Req.Test.stub(Client, plug)
   end
 
-  # A Media Source whose scan finds a new file, a matched Media and an Unmatched Media
+  # A Media Source whose scan finds a file without Media, a Media whose file hasn't changed and a
+  # Media whose file changed since it was processed
   defp scanned_files do
     admin = generate(administrator())
     media_source = generate(filesystem_media_source(actor: admin))
     root = media_source.implementation.filesystem_path
+    File.mkdir_p!(root)
+    on_exit(fn -> File.rm_rf!(root) end)
 
     paths = %{
-      new: "#{root}/new.mkv",
-      matched: "#{root}/matched.mkv",
-      unmatched: "#{root}/unmatched.mkv"
+      new: Path.expand("#{root}/new.mkv"),
+      unchanged: Path.expand("#{root}/unchanged.mkv"),
+      changed: Path.expand("#{root}/changed.mkv")
     }
 
+    for path <- Map.values(paths), do: File.write!(path, "stub")
+
     generate(
-      video_media(generate(movie()), media_source_id: media_source.id, path: paths.matched)
+      video_media(generate(movie()),
+        media_source_id: media_source.id,
+        path: paths.unchanged,
+        file_stamp: FileStamp.read(paths.unchanged, :movie)
+      )
     )
 
-    generate(video_media(nil, media_source_id: media_source.id, path: paths.unmatched))
+    generate(
+      video_media(nil,
+        media_source_id: media_source.id,
+        path: paths.changed,
+        file_stamp: "the stamp of the file it replaced"
+      )
+    )
 
     stub(ScannerMock, :scan, fn _media_import ->
       Enum.map(Map.values(paths), &Candidate.new(&1, :movie))

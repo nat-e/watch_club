@@ -147,11 +147,6 @@ msgstr ""
 msgid "Manual"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/media_source_card.ex
-#, elixir-autogen, elixir-format
-msgid "Manual only"
-msgstr ""
-
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Media type"
@@ -270,54 +265,9 @@ msgstr ""
 msgid "All"
 msgstr ""
 
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "All files"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Also retries files that couldn't be matched."
-msgstr ""
-
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
 msgid "Files"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
-#, elixir-autogen, elixir-format
-msgid "New"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
-#, elixir-autogen, elixir-format
-msgid "New and unmatched"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "New and unmatched files"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "New files only"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Only files not imported yet."
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Process"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Reads every file again and matches it again. Manual matches are kept."
 msgstr ""
 
 #: lib/watch_club_web/live/admin/media_sources_page.ex
@@ -333,11 +283,6 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Regenerate thumbnails and markers"
-msgstr ""
-
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Even for files that haven't changed. New files always get them."
 msgstr ""
 
 #: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
@@ -584,4 +529,29 @@ msgstr ""
 #: lib/watch_club_web/live/admin/media_sources/media_source_card.ex
 #, elixir-autogen, elixir-format
 msgid "Every 15 minutes"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "New and changed"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Read every file again"
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "We process new and changed files, subtitles included, and remove the media of deleted files."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Even files that haven't changed. Each file is matched again, but manual matches are kept."
+msgstr ""
+
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "For every video, even unchanged ones. New files always get them."
 msgstr ""

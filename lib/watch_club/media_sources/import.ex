@@ -48,14 +48,14 @@ defmodule WatchClub.MediaSources.Import do
 
     create :start do
       primary? true
-      accept [:media_source_id, :files_to_process, :regenerate_thumbnails_and_markers?]
+      accept [:media_source_id, :read_every_file_again?, :regenerate_thumbnails_and_markers?]
 
       change set_attribute(:triggered_manually?, true)
       change Changes.Schedule
     end
 
     create :start_scheduled do
-      description "Starts a Media Import of the Media Source's new files, on schedule"
+      description "Starts a Media Import of the Media Source's new and changed files, on schedule"
       accept [:media_source_id]
 
       change set_attribute(:triggered_manually?, false)
@@ -63,11 +63,11 @@ defmodule WatchClub.MediaSources.Import do
     end
 
     action :start_scheduled_imports do
-      description "Starts a scheduled Media Import of each Media Source with scheduled imports, unless one is already processing"
+      description "Starts a scheduled Media Import of each Media Source, unless one is already processing"
 
       run fn _input, context ->
         Source
-        |> Ash.Query.filter(scheduled_imports? and not exists(imports, status == :processing))
+        |> Ash.Query.filter(not exists(imports, status == :processing))
         |> Ash.read!(scope: context)
         |> Enum.each(fn %Source{id: id} ->
           Ash.create!(__MODULE__, %{media_source_id: id},
@@ -203,15 +203,16 @@ defmodule WatchClub.MediaSources.Import do
   attributes do
     uuid_v7_primary_key :id
 
-    attribute :files_to_process, WatchClub.MediaSources.FilesToProcess do
+    attribute :read_every_file_again?, :boolean do
+      description "Processes every file, unchanged ones included, instead of the new and changed files"
       allow_nil? false
-      default :new
+      default false
       public? true
+      source :read_every_file_again
     end
 
-    # New files get theirs anyway, so it only matters with New and unmatched files or All files
     attribute :regenerate_thumbnails_and_markers?, :boolean do
-      description "Rebuilds the Scrubbing Thumbnails and Markers of every Video it processes"
+      description "Rebuilds the Scrubbing Thumbnails and Markers of every Video of its Media Source"
       allow_nil? false
       default false
       public? true
