@@ -106,4 +106,9 @@ defmodule WatchClub.MediaCatalog.AudioTrack do
       public? true
     end
   end
+
+  identities do
+    # A Video processed again updates its tracks in place, so its Playbacks keep their picks
+    identity :unique_stream_index, [:video_id, :stream_index]
+  end
 end

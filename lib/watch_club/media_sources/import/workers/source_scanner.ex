@@ -1,26 +1,34 @@
 defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
   @moduledoc """
-  Performs the scan phase of an `Import`.
-  It will create a list of import Candidates for the source and enqueue
-  one CandiateIngestor job per eligible candidate.
+  Performs the scan phase of an `Import`. The source's scanner lists its files as Candidates, and
+  the scan enqueues one `CandidateIngestor` job per file to process: the files without Media, and
+  those whose File Stamp changed, or every file when the Import reads every file again. A Media
+  saved without a File Stamp gets one, without processing its file. A listed file it can't read
+  keeps its Media as it is.
 
-  The Import's `files_to_process` decides which Candidates that already have Media in the source
-  are skipped: all of them (`:new`, the default), the matched ones (`:new_and_unmatched`) or none
-  (`:all`).
+  It removes the Media of the files gone: the source no longer lists them, and they're no longer on
+  disk. A file the source stops listing keeps its Media while it's on disk, because Sonarr and a
+  folder walk skip what they fail to read. A source that lists no file removes nothing, as when its
+  folder can't be reached.
 
-  The actual Candidate discovery logic depends on the type of source (Filesystem, Servarr...).
+  With `regenerate_thumbnails_and_markers?`, it rebuilds them for every Video of the source.
+
+  The Candidate discovery logic depends on the type of source (Filesystem, Servarr...).
   See the `WatchClub.MediaSources.Import.Scanner` module for details.
   """
 
   use Oban.Worker, queue: :media_source_scans, max_attempts: 1
 
+  alias WatchClub.MediaCatalog
+  alias WatchClub.MediaCatalog.{Media, Video}
   alias WatchClub.MediaSources
   alias WatchClub.MediaSources.{Import, Source}
-
+  alias WatchClub.MediaSources.Import.FileStamp
   alias WatchClub.MediaSources.Import.Scanner
   alias WatchClub.MediaSources.Import.Workers.CandidateIngestor
   alias WatchClub.SystemActor
 
+  require Ash.Query
   require Logger
 
   @chunk_size 1_000
@@ -40,31 +48,45 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
   def perform(%Oban.Job{args: %{"media_import_id" => id}}) do
     Logger.metadata(media_import_id: id)
 
-    %Import{media_source: %Source{}} =
-      import_job =
-      Import
-      |> Ash.get!(id, load: [media_source: [:implementation]], actor: SystemActor.actor())
+    %Import{media_source: %Source{} = source} =
+      media_import =
+      Ash.get!(Import, id, load: [media_source: [:implementation]], actor: SystemActor.actor())
 
     Logger.metadata(
-      files_to_process: import_job.files_to_process,
-      source_type: import_job.media_source.source_type,
-      source_id: import_job.media_source.id
+      read_every_file_again?: media_import.read_every_file_again?,
+      source_type: source.source_type,
+      source_id: source.id
     )
 
-    scanner = Scanner.for_source_type(import_job.media_source.source_type)
-    to_skip = paths_to_skip(import_job)
+    candidates =
+      media_import |> Scanner.for_source_type(source.source_type).scan() |> Enum.to_list()
+
+    # Loaded once the source has listed its files, which can take minutes, so that the Media
+    # webhooks moved or removed meanwhile are seen as they are now
+    medias =
+      Media
+      |> Ash.Query.filter(media_source_id == ^source.id)
+      |> Ash.Query.select([:id, :path, :type, :file_stamp])
+      |> Ash.read!(actor: SystemActor.actor())
+      |> Map.new(&{&1.path, stamp_if_missing!(&1)})
+
+    remove_gone_medias!(source, medias, candidates)
+
+    if media_import.regenerate_thumbnails_and_markers? do
+      Video
+      |> Ash.Query.filter(media.media_source_id == ^source.id)
+      |> MediaCatalog.regenerate_thumbnails_and_markers!(
+        actor: SystemActor.actor(),
+        bulk_options: [strategy: [:stream]]
+      )
+    end
 
     candidates_enqueued =
-      import_job
-      |> scanner.scan()
-      |> Stream.reject(fn candidate ->
-        skip? = MapSet.member?(to_skip, candidate.path)
-        if skip?, do: Logger.debug("Skipping candidate, already imported")
-        skip?
-      end)
-      |> enqueue_candidates(import_job)
+      candidates
+      |> Stream.filter(&to_process?(&1, Map.get(medias, &1.path), media_import))
+      |> enqueue_candidates(media_import)
 
-    MediaSources.finish_media_import_scan!(import_job, candidates_enqueued,
+    MediaSources.finish_media_import_scan!(media_import, candidates_enqueued,
       actor: SystemActor.actor()
     )
 
@@ -74,14 +96,52 @@ defmodule WatchClub.MediaSources.Import.Workers.SourceScanner do
     )
   end
 
-  defp paths_to_skip(%Import{files_to_process: :all}), do: MapSet.new()
+  defp to_process?(_candidate, nil, _media_import), do: true
+  defp to_process?(_candidate, _media, %Import{read_every_file_again?: true}), do: true
 
-  defp paths_to_skip(%Import{files_to_process: files_to_process, media_source: source}) do
-    source
-    |> Ash.load!(:medias, actor: SystemActor.actor())
-    |> Map.fetch!(:medias)
-    |> Enum.reject(&(files_to_process == :new_and_unmatched and is_nil(&1.content_id)))
-    |> MapSet.new(& &1.path)
+  # A file it can't read now keeps its Media as it is
+  defp to_process?(candidate, media, _media_import) do
+    stamp = FileStamp.read(candidate.path, candidate.media_type)
+    stamp != nil and stamp != media.file_stamp
+  end
+
+  # A Media without a File Stamp gets one, without processing its file
+  defp stamp_if_missing!(%Media{file_stamp: nil} = media) do
+    case FileStamp.read(media.path, media.type) do
+      nil -> media
+      stamp -> MediaCatalog.stamp_media!(media, stamp, actor: SystemActor.actor())
+    end
+  end
+
+  defp stamp_if_missing!(%Media{} = media), do: media
+
+  defp remove_gone_medias!(_source, _medias, []), do: :ok
+
+  defp remove_gone_medias!(source, medias, candidates) do
+    listed = MapSet.new(candidates, & &1.path)
+
+    gone_paths =
+      for {path, _media} <- medias,
+          not MapSet.member?(listed, path),
+          File.stat(path) == {:error, :enoent},
+          do: path
+
+    if gone_paths != [] do
+      Logger.info("Removing the Media of #{length(gone_paths)} files gone",
+        event: :import_media_deleted,
+        paths: Enum.take(gone_paths, 20)
+      )
+
+      # By path, so a Media that a webhook moved or removed since is left alone
+      Media
+      |> Ash.Query.filter(media_source_id == ^source.id and path in ^gone_paths)
+      |> MediaCatalog.destroy_media!(
+        actor: SystemActor.actor(),
+        bulk_options: [strategy: [:stream], notify?: true]
+      )
+    end
+
+    :ok
   end
 
   defp enqueue_candidates(candidates, %Import{} = media_import) do

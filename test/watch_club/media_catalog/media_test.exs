@@ -268,12 +268,6 @@ defmodule WatchClub.MediaCatalog.MediaTest do
           load: [video: [:video_tracks, :audio_tracks, :text_tracks]]
         )
 
-      original_track_ids =
-        Enum.map(
-          original.video.video_tracks ++ original.video.audio_tracks ++ original.video.text_tracks,
-          & &1.id
-        )
-
       refreshed =
         create_or_update_video!(
           %{
@@ -300,22 +294,47 @@ defmodule WatchClub.MediaCatalog.MediaTest do
       assert refreshed.id == original.id
       assert refreshed.video.id == original.video.id
       assert [%VideoTrack{codec: "av1"}] = refreshed.video.video_tracks
-      assert [%AudioTrack{codec: "opus"}] = refreshed.video.audio_tracks
       assert refreshed.video.text_tracks == []
 
-      for old_id <- original_track_ids do
-        refute VideoTrack
-               |> Ash.Query.filter(id == ^old_id)
-               |> Ash.exists?(authorize?: false)
+      # The track at the same stream index keeps its id, so Playbacks keep their picks
+      [original_audio_track] = original.video.audio_tracks
+      assert [%AudioTrack{codec: "opus"} = audio_track] = refreshed.video.audio_tracks
+      assert audio_track.id == original_audio_track.id
 
-        refute AudioTrack
-               |> Ash.Query.filter(id == ^old_id)
-               |> Ash.exists?(authorize?: false)
+      [original_text_track] = original.video.text_tracks
 
-        refute TextTrack
-               |> Ash.Query.filter(id == ^old_id)
-               |> Ash.exists?(authorize?: false)
-      end
+      refute TextTrack
+             |> Ash.Query.filter(id == ^original_text_track.id)
+             |> Ash.exists?(authorize?: false)
+    end
+
+    test "keeps the Text Tracks that are still there, embedded or sidecar" do
+      movie = seed_movie()
+      path = "tmp/new-subtitles.mkv"
+      input = video_media_input(path, movie)
+      sidecar = %{sidecar_path: "/media/new-subtitles.en.srt", codec: "subrip", language: "en"}
+
+      original =
+        create_or_update_video!(
+          put_in(input.video.text_tracks, [sidecar | input.video.text_tracks]),
+          actor: SystemActor.actor(),
+          load: [video: :text_tracks]
+        )
+
+      french = %{sidecar_path: "/media/new-subtitles.fr.srt", codec: "subrip", language: "fr"}
+
+      refreshed =
+        create_or_update_video!(
+          put_in(input.video.text_tracks, [sidecar, french | input.video.text_tracks]),
+          actor: SystemActor.actor(),
+          load: [video: :text_tracks]
+        )
+
+      original_ids = MapSet.new(original.video.text_tracks, & &1.id)
+      refreshed_ids = MapSet.new(refreshed.video.text_tracks, & &1.id)
+
+      assert MapSet.size(refreshed_ids) == 3
+      assert MapSet.subset?(original_ids, refreshed_ids)
     end
 
     test "gives each Media Source that covers the file its own Media" do
@@ -441,6 +460,21 @@ defmodule WatchClub.MediaCatalog.MediaTest do
 
       refute_enqueued(worker: GenerateTrickplay)
       assert_enqueued(worker: DetectMarkers, args: %{movie_id: new_movie.id})
+    end
+  end
+
+  describe "stamp_media/*" do
+    test "saves the File Stamp of a Media without one" do
+      media = generate(video_media(nil))
+
+      assert %Media{file_stamp: "stamp"} =
+               stamp_media!(media, "stamp", actor: SystemActor.actor())
+    end
+
+    test "rejects the Instance Administrator" do
+      generate(video_media(nil))
+      |> stamp_media("stamp", actor: generate(administrator()))
+      |> assert_has_error(Ash.Error.Forbidden, fn _ -> true end)
     end
   end
 

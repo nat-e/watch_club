@@ -201,13 +201,5 @@ defmodule WatchClub.MediaSources.Source do
               expr(source_type in [:radarr, :sonarr, :sportarr]) do
       public? true
     end
-
-    # Their webhooks can get lost, so the scheduled Media Imports catch the files they missed
-    calculate :scheduled_imports?,
-              :boolean,
-              expr(source_type in [:radarr, :sonarr, :sportarr]) do
-      description "Whether WatchClub imports the Media Source's new files every 15 minutes"
-      public? true
-    end
   end
 end

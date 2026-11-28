@@ -12,6 +12,7 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
   alias WatchClub.MediaSources.Import
   alias WatchClub.MediaSources.Import.Candidate
   alias WatchClub.MediaSources.Import.Candidate.MovieIdentity
+  alias WatchClub.MediaSources.Import.FileStamp
   alias WatchClub.MediaSources.Import.Workers.CandidateIngestor
 
   require Ash.Query
@@ -101,6 +102,7 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
 
       assert %Media{
                type: :movie,
+               file_stamp: file_stamp,
                video: %Video{
                  parts: [%Part{movie_id: movie_id}],
                  keyframe_seconds: ^keyframe_seconds,
@@ -110,6 +112,7 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
              } = load_media!(path)
 
       assert movie_id == movie.id
+      assert file_stamp == FileStamp.read(path, :movie)
 
       assert_received {[:watch_club, :media_ingest, :stop], ^ref, %{duration: _},
                        %{media_type: "movie", trigger: :webhook, outcome: :matched, reason: nil}}
@@ -220,7 +223,7 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
       on_exit(fn -> File.rm_rf!(dir) end)
 
       Oban.cancel_all_jobs(Oban.Job)
-      %{candidate: candidate, media_id: id}
+      %{candidate: candidate}
     end
 
     test "keeps the Scrubbing Thumbnails and Markers of an unchanged file",
@@ -229,16 +232,6 @@ defmodule WatchClub.MediaSources.Import.Workers.CandidateIngestorTest do
 
       refute_enqueued(worker: GenerateTrickplay)
       refute_enqueued(worker: DetectMarkers)
-    end
-
-    test "regenerates the Scrubbing Thumbnails and Markers of an unchanged file when asked",
-         %{candidate: candidate, media_id: media_id} do
-      candidate = %{candidate | regenerate_thumbnails_and_markers?: true}
-
-      assert :ok = perform_job(CandidateIngestor, Candidate.to_map(candidate))
-
-      assert_enqueued(worker: GenerateTrickplay, args: %{video_id: media_id})
-      assert_enqueued(worker: DetectMarkers)
     end
   end
 

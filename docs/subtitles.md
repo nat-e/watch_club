@@ -21,6 +21,8 @@ Since Forced and SDH markers are often not accurate, we also extract them, with 
 A track's name wins over its forced marker: "Full" or "Complet" makes it a full track, "Forced" a forced one. A track marked forced whose name says neither is a full track with at least 5 lines per minute of the video, when the file counts its lines (mkvmerge writes the count), or else when its language matches none of the video's audio tracks.
 All tracks metadata is stored in the database, and filtered later, so that adding or removing a language does not need re-importing.
 
+Subtitle files next to a video, such as the ones Bazarr downloads, are part of its File Stamp. When one is added, replaced or removed, the next Media Import, at most 15 minutes later, processes the video again. Tracks still in the file keep their ids, so a Playback keeps the subtitles it picked.
+
 ## Future improvements
 
 - Bazarr integration

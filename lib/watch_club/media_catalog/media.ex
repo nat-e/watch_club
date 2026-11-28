@@ -45,6 +45,11 @@ defmodule WatchClub.MediaCatalog.Media do
       change NormalizePath
     end
 
+    update :stamp do
+      description "Saves the File Stamp of a Media saved without one, without processing its file"
+      accept [:file_stamp]
+    end
+
     update :match do
       description """
       The Instance Administrator's Manual Match of a Video: a Movie file to a Movie, a TV Show
@@ -137,10 +142,10 @@ defmodule WatchClub.MediaCatalog.Media do
 
     create :create_video do
       primary? true
-      accept [:media_source_id, :path, :type]
+      accept [:media_source_id, :path, :type, :file_stamp]
       upsert? true
       upsert_identity :unique_path_per_media_source
-      upsert_fields [:content_id]
+      upsert_fields [:content_id, :file_stamp]
 
       argument :video, :map do
         allow_nil? false
@@ -166,10 +171,10 @@ defmodule WatchClub.MediaCatalog.Media do
     end
 
     create :create_ebook do
-      accept [:media_source_id, :path]
+      accept [:media_source_id, :path, :file_stamp]
       upsert? true
       upsert_identity :unique_path_per_media_source
-      upsert_fields [:content_id]
+      upsert_fields [:content_id, :file_stamp]
 
       argument :ebook, :map do
         allow_nil? false
@@ -196,10 +201,10 @@ defmodule WatchClub.MediaCatalog.Media do
     end
 
     create :create_audiobook do
-      accept [:media_source_id, :path]
+      accept [:media_source_id, :path, :file_stamp]
       upsert? true
       upsert_identity :unique_path_per_media_source
-      upsert_fields [:content_id]
+      upsert_fields [:content_id, :file_stamp]
 
       argument :audiobook, :map do
         allow_nil? false
@@ -252,8 +257,8 @@ defmodule WatchClub.MediaCatalog.Media do
       authorize_if always()
     end
 
-    policy action([:create_video, :create_ebook, :create_audiobook, :change_path]) do
-      description "Only the system actor can create Media or move it"
+    policy action([:create_video, :create_ebook, :create_audiobook, :change_path, :stamp]) do
+      description "Only the system actor can create Media, move it or stamp it"
       authorize_if WatchClub.Checks.IsSystemActor
     end
 
@@ -326,6 +331,11 @@ defmodule WatchClub.MediaCatalog.Media do
       default false
       public? true
       source :is_manually_matched
+    end
+
+    attribute :file_stamp, :string do
+      description "The File Stamp of its file when it was last processed, nil when unknown"
+      public? true
     end
 
     timestamps()

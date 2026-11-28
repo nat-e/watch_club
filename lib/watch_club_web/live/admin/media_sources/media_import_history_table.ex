@@ -95,7 +95,9 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
     ~H"""
     <.stack space="related" class="items-start">
       <.badge variant="muted" size="sm">
-        {files_to_process_label(@media_import.files_to_process)}
+        {if @media_import.read_every_file_again?,
+          do: dgettext("admin_media_imports", "All"),
+          else: dgettext("admin_media_imports", "New and changed")}
       </.badge>
       <span
         :if={@media_import.status == :processing and is_nil(@media_import.file_count)}
@@ -185,13 +187,6 @@ defmodule WatchClubWeb.Admin.MediaSources.MediaImportHistoryTable do
 
   defp number!(count, locale),
     do: WatchClub.Cldr.Number.to_string!(count, locale: UserLocale.to_cldr_locale_name(locale))
-
-  defp files_to_process_label(:new), do: dgettext("admin_media_imports", "New")
-
-  defp files_to_process_label(:new_and_unmatched),
-    do: dgettext("admin_media_imports", "New and unmatched")
-
-  defp files_to_process_label(:all), do: dgettext("admin_media_imports", "All")
 
   defp duration(%Import{finished_at: nil}), do: "—"
 

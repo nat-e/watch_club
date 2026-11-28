@@ -17,7 +17,7 @@ defmodule WatchClub.MediaSources.Import.Candidate do
             | nil,
           media_structure: __MODULE__.MediaStructure.t() | nil,
           match_result: __MODULE__.MatchResult.t() | nil,
-          regenerate_thumbnails_and_markers?: boolean()
+          file_stamp: String.t() | nil
         }
 
   defstruct [
@@ -29,8 +29,8 @@ defmodule WatchClub.MediaSources.Import.Candidate do
     :identity,
     :media_structure,
     :match_result,
-    # The Media Import's choice to rebuild them even when the file hasn't changed
-    regenerate_thumbnails_and_markers?: false
+    # Read before the file, so a change while it's processed shows at the next Media Import
+    :file_stamp
   ]
 
   defmodule MatchResult do
@@ -203,9 +203,8 @@ defmodule WatchClub.MediaSources.Import.Candidate do
   end
 
   @doc """
-  Turns a `Candidate`'s scan-time fields (`media_source_id`, `path`, `media_type`, `identity` and
-  `regenerate_thumbnails_and_markers?`) into a map that can be stored as JSON. `from_map/1`
-  reverses it.
+  Turns a `Candidate`'s scan-time fields (`media_source_id`, `path`, `media_type` and `identity`)
+  into a map that can be stored as JSON. `from_map/1` reverses it.
   """
   @spec to_map(t()) :: map()
   def to_map(%__MODULE__{} = candidate) do
@@ -213,8 +212,7 @@ defmodule WatchClub.MediaSources.Import.Candidate do
       media_source_id: candidate.media_source_id,
       path: candidate.path,
       media_type: candidate.media_type,
-      identity: candidate.identity && Map.from_struct(candidate.identity),
-      regenerate_thumbnails_and_markers?: candidate.regenerate_thumbnails_and_markers?
+      identity: candidate.identity && Map.from_struct(candidate.identity)
     }
   end
 
@@ -224,24 +222,19 @@ defmodule WatchClub.MediaSources.Import.Candidate do
   `to_map/1`.
   """
   @spec from_map(map()) :: t()
-  def from_map(
-        %{
-          "media_source_id" => media_source_id,
-          "path" => path,
-          "media_type" => media_type,
-          "identity" => identity_fields
-        } = args
-      ) do
+  def from_map(%{
+        "media_source_id" => media_source_id,
+        "path" => path,
+        "media_type" => media_type,
+        "identity" => identity_fields
+      }) do
     media_type = to_media_type(media_type)
 
     %__MODULE__{
       media_source_id: media_source_id,
       path: path,
       media_type: media_type,
-      identity: build_identity(identity_fields, media_type),
-      # Missing from the jobs enqueued before the option existed
-      regenerate_thumbnails_and_markers?:
-        Map.get(args, "regenerate_thumbnails_and_markers?", false)
+      identity: build_identity(identity_fields, media_type)
     }
   end
 

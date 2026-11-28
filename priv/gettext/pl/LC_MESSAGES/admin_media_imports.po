@@ -175,12 +175,6 @@ msgid "Manual"
 msgstr "Ręcznie"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/media_source_card.ex
-#, elixir-autogen, elixir-format
-msgid "Manual only"
-msgstr "Tylko ręcznie"
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Media type"
@@ -322,64 +316,10 @@ msgid "All"
 msgstr "Wszystkie"
 
 # AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "All files"
-msgstr "Wszystkie pliki"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Also retries files that couldn't be matched."
-msgstr "Ponawia też dopasowanie niedopasowanych plików."
-
-# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
 msgid "Files"
 msgstr "Pliki"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
-#, elixir-autogen, elixir-format
-msgid "New"
-msgstr "Nowe"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
-#, elixir-autogen, elixir-format
-msgid "New and unmatched"
-msgstr "Nowe i niedopasowane"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "New and unmatched files"
-msgstr "Nowe i niedopasowane pliki"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "New files only"
-msgstr "Tylko nowe pliki"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Only files not imported yet."
-msgstr "Tylko pliki, których jeszcze nie zaimportowano."
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Process"
-msgstr "Pliki do przetworzenia"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Reads every file again and matches it again. Manual matches are kept."
-msgstr "Ponownie odczytuje i dopasowuje każdy plik. Ręczne dopasowania pozostają bez zmian."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
@@ -398,12 +338,6 @@ msgstr "Sportarr"
 #, elixir-autogen, elixir-format
 msgid "Regenerate thumbnails and markers"
 msgstr "Wygeneruj ponownie miniatury i znaczniki"
-
-# AI-translated (Claude)
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
-#, elixir-autogen, elixir-format
-msgid "Even for files that haven't changed. New files always get them."
-msgstr "Także dla plików, które się nie zmieniły. Nowe pliki zawsze je otrzymują."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
@@ -702,3 +636,33 @@ msgstr "Zobacz wszystkie niedopasowane pliki"
 #, elixir-autogen, elixir-format
 msgid "Every 15 minutes"
 msgstr "Co 15 minut"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
+#, elixir-autogen, elixir-format
+msgid "New and changed"
+msgstr "Nowe i zmienione"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Read every file again"
+msgstr "Odczytaj ponownie wszystkie pliki"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "We process new and changed files, subtitles included, and remove the media of deleted files."
+msgstr "Przetwarzamy nowe i zmienione pliki, łącznie z napisami, i usuwamy media usuniętych plików."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Even files that haven't changed. Each file is matched again, but manual matches are kept."
+msgstr "Także pliki, które się nie zmieniły. Każdy plik jest ponownie dopasowywany, ale ręczne dopasowania pozostają bez zmian."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "For every video, even unchanged ones. New files always get them."
+msgstr "Dla każdego wideo, także niezmienionego. Nowe pliki zawsze je otrzymują."

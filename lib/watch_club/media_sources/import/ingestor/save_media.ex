@@ -10,35 +10,39 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
 
   def apply!(%Candidate{media_type: media_type} = candidate)
       when media_type in [:movie, :tv_show_episode, :sports_event] do
-    media =
-      MediaCatalog.create_or_update_video!(
-        %{
-          media_source_id: candidate.media_source_id,
-          path: candidate.path,
-          type: media_type,
-          video: build_video_input(candidate)
-        },
-        actor: SystemActor.actor(),
-        load: :video
-      )
-
-    if candidate.regenerate_thumbnails_and_markers? do
-      MediaCatalog.regenerate_thumbnails_and_markers!(media.video, actor: SystemActor.actor())
-    end
-
-    media
+    MediaCatalog.create_or_update_video!(
+      %{
+        media_source_id: candidate.media_source_id,
+        path: candidate.path,
+        type: media_type,
+        file_stamp: candidate.file_stamp,
+        video: build_video_input(candidate)
+      },
+      actor: SystemActor.actor(),
+      load: :video
+    )
   end
 
   def apply!(%Candidate{media_type: :audiobook} = candidate) do
     MediaCatalog.create_or_update_audiobook!(
-      %{media_source_id: candidate.media_source_id, path: candidate.path, audiobook: %{}},
+      %{
+        media_source_id: candidate.media_source_id,
+        path: candidate.path,
+        file_stamp: candidate.file_stamp,
+        audiobook: %{}
+      },
       actor: SystemActor.actor()
     )
   end
 
   def apply!(%Candidate{media_type: :ebook} = candidate) do
     MediaCatalog.create_or_update_ebook!(
-      %{media_source_id: candidate.media_source_id, path: candidate.path, ebook: %{}},
+      %{
+        media_source_id: candidate.media_source_id,
+        path: candidate.path,
+        file_stamp: candidate.file_stamp,
+        ebook: %{}
+      },
       actor: SystemActor.actor()
     )
   end
@@ -56,8 +60,10 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
       keyframe_seconds: structure.keyframe_seconds,
       keyframe_interval_bytes: structure.keyframe_interval_bytes,
       video_tracks: structure.video_tracks,
-      audio_tracks: structure.audio_tracks,
-      text_tracks: structure.text_tracks
+      # As maps, so the Video matches them with the tracks it already has: Ash would match a
+      # struct by its `video_id`, which these don't have
+      audio_tracks: Enum.map(structure.audio_tracks, &Map.from_struct/1),
+      text_tracks: Enum.map(structure.text_tracks, &Map.from_struct/1)
     }
   end
 end
