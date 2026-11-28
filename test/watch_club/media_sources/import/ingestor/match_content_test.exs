@@ -1,6 +1,7 @@
 defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
   use WatchClub.DataCase, async: false
 
+  alias WatchClub.Accounts.UserLocale
   alias WatchClub.Contents.{Content, ContentIdentity, TvShowEpisodeLocalization}
   alias WatchClub.MediaCatalog
   alias WatchClub.MediaSources.Import.Candidate
@@ -118,8 +119,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
         assert matched_id == movie.id
       end
 
-      assert_receive :fetched_metadata
-      assert_receive :fetched_metadata
+      # Only the first file fetches, once per Locale
+      for _ <- UserLocale.values(), do: assert_receive(:fetched_metadata)
       refute_receive :fetched_metadata, 0
     end
 
@@ -454,8 +455,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.MatchContentTest do
         assert is_binary(id)
       end
 
-      # Only the first file fetches: two Locales, each with the TV Show's details and two seasons
-      for _ <- 1..6, do: assert_receive({:fetched_metadata, _})
+      # Only the first file fetches: for each Locale, the TV Show's details and two seasons
+      for _ <- UserLocale.values(), _ <- 1..3, do: assert_receive({:fetched_metadata, _})
       refute_receive {:fetched_metadata, _}, 0
     end
 

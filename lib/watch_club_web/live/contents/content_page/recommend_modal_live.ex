@@ -109,7 +109,7 @@ defmodule WatchClubWeb.Contents.ContentPage.RecommendModalLive do
     """
   end
 
-  # The French names the Content Type, which sets the words' gender
+  # Translations name the Content Type, which sets the words' gender
   defp recommended_it_to_you(:movie), do: dpgettext("contents", "movie", "Recommended it to you")
 
   defp recommended_it_to_you(:tv_show),

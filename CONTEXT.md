@@ -23,7 +23,7 @@ A user’s personal choices that shape their WatchClub experience.
 _Avoid_: User settings, account settings
 
 **Track Language**:
-A language a **User** can choose for audio and subtitles: English or French.
+A language a **User** can choose for audio and subtitles: English, French or Polish.
 _Avoid_: Locale
 
 **Preferred Audio Language**:
@@ -323,7 +323,7 @@ A **Text Track** that also describes sounds and names who speaks, for deaf and h
 _Avoid_: Closed captions, CC, hearing impaired subtitles
 
 **Text Track Choices**:
-The **Text Tracks** a **User** can pick in a **Playback**: one per language and region among English, French and the original language of the **Content**, named after it.
+The **Text Tracks** a **User** can pick in a **Playback**: one per language and region among the **Track Languages** and the original language of the **Content**, named after it.
 _Avoid_: Subtitle list, subtitle menu, visible tracks
 
 **Preferred Audio Track**:

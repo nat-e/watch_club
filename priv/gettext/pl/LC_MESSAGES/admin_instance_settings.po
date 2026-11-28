@@ -1,0 +1,48 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: pl\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/instance_settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Instance settings"
+msgstr "Ustawienia instancji"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/instance_settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Configure how your instance presents itself."
+msgstr "Określ, jak prezentuje się twoja instancja."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/instance_settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "General"
+msgstr "Ogólne"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/instance_settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Instance name"
+msgstr "Nazwa instancji"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/instance_settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Instance settings updated."
+msgstr "Zaktualizowano ustawienia instancji."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/instance_settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "The name shown across the app, in the browser tab, and in invitations."
+msgstr "Nazwa widoczna w całej aplikacji, na karcie przeglądarki i w zaproszeniach."

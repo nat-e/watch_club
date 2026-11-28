@@ -273,6 +273,17 @@ defmodule WatchClub.Contents.Content do
       run WatchClub.Contents.Actions.GetOrRefreshContent
     end
 
+    action :refresh_all_metadata do
+      description """
+      Refreshes, one at a time, the metadata of every Content last refreshed before
+      refreshed_before. A Content the Metadata Provider fails on keeps its stored metadata.
+      """
+
+      argument :refreshed_before, :utc_datetime_usec, allow_nil?: false
+
+      run WatchClub.Contents.Actions.RefreshAllMetadata
+    end
+
     action :search, :struct do
       constraints instance_of: SearchResultsPage
 

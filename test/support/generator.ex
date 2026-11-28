@@ -1,6 +1,6 @@
 defmodule WatchClub.Generator do
   use Ash.Generator
-  alias WatchClub.Accounts.{InvitationCode, User, UserSettings}
+  alias WatchClub.Accounts.{InvitationCode, User, UserLocale, UserSettings}
 
   alias WatchClub.Contents.{
     Book,
@@ -131,7 +131,8 @@ defmodule WatchClub.Generator do
             id: content.id,
             backdrop_path: content.original_title,
             localizations:
-              for {iso_639_1, iso_3166_1} <- [{"fr", "FR"}, {"en", "US"}] do
+              for locale <- UserLocale.values(),
+                  [iso_639_1, iso_3166_1] = UserLocale.split(locale) do
                 %{
                   iso_639_1: iso_639_1,
                   iso_3166_1: iso_3166_1,
@@ -183,7 +184,8 @@ defmodule WatchClub.Generator do
             tmdb_id: tmdb_id,
             tvdb_id: tmdb_id,
             localizations:
-              for {iso_639_1, iso_3166_1} <- [{"fr", "FR"}, {"en", "US"}] do
+              for locale <- UserLocale.values(),
+                  [iso_639_1, iso_3166_1] = UserLocale.split(locale) do
                 %{iso_639_1: iso_639_1, iso_3166_1: iso_3166_1, title: content.original_title}
               end,
             episodes: episodes

@@ -1,0 +1,99 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: pl\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "My Requests"
+msgstr "Moje prośby"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "No requests yet"
+msgstr "Nie masz jeszcze żadnych próśb"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
+#, elixir-autogen, elixir-format
+msgid "Stop getting notified"
+msgstr "Nie powiadamiaj mnie"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
+#, elixir-autogen, elixir-format
+msgid "Stop getting notified about %{title}"
+msgstr "Nie powiadamiaj mnie: %{title}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "%{percent}% downloaded"
+msgstr "Pobrano %{percent}%"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Not found, we'll keep looking for it"
+msgstr "Nie znaleziono, ale nadal będziemy szukać"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "On the way"
+msgstr "W drodze"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Out on %{date}"
+msgstr "Premiera %{date}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Ready to watch"
+msgstr "Gotowe do obejrzenia"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Not found, still looking"
+msgstr "Nie znaleziono, szukamy dalej"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "%{ready} of %{count} episode ready"
+msgid_plural "%{ready} of %{count} episodes ready"
+msgstr[0] "Gotowe: %{ready} z %{count} odcinka"
+msgstr[1] "Gotowe: %{ready} z %{count} odcinków"
+msgstr[2] "Gotowe: %{ready} z %{count} odcinków"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "Download stuck"
+msgstr "Pobieranie utknęło"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Request the movies and TV shows you'd like to watch. You can follow them here until they're ready."
+msgstr "Poproś o filmy i seriale, które chcesz obejrzeć. Tutaj możesz śledzić ich postęp, aż będą gotowe."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/requests/request_status.ex
+#, elixir-autogen, elixir-format
+msgid "The download is stuck. Let %{admin} know."
+msgstr "Pobieranie utknęło. Daj znać administratorowi (%{admin})."

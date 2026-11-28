@@ -115,7 +115,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
           subtitles("fre", "Forced"),
           subtitles("fre", "Full", %{"forced" => 1}),
           subtitles("eng", "Signs.2002.1080p.BluRay.x264-GROUP"),
-          subtitles("eng", "English - Forced - 1080p")
+          subtitles("eng", "English - Forced - 1080p"),
+          subtitles(nil, "Polski")
         ])
       )
 
@@ -130,7 +131,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructureTest do
                %TextTrack{language: "fr", forced?: true, sdh?: false},
                %TextTrack{language: "fr", forced?: false, sdh?: false},
                %TextTrack{language: "en", forced?: false, sdh?: false},
-               %TextTrack{language: "en", forced?: true, sdh?: false}
+               %TextTrack{language: "en", forced?: true, sdh?: false},
+               %TextTrack{language: "pl", forced?: false, sdh?: false}
              ] = candidate.media_structure.text_tracks
     end
 

@@ -1,0 +1,252 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: pl\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Language"
+msgstr "Język"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Settings"
+msgstr "Ustawienia"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Manage your account preferences."
+msgstr "Zarządzaj ustawieniami swojego konta."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Preferences"
+msgstr "Preferencje"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Choose the language used across %{name}."
+msgstr "Wybierz język, w którym wyświetla się %{name}."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Change the password used to sign in. Your other devices will be signed out."
+msgstr "Zmień hasło, którym się logujesz. Twoje pozostałe urządzenia zostaną wylogowane."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Confirm password"
+msgstr "Potwierdź hasło"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Current password"
+msgstr "Obecne hasło"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "New password"
+msgstr "Nowe hasło"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Security"
+msgstr "Bezpieczeństwo"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Update password"
+msgstr "Zmień hasło"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Your password has been updated"
+msgstr "Twoje hasło zostało zmienione"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "About"
+msgstr "O aplikacji"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB."
+msgstr "Ten produkt korzysta z TMDB i interfejsów API TMDB, ale nie jest wspierany, certyfikowany ani w inny sposób zatwierdzony przez TMDB."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Audio"
+msgstr "Dźwięk"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Audio and subtitles"
+msgstr "Dźwięk i napisy"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Choose the audio and subtitles videos start with. You can still change them while watching."
+msgstr "Wybierz, z jakim dźwiękiem i napisami rozpoczyna się odtwarzanie. W trakcie oglądania nadal możesz je zmienić."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Off"
+msgstr "Wyłączone"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Original language"
+msgstr "Język oryginału"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Subtitles"
+msgstr "Napisy"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Your audio and subtitle preferences are saved"
+msgstr "Zapisano ustawienia dźwięku i napisów"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Languages without subtitles"
+msgstr "Języki bez napisów"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "When the audio is in one of these languages, only forced subtitles show, for signs or lines in another language."
+msgstr "Gdy dźwięk jest w jednym z tych języków, wyświetlają się tylko napisy wymuszone, które tłumaczą tekst na ekranie lub kwestie w innym języku."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Saving…"
+msgstr "Zapisywanie…"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Zoom"
+msgstr "Powiększenie"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Zoom in"
+msgstr "Powiększ"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Zoom out"
+msgstr "Pomniejsz"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Change profile picture"
+msgstr "Zmień zdjęcie profilowe"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Crop your profile picture"
+msgstr "Przytnij zdjęcie profilowe"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Drag the picture, or click where to center it."
+msgstr "Przeciągnij zdjęcie lub kliknij miejsce, które ma być na środku."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Drag the picture, or tap where to center it."
+msgstr "Przeciągnij zdjęcie lub dotknij miejsca, które ma być na środku."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Remove profile picture"
+msgstr "Usuń zdjęcie profilowe"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Save profile picture"
+msgstr "Zapisz zdjęcie profilowe"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Upload profile picture"
+msgstr "Prześlij zdjęcie profilowe"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't save your profile picture. Try again."
+msgstr "Nie udało nam się zapisać zdjęcia profilowego. Spróbuj ponownie."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Your new profile picture. Move it with the arrow keys."
+msgstr "Twoje nowe zdjęcie profilowe. Przesuń je klawiszami strzałek."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Your profile picture is removed"
+msgstr "Usunięto zdjęcie profilowe"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Your profile picture is saved"
+msgstr "Zapisano zdjęcie profilowe"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "Prefer subtitles for the deaf and hard of hearing (SDH)"
+msgstr "Preferuj napisy dla niesłyszących"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#, elixir-autogen, elixir-format
+msgid "They also describe sounds and say who is speaking."
+msgstr "Opisują też dźwięki i wskazują, kto mówi."
