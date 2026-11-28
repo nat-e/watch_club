@@ -11,144 +11,171 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/contents/poster_card.ex
 #, elixir-autogen, elixir-format
 msgid "Original language: %{language}"
-msgstr ""
+msgstr "Język oryginału: %{language}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "%{decade}s"
-msgstr ""
+msgstr "Lata %{decade}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Clear filters"
-msgstr ""
+msgstr "Wyczyść filtry"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Filters"
-msgstr ""
+msgstr "Filtry"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "More"
-msgstr ""
+msgstr "Więcej"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "More filters"
-msgstr ""
+msgstr "Więcej filtrów"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "More filters, %{count} on"
 msgid_plural "More filters, %{count} on"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Więcej filtrów, %{count} aktywny"
+msgstr[1] "Więcej filtrów, %{count} aktywne"
+msgstr[2] "Więcej filtrów, %{count} aktywnych"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Not watched"
-msgstr ""
+msgstr "Nieobejrzane"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Nothing matches these filters"
-msgstr ""
+msgstr "Nic nie pasuje do tych filtrów"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Original language"
-msgstr ""
+msgstr "Język oryginału"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Remove a filter to see more."
-msgstr ""
+msgstr "Usuń któryś filtr, aby zobaczyć więcej."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Sort: %{sort}"
-msgstr ""
+msgstr "Sortowanie: %{sort}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Year"
-msgstr ""
+msgstr "Rok"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Type"
-msgstr ""
+msgstr "Typ"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Genre"
-msgstr ""
+msgstr "Gatunek"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "%{rating}+"
-msgstr ""
+msgstr "%{rating}+"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Rating"
-msgstr ""
+msgstr "Ocena"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgctxt "rating"
 msgid "Any"
-msgstr ""
+msgstr "Dowolna"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "No TV shows yet"
-msgstr ""
+msgstr "Nie ma jeszcze seriali"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "No movies yet"
-msgstr ""
+msgstr "Nie ma jeszcze filmów"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "No sports events yet"
-msgstr ""
+msgstr "Nie ma jeszcze wydarzeń sportowych"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/contents/poster_card.ex
 #, elixir-autogen, elixir-format
 msgid "Recommended by %{names}"
-msgstr ""
+msgstr "Polecane przez %{names}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/contents/poster_card.ex
 #, elixir-autogen, elixir-format
 msgid "Recommended by %{name} and %{count} other"
 msgid_plural "Recommended by %{name} and %{count} others"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Polecane przez %{name} i %{count} inną osobę"
+msgstr[1] "Polecane przez %{name} i %{count} inne osoby"
+msgstr[2] "Polecane przez %{name} i %{count} innych osób"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Recommended by friends"
-msgstr ""
+msgstr "Polecane przez znajomych"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Request the TV shows you'd like to watch. We'll look for them and add them here for everyone."
-msgstr ""
+msgstr "Poproś o seriale, które chcesz obejrzeć. Poszukamy ich i dodamy je tutaj dla wszystkich."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Request the movies you'd like to watch. We'll look for them and add them here for everyone."
-msgstr ""
+msgstr "Poproś o filmy, które chcesz obejrzeć. Poszukamy ich i dodamy je tutaj dla wszystkich."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/browse_page.ex
 #, elixir-autogen, elixir-format
 msgid "Request the sports events you'd like to watch. We'll look for them and add them here for everyone."
-msgstr ""
+msgstr "Poproś o wydarzenia sportowe, które chcesz obejrzeć. Poszukamy ich i dodamy je tutaj dla wszystkich."

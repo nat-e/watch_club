@@ -11,63 +11,75 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Actions"
-msgstr ""
+msgstr "Akcje"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Actions for %{username}"
-msgstr ""
+msgstr "Akcje dla użytkownika %{username}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex
 #: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Delete user"
-msgstr ""
+msgstr "Usuń użytkownika"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Member since"
-msgstr ""
+msgstr "Data dołączenia"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "User"
-msgstr ""
+msgstr "Użytkownik"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "User deleted"
-msgstr ""
+msgstr "Usunięto użytkownika"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Users"
-msgstr ""
+msgstr "Użytkownicy"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Reset password"
-msgstr ""
+msgstr "Zresetuj hasło"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Delete %{username}? They can't sign in anymore, and their watch history and playlists are deleted. Their messages and requests stay, shown as from a deleted user. You can't undo this."
-msgstr ""
+msgstr "Usunąć użytkownika %{username}? Ta osoba nie będzie mogła się już zalogować, a jej historia oglądania i playlisty zostaną usunięte. Jej wiadomości i prośby pozostaną, ale będą podpisane jako usunięty użytkownik. Tego nie da się cofnąć."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Instance administrator"
-msgstr ""
+msgstr "Administrator"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Invite friends to %{name} and manage who has access."
-msgstr ""
+msgstr "Zapraszaj znajomych do klubu %{name} i decyduj, kto ma dostęp."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Reset link copied. Send it to %{username}: it works for 3 days."
-msgstr ""
+msgstr "Skopiowano link do resetowania hasła. Wyślij go użytkownikowi %{username}: będzie ważny przez 3 dni."

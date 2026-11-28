@@ -11,127 +11,152 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Copy invitation link"
-msgstr ""
+msgstr "Kopiuj link zaproszenia"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Expires"
-msgstr ""
+msgstr "Wygasa"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Invitation actions"
-msgstr ""
+msgstr "Opcje zaproszenia"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Invitation created"
-msgstr ""
+msgstr "Utworzono zaproszenie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Unlimited"
-msgstr ""
+msgstr "Bez limitu"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Uses"
-msgstr ""
+msgstr "Użycia"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Code"
-msgstr ""
+msgstr "Kod"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Create"
-msgstr ""
+msgstr "Utwórz"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Delete"
-msgstr ""
+msgstr "Usuń"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Edit"
-msgstr ""
+msgstr "Edytuj"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Invitation updated"
-msgstr ""
+msgstr "Zaktualizowano zaproszenie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Maximum number of accounts this invitation can create. Leave empty for unlimited."
-msgstr ""
+msgstr "Maksymalna liczba kont, które można założyć z tym zaproszeniem. Zostaw puste, aby nie ustawiać limitu."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Save"
-msgstr ""
+msgstr "Zapisz"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "The code cannot be changed once created."
-msgstr ""
+msgstr "Po utworzeniu kodu nie można już zmienić."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "Active invitations"
-msgstr ""
+msgstr "Aktywne zaproszenia"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Delete invitation"
-msgstr ""
+msgstr "Usuń zaproszenie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Edit invitation"
-msgstr ""
+msgstr "Edytuj zaproszenie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Invitation deleted"
-msgstr ""
+msgstr "Usunięto zaproszenie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Invitation link copied. Send it to your friends."
-msgstr ""
+msgstr "Skopiowano link zaproszenia. Wyślij go znajomym."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page.ex
 #, elixir-autogen, elixir-format
 msgid "Invite friends"
-msgstr ""
+msgstr "Zaproś znajomych"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Maximum uses"
-msgstr ""
+msgstr "Maksymalna liczba użyć"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "New invitation"
-msgstr ""
+msgstr "Nowe zaproszenie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
 #, elixir-autogen, elixir-format
 msgid "No active invitations"
-msgstr ""
+msgstr "Brak aktywnych zaproszeń"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Nobody can sign up with %{code} anymore. Accounts already created with it stay."
-msgstr ""
+msgstr "Nikt nie będzie mógł już zarejestrować się kodem %{code}. Konta założone wcześniej z tym kodem pozostaną."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Share the link with friends so they can create their account. It works for 7 days."
-msgstr ""
+msgstr "Wyślij link znajomym, aby mogli założyć konto. Link jest ważny przez 7 dni."

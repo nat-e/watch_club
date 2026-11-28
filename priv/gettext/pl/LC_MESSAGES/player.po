@@ -11,297 +11,354 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/problem_category.ex
 #: lib/watch_club_web/live/player/player_components.ex
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Audio"
-msgstr ""
+msgstr "Dźwięk"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Back"
-msgstr ""
+msgstr "Wstecz"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Back home"
-msgstr ""
+msgstr "Wróć na stronę główną"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Quality"
-msgstr ""
+msgstr "Jakość"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/problem_category.ex
 #: lib/watch_club_web/live/player/player_components.ex
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Subtitles"
-msgstr ""
+msgstr "Napisy"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Skip intro"
-msgstr ""
+msgstr "Pomiń czołówkę"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Skip recap"
-msgstr ""
+msgstr "Pomiń streszczenie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "Details (optional)"
-msgstr ""
+msgstr "Szczegóły (opcjonalnie)"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/problem_category.ex
 #, elixir-autogen, elixir-format
 msgid "Other"
-msgstr ""
+msgstr "Inne"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/problem_category.ex
 #, elixir-autogen, elixir-format
 msgid "Picture quality"
-msgstr ""
+msgstr "Jakość obrazu"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/problem_category.ex
 #, elixir-autogen, elixir-format
 msgid "Player not working"
-msgstr ""
+msgstr "Odtwarzacz nie działa"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #: lib/watch_club_web/live/player/player_components.ex
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Report a problem"
-msgstr ""
+msgstr "Zgłoś problem"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "Send report"
-msgstr ""
+msgstr "Wyślij zgłoszenie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Settings"
-msgstr ""
+msgstr "Ustawienia"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/problem_category.ex
 #, elixir-autogen, elixir-format
 msgid "Slow or buffering"
-msgstr ""
+msgstr "Zacina się lub wolno się ładuje"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "What happened?"
-msgstr ""
+msgstr "Co się stało?"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "What's wrong?"
-msgstr ""
+msgstr "Co jest nie tak?"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/problem_category.ex
 #, elixir-autogen, elixir-format
 msgid "Wrong video"
-msgstr ""
+msgstr "Niewłaściwe wideo"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/tv_controls_live.ex
 #, elixir-autogen, elixir-format
 msgid "Back 10 seconds"
-msgstr ""
+msgstr "Cofnij o 10 sekund"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Browse"
-msgstr ""
+msgstr "Przeglądaj"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Cancel"
-msgstr ""
+msgstr "Anuluj"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Close the Remote"
-msgstr ""
+msgstr "Zamknij pilota"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Connecting to %{tv}…"
-msgstr ""
+msgstr "Łączenie z telewizorem %{tv}…"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/tv_controls_live.ex
 #, elixir-autogen, elixir-format
 msgid "Forward 10 seconds"
-msgstr ""
+msgstr "Przewiń o 10 sekund do przodu"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "More"
-msgstr ""
+msgstr "Więcej"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Nothing is playing on a TV"
-msgstr ""
+msgstr "Na telewizorze nic nie jest odtwarzane"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Now playing"
-msgstr ""
+msgstr "Teraz odtwarzane"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Off"
-msgstr ""
+msgstr "Wyłączone"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/tv_controls_live.ex
 #, elixir-autogen, elixir-format
 msgid "Pause"
-msgstr ""
+msgstr "Wstrzymaj"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Paused on"
-msgstr ""
+msgstr "Wstrzymano na telewizorze"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/tv_bar.ex
 #, elixir-autogen, elixir-format
 msgid "Paused on %{tv}"
-msgstr ""
+msgstr "Wstrzymano na telewizorze %{tv}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/tv_controls_live.ex
 #, elixir-autogen, elixir-format
 msgid "Play"
-msgstr ""
+msgstr "Odtwórz"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Play on a TV"
-msgstr ""
+msgstr "Odtwórz na telewizorze"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Playing on"
-msgstr ""
+msgstr "Odtwarzanie na telewizorze"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Playing somewhere else"
-msgstr ""
+msgstr "Odtwarzanie gdzie indziej"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Remote"
-msgstr ""
+msgstr "Pilot"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/tv_controls_live.ex
 #, elixir-autogen, elixir-format
 msgid "Seek"
-msgstr ""
+msgstr "Przewijanie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Start a video in Chrome on a computer or an Android phone, then pick a TV with the cast icon in the Player."
-msgstr ""
+msgstr "Odtwórz wideo w Chrome na komputerze lub telefonie z Androidem, a potem wybierz telewizor za pomocą ikony przesyłania w odtwarzaczu."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Stop casting"
-msgstr ""
+msgstr "Zatrzymaj przesyłanie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Stop casting to %{tv}"
-msgstr ""
+msgstr "Zatrzymaj przesyłanie na telewizor %{tv}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Up next"
-msgstr ""
+msgstr "Następne"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/helpers/now_playing.ex
 #, elixir-autogen, elixir-format
 msgid "Video"
-msgstr ""
+msgstr "Wideo"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "You started watching on another screen."
-msgstr ""
+msgstr "Oglądasz teraz na innym ekranie."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/tv_bar.ex
 #, elixir-autogen, elixir-format
 msgid "Open the Remote"
-msgstr ""
+msgstr "Otwórz pilota"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Remote sections"
-msgstr ""
+msgstr "Sekcje pilota"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Stopped casting to %{tv}."
-msgstr ""
+msgstr "Zatrzymano przesyłanie na telewizor %{tv}."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Play %{name}"
-msgstr ""
+msgstr "Odtwórz %{name}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player_page.ex
 #, elixir-autogen, elixir-format
 msgid "Couldn't play on the TV. Try again, and let %{admin} know if it keeps happening."
-msgstr ""
+msgstr "Nie udało się odtworzyć na telewizorze. Spróbuj ponownie, a jeśli problem się powtórzy, daj znać administratorowi (%{admin})."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "Report the problem so %{admin} can look into it."
-msgstr ""
+msgstr "Zgłoś problem, a %{admin} mu się przyjrzy."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playbacks/report_problem_live.ex
 #, elixir-autogen, elixir-format
 msgid "Tell %{admin} what's wrong with this video."
-msgstr ""
+msgstr "Opisz, co jest nie tak z tym wideo, a %{admin} to sprawdzi."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player_page.ex
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Thanks! We sent your report to %{admin}."
-msgstr ""
+msgstr "Dzięki! %{admin} ma już twoje zgłoszenie."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player_page.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't find this video."
-msgstr ""
+msgstr "Nie znaleźliśmy tego wideo."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't play this video"
-msgstr ""
+msgstr "Nie udało nam się odtworzyć tego wideo"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/player_page.ex
 #, elixir-autogen, elixir-format
 msgid "Couldn't play on the TV. It may not reach Watch Club: the TV needs an HTTPS address with a trusted certificate."
-msgstr ""
+msgstr "Nie udało się odtworzyć na telewizorze. Możliwe, że telewizor nie może połączyć się z Watch Club: potrzebuje adresu HTTPS z zaufanym certyfikatem."
 
+# AI-translated (Claude)
 #: lib/watch_club/playbacks/calculations/text_track_choices.ex
 #, elixir-autogen, elixir-format
 msgid "%{language} (SDH)"
-msgstr ""
+msgstr "%{language} (dla niesłyszących)"
 
+# AI-translated (Claude)
 #: lib/watch_club/playbacks/calculations/text_track_choices.ex
 #, elixir-autogen, elixir-format
 msgid "%{language} (forced)"
-msgstr ""
+msgstr "%{language} (wymuszone)"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/remote_page.ex
 #, elixir-autogen, elixir-format
 msgid "Auto"
-msgstr ""
+msgstr "Automatyczna"

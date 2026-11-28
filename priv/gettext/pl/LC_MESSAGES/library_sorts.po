@@ -11,27 +11,32 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club/contents/library_sort.ex
 #, elixir-autogen, elixir-format
 msgid "Newest"
-msgstr ""
+msgstr "Najnowsze"
 
+# AI-translated (Claude)
 #: lib/watch_club/contents/library_sort.ex
 #, elixir-autogen, elixir-format
 msgid "Oldest"
-msgstr ""
+msgstr "Najstarsze"
 
+# AI-translated (Claude)
 #: lib/watch_club/contents/library_sort.ex
 #, elixir-autogen, elixir-format
 msgid "Recently added"
-msgstr ""
+msgstr "Ostatnio dodane"
 
+# AI-translated (Claude)
 #: lib/watch_club/contents/library_sort.ex
 #, elixir-autogen, elixir-format
 msgid "Title, A to Z"
-msgstr ""
+msgstr "Tytuł, od A do Z"
 
+# AI-translated (Claude)
 #: lib/watch_club/contents/library_sort.ex
 #, elixir-autogen, elixir-format
 msgid "Best rated"
-msgstr ""
+msgstr "Najlepiej oceniane"

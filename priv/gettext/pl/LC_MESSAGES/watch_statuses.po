@@ -11,17 +11,20 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club/history/watch_status.ex
 #, elixir-autogen, elixir-format
 msgid "Not Watched"
-msgstr ""
+msgstr "Nieobejrzane"
 
+# AI-translated (Claude)
 #: lib/watch_club/history/watch_status.ex
 #, elixir-autogen, elixir-format
 msgid "Watched"
-msgstr ""
+msgstr "Obejrzane"
 
+# AI-translated (Claude)
 #: lib/watch_club/history/watch_status.ex
 #, elixir-autogen, elixir-format
 msgid "Watching"
-msgstr ""
+msgstr "W trakcie"

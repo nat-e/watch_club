@@ -11,378 +11,452 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Remove"
-msgstr ""
+msgstr "Usuń"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Remove media"
-msgstr ""
+msgstr "Usuń media"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Audio"
-msgstr ""
+msgstr "Dźwięk"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Audio (%{count})"
-msgstr ""
+msgstr "Dźwięk (%{count})"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Clear filters"
-msgstr ""
+msgstr "Wyczyść filtry"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Codec"
-msgstr ""
+msgstr "Kodek"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Container"
-msgstr ""
+msgstr "Kontener"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Default"
-msgstr ""
+msgstr "Domyślne"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "File"
-msgstr ""
+msgstr "Plik"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Forced"
-msgstr ""
+msgstr "Wymuszone"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Frame rate"
-msgstr ""
+msgstr "Liczba klatek"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Play"
-msgstr ""
+msgstr "Odtwórz"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Resolution"
-msgstr ""
+msgstr "Rozdzielczość"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Subtitles"
-msgstr ""
+msgstr "Napisy"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Subtitles (%{count})"
-msgstr ""
+msgstr "Napisy (%{count})"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Try clearing your filters or searching for something else"
-msgstr ""
+msgstr "Wyczyść filtry albo wyszukaj coś innego"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Unmatched"
-msgstr ""
+msgstr "Niedopasowane"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Video"
-msgstr ""
+msgstr "Wideo"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} fps"
-msgstr ""
+msgstr "%{count} kl./s"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "%{range} of %{count}"
-msgstr ""
+msgstr "%{range} z %{count}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Added"
-msgstr ""
+msgstr "Dodano"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Close details"
-msgstr ""
+msgstr "Zamknij szczegóły"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Media details"
-msgstr ""
+msgstr "Szczegóły mediów"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Media removed."
-msgstr ""
+msgstr "Usunięto media."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Next page"
-msgstr ""
+msgstr "Następna strona"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "No file selected"
-msgstr ""
+msgstr "Nie wybrano pliku"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "None"
-msgstr ""
+msgstr "Brak"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Page %{page}"
-msgstr ""
+msgstr "Strona %{page}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Page %{page} of %{count}"
-msgstr ""
+msgstr "Strona %{page} z %{count}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Pages"
-msgstr ""
+msgstr "Strony"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Previous page"
-msgstr ""
+msgstr "Poprzednia strona"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Search file name or title"
-msgstr ""
+msgstr "Szukaj po nazwie pliku lub tytule"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Select a file to see its details."
-msgstr ""
+msgstr "Wybierz plik, aby zobaczyć jego szczegóły."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Title"
-msgstr ""
+msgstr "Tytuł"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Back"
-msgstr ""
+msgstr "Wstecz"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Current match"
-msgstr ""
+msgstr "Obecne dopasowanie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Match"
-msgstr ""
+msgstr "Dopasuj"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Matched manually"
-msgstr ""
+msgstr "Dopasowano ręcznie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Matched to %{title}."
-msgstr ""
+msgstr "Dopasowano do pozycji %{title}."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "More actions"
-msgstr ""
+msgstr "Więcej opcji"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Movie title or TMDB ID"
-msgstr ""
+msgstr "Tytuł filmu lub ID TMDB"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "No TV show has this TMDB ID."
-msgstr ""
+msgstr "Żaden serial nie ma tego ID TMDB."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "No movie has this TMDB ID."
-msgstr ""
+msgstr "Żaden film nie ma tego ID TMDB."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Rematch"
-msgstr ""
+msgstr "Dopasuj ponownie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Remove manual match"
-msgstr ""
+msgstr "Usuń ręczne dopasowanie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Search TMDB"
-msgstr ""
+msgstr "Szukaj w TMDB"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Search TMDB by title or TMDB ID."
-msgstr ""
+msgstr "Szukaj w TMDB po tytule lub ID TMDB."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Season %{number}"
-msgstr ""
+msgstr "Sezon %{number}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "TMDB ID %{id}"
-msgstr ""
+msgstr "ID TMDB %{id}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "TMDB has no episodes for this TV show yet."
-msgstr ""
+msgstr "TMDB nie ma jeszcze odcinków tego serialu."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "TV show title or TMDB ID"
-msgstr ""
+msgstr "Tytuł serialu lub ID TMDB"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Couldn't load the episodes."
-msgstr ""
+msgstr "Nie udało się wczytać odcinków."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Couldn't match the file. Try again."
-msgstr ""
+msgstr "Nie udało się dopasować pliku. Spróbuj ponownie."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Try again"
-msgstr ""
+msgstr "Spróbuj ponownie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Event title or Sportarr ID"
-msgstr ""
+msgstr "Tytuł wydarzenia lub ID Sportarr"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "No event has this Sportarr ID."
-msgstr ""
+msgstr "Żadne wydarzenie nie ma tego ID Sportarr."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Search sportarr.net"
-msgstr ""
+msgstr "Szukaj na sportarr.net"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Search sportarr.net by title or Sportarr ID."
-msgstr ""
+msgstr "Szukaj na sportarr.net po tytule lub ID Sportarr."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Sportarr ID %{id}"
-msgstr ""
+msgstr "ID Sportarr %{id}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "Manual match removed. The file is unmatched until an import matches it."
-msgstr ""
+msgstr "Usunięto ręczne dopasowanie. Plik pozostanie niedopasowany, dopóki import go nie dopasuje."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Regenerate thumbnails and markers"
-msgstr ""
+msgstr "Wygeneruj ponownie miniatury i znaczniki"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Thumbnails and markers will be regenerated in the background."
-msgstr ""
+msgstr "Miniatury i znaczniki zostaną ponownie wygenerowane w tle."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Add a media source to bring your videos into Watch Club."
-msgstr ""
+msgstr "Dodaj źródło mediów, aby twoje pliki wideo pojawiły się w Watch Club."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Add media sources"
-msgstr ""
+msgstr "Dodaj źródła mediów"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #, elixir-autogen, elixir-format
 msgid "By title"
-msgstr ""
+msgstr "Według tytułu"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Every file in Watch Club: find the unmatched ones, match them by hand, or remove them."
-msgstr ""
+msgstr "Wszystkie pliki w Watch Club: znajdź niedopasowane, dopasuj je ręcznie albo usuń."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Media browser"
-msgstr ""
+msgstr "Przeglądarka mediów"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #: lib/watch_club_web/live/admin/media_browser_page/media_table.ex
 #, elixir-autogen, elixir-format
 msgid "Media type"
-msgstr ""
+msgstr "Typ mediów"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "No media matches your filters"
-msgstr ""
+msgstr "Brak mediów pasujących do filtrów"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "No media yet"
-msgstr ""
+msgstr "Nie ma jeszcze mediów"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Remove this media from Watch Club? Its file stays on disk, so the next import adds it back."
-msgstr ""
+msgstr "Usunąć te media z Watch Club? Plik zostanie na dysku, więc następny import doda je z powrotem."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Search media"
-msgstr ""
+msgstr "Szukaj mediów"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "This file isn't matched to any content."
-msgstr ""
+msgstr "Ten plik nie jest dopasowany do żadnej pozycji."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "SDH"
-msgstr ""
+msgstr "Dla niesłyszących"

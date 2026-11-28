@@ -11,336 +11,402 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "An administrator already exists"
-msgstr ""
+msgstr "Konto administratora już istnieje"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "Passwords do not match"
-msgstr ""
+msgstr "Hasła nie są zgodne"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "Username cannot be longer than %{max} characters"
-msgstr ""
+msgstr "Nazwa użytkownika nie może przekraczać %{max} znaków"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "Username must be at least %{min} characters"
-msgstr ""
+msgstr "Nazwa użytkownika musi składać się z co najmniej %{min} znaków"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "Password must be at least %{min} characters"
-msgstr ""
+msgstr "Hasło musi składać się z co najmniej %{min} znaków"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/invitation_code.ex
 #, elixir-autogen, elixir-format
 msgid "Code can only contain upper case letters, numbers and _"
-msgstr ""
+msgstr "Kod może zawierać tylko wielkie litery, cyfry i _"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/invitation_code.ex
 #, elixir-autogen, elixir-format
 msgid "Code cannot be longer than %{max} characters"
-msgstr ""
+msgstr "Kod nie może przekraczać %{max} znaków"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/invitation_code.ex
 #, elixir-autogen, elixir-format
 msgid "Code must be at least %{min} characters"
-msgstr ""
+msgstr "Kod musi składać się z co najmniej %{min} znaków"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/invitation_code.ex
 #, elixir-autogen, elixir-format
 msgid "This code is already used by another invitation"
-msgstr ""
+msgstr "Inne zaproszenie używa już tego kodu"
 
+# AI-translated (Claude)
 #: lib/watch_club/instance/instance_settings.ex
 #, elixir-autogen, elixir-format
 msgid "Instance name cannot be longer than %{max} characters"
-msgstr ""
+msgstr "Nazwa instancji nie może przekraczać %{max} znaków"
 
+# AI-translated (Claude)
 #: lib/watch_club/instance/instance_settings.ex
 #, elixir-autogen, elixir-format
 msgid "Instance name must be at least %{min} characters"
-msgstr ""
+msgstr "Nazwa instancji musi składać się z co najmniej %{min} znaków"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "The invitation code is required"
-msgstr ""
+msgstr "Kod zaproszenia jest wymagany"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "This username is already taken"
-msgstr ""
+msgstr "Ta nazwa użytkownika jest już zajęta"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
 #, elixir-autogen, elixir-format
 msgid "%{name} API was not found at this URL."
-msgstr ""
+msgstr "Pod tym adresem URL nie znaleziono API %{name}."
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
 #, elixir-autogen, elixir-format
 msgid "%{name} could not reach this URL."
-msgstr ""
+msgstr "Serwer %{name} nie mógł połączyć się z tym adresem URL."
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
 #, elixir-autogen, elixir-format
 msgid "%{name} is rate-limiting requests. Try again."
-msgstr ""
+msgstr "Serwer %{name} ogranicza liczbę żądań. Spróbuj ponownie."
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
 #, elixir-autogen, elixir-format
 msgid "%{name} rejected the request."
-msgstr ""
+msgstr "Serwer %{name} odrzucił żądanie."
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
 #, elixir-autogen, elixir-format
 msgid "%{name} rejected this API key."
-msgstr ""
+msgstr "Serwer %{name} odrzucił ten klucz API."
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
 #: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
 #, elixir-autogen, elixir-format
 msgid "%{name} returned a server error."
-msgstr ""
+msgstr "Serwer %{name} zwrócił błąd."
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
 #, elixir-autogen, elixir-format
 msgid "Could not connect to %{name} at this URL."
-msgstr ""
+msgstr "Nie udało się połączyć z serwerem %{name} pod tym adresem URL."
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
 #, elixir-autogen, elixir-format
 msgid "Could not connect to %{name}."
-msgstr ""
+msgstr "Nie udało się połączyć z serwerem %{name}."
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
 #, elixir-autogen, elixir-format
 msgid "This URL did not respond like a %{name} server."
-msgstr ""
+msgstr "Ten adres URL odpowiada inaczej niż serwer %{name}."
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
 #, elixir-autogen, elixir-format
 msgid "This URL is a %{app_name} server, not %{expected}."
-msgstr ""
+msgstr "Pod tym adresem URL jest serwer %{app_name}, a nie %{expected}."
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
 #, elixir-autogen, elixir-format
 msgid "This URL is not a %{expected} server."
-msgstr ""
+msgstr "Pod tym adresem URL nie ma serwera %{expected}."
 
+# AI-translated (Claude)
 #: lib/watch_club/shared/validations/http_url.ex
 #, elixir-autogen, elixir-format
 msgid "This URL is not valid."
-msgstr ""
+msgstr "Ten adres URL jest nieprawidłowy."
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
 #, elixir-autogen, elixir-format
 msgid "Could not reach %{name}."
-msgstr ""
+msgstr "Nie udało się skontaktować z serwerem %{name}."
 
+# AI-translated (Claude)
 #: lib/watch_club/conversations/conversation.ex
 #, elixir-autogen, elixir-format
 msgid "Choose at least one person"
-msgstr ""
+msgstr "Wybierz co najmniej jedną osobę"
 
+# AI-translated (Claude)
 #: lib/watch_club/conversations/conversation.ex
 #: lib/watch_club/conversations/message.ex
 #, elixir-autogen, elixir-format
 msgid "The message cannot be longer than %{max} characters"
-msgstr ""
+msgstr "Wiadomość nie może przekraczać %{max} znaków"
 
+# AI-translated (Claude)
 #: lib/watch_club/conversations/message.ex
 #, elixir-autogen, elixir-format
 msgid "Write a message"
-msgstr ""
+msgstr "Napisz wiadomość"
 
+# AI-translated (Claude)
 #: lib/watch_club/requests/content_request.ex
 #, elixir-autogen, elixir-format
 msgid "This has already been requested"
-msgstr ""
+msgstr "O tę pozycję już poproszono"
 
+# AI-translated (Claude)
 #: lib/watch_club/conversations/participant.ex
 #, elixir-autogen, elixir-format
 msgid "This person is already in the conversation"
-msgstr ""
+msgstr "Ta osoba jest już w rozmowie"
 
+# AI-translated (Claude)
 #: lib/watch_club/playlists/playlist.ex
 #, elixir-autogen, elixir-format
 msgid "Playlist icon is invalid"
-msgstr ""
+msgstr "Nieprawidłowa ikona playlisty"
 
+# AI-translated (Claude)
 #: lib/watch_club/playlists/playlist.ex
 #, elixir-autogen, elixir-format
 msgid "Playlist name cannot be longer than %{max} characters"
-msgstr ""
+msgstr "Nazwa playlisty nie może przekraczać %{max} znaków"
 
+# AI-translated (Claude)
 #: lib/watch_club/playlists/playlist.ex
 #, elixir-autogen, elixir-format
 msgid "Playlist name must be at least %{min} characters"
-msgstr ""
+msgstr "Nazwa playlisty musi składać się z co najmniej %{min} znaków"
 
+# AI-translated (Claude)
 #: lib/watch_club/playlists/playlist_access.ex
 #, elixir-autogen, elixir-format
 msgid "The playlist is already shared with this user"
-msgstr ""
+msgstr "Playlista jest już udostępniona temu użytkownikowi"
 
+# AI-translated (Claude)
 #: lib/watch_club/playlists/playlist_item.ex
 #, elixir-autogen, elixir-format
 msgid "This is already in the playlist"
-msgstr ""
+msgstr "Ta pozycja jest już na playliście"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Choose an option from the list"
-msgstr ""
+msgstr "Wybierz opcję z listy"
 
+# AI-translated (Claude)
 #: lib/watch_club/playbacks/problem_report.ex
 #, elixir-autogen, elixir-format
 msgid "Details cannot be longer than %{max} characters"
-msgstr ""
+msgstr "Szczegóły nie mogą przekraczać %{max} znaków"
 
+# AI-translated (Claude)
 #: lib/watch_club/playbacks/problem_report.ex
 #, elixir-autogen, elixir-format
 msgid "Pick what's wrong"
-msgstr ""
+msgstr "Wybierz, co jest nie tak"
 
+# AI-translated (Claude)
 #: lib/watch_club/playbacks/playback.ex
 #: lib/watch_club/playbacks/session.ex
 #, elixir-autogen, elixir-format
 msgid "Something else started playing at the same time"
-msgstr ""
+msgstr "W tym samym czasie rozpoczęło się inne odtwarzanie"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/import.ex
 #, elixir-autogen, elixir-format
 msgid "An import of this media source is already running."
-msgstr ""
+msgstr "Import z tego źródła mediów już trwa."
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "Choose a password"
-msgstr ""
+msgstr "Wybierz hasło"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "Choose a username"
-msgstr ""
+msgstr "Wybierz nazwę użytkownika"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "Enter your password"
-msgstr ""
+msgstr "Wpisz hasło"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "Enter your username"
-msgstr ""
+msgstr "Wpisz nazwę użytkownika"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/invitation_code.ex
 #, elixir-autogen, elixir-format
 msgid "This invitation has already been used. Ask the person who sent it for a new link."
-msgstr ""
+msgstr "To zaproszenie zostało już wykorzystane. Poproś osobę, która ci je wysłała, o nowy link."
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/invitation_code.ex
 #, elixir-autogen, elixir-format
 msgid "This invitation has expired. Ask the person who sent it for a new link."
-msgstr ""
+msgstr "To zaproszenie wygasło. Poproś osobę, która ci je wysłała, o nowy link."
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/changes/apply_invitation_code.ex
 #, elixir-autogen, elixir-format
 msgid "This invitation no longer works. Ask the person who sent it for a new link."
-msgstr ""
+msgstr "To zaproszenie już nie działa. Poproś osobę, która ci je wysłała, o nowy link."
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "This link no longer works"
-msgstr ""
+msgstr "Ten link już nie działa"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "Use only lowercase letters, numbers and _"
-msgstr ""
+msgstr "Używaj tylko małych liter, cyfr i _"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/sign_in_page.ex
 #, elixir-autogen, elixir-format
 msgid "Wrong username or password"
-msgstr ""
+msgstr "Nieprawidłowa nazwa użytkownika lub hasło"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "Enter your current password"
-msgstr ""
+msgstr "Wpisz obecne hasło"
 
+# AI-translated (Claude)
 #: lib/watch_club/playlists/playlist.ex
 #, elixir-autogen, elixir-format
 msgid "Name your playlist"
-msgstr ""
+msgstr "Nazwij swoją playlistę"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "Wrong current password"
-msgstr ""
+msgstr "Nieprawidłowe obecne hasło"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/source.ex
 #, elixir-autogen, elixir-format
 msgid "Choose a media type"
-msgstr ""
+msgstr "Wybierz typ mediów"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/wizard.ex
 #, elixir-autogen, elixir-format
 msgid "Choose a quality profile"
-msgstr ""
+msgstr "Wybierz profil jakości"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/wizard.ex
 #, elixir-autogen, elixir-format
 msgid "Choose a root folder"
-msgstr ""
+msgstr "Wybierz folder główny"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/source.ex
 #, elixir-autogen, elixir-format
 msgid "Enter a path"
-msgstr ""
+msgstr "Wpisz ścieżkę"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/wizard.ex
 #, elixir-autogen, elixir-format
 msgid "Enter the API key"
-msgstr ""
+msgstr "Wpisz klucz API"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/wizard.ex
 #, elixir-autogen, elixir-format
 msgid "Enter the URL"
-msgstr ""
+msgstr "Wpisz adres URL"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/wizard.ex
 #, elixir-autogen, elixir-format
 msgid "Enter the Watch Club URL"
-msgstr ""
+msgstr "Wpisz adres URL Watch Club"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/invitation_code.ex
 #, elixir-autogen, elixir-format
 msgid "It's already been used more times than that."
-msgstr ""
+msgstr "Tego zaproszenia użyto już więcej razy."
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/invitation_code.ex
 #, elixir-autogen, elixir-format
 msgid "Maximum uses must be at least %{greater_than_or_equal_to}"
-msgstr ""
+msgstr "Maksymalna liczba użyć musi wynosić co najmniej %{greater_than_or_equal_to}"
 
+# AI-translated (Claude)
 #: lib/watch_club/instance/instance_settings.ex
 #, elixir-autogen, elixir-format
 msgid "Name your instance"
-msgstr ""
+msgstr "Nazwij swoją instancję"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex
 #, elixir-autogen, elixir-format
 msgid "The webhook test failed. Check that %{name} can reach this address."
-msgstr ""
+msgstr "Test webhooka nie powiódł się. Sprawdź, czy serwer %{name} może połączyć się z tym adresem."
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/changes/store_profile_picture.ex
 #: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #, elixir-autogen, elixir-format
 msgid "We can't open this file. Choose a JPEG, PNG or WebP image."
-msgstr ""
+msgstr "Nie możemy otworzyć tego pliku. Wybierz obraz JPEG, PNG lub WebP."

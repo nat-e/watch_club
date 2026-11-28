@@ -11,114 +11,135 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page.ex
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} unread message"
 msgid_plural "%{count} unread messages"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{count} nieprzeczytana wiadomość"
+msgstr[1] "%{count} nieprzeczytane wiadomości"
+msgstr[2] "%{count} nieprzeczytanych wiadomości"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page.ex
 #, elixir-autogen, elixir-format
 msgid "%{name}: %{text}"
-msgstr ""
+msgstr "%{name}: %{text}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "%{recommender} recommended it to %{recipients}"
-msgstr ""
+msgstr "%{recommender} poleca. Do: %{recipients}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "Back to Inbox"
-msgstr ""
+msgstr "Wróć do Wiadomości"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "Conversation about %{title}"
-msgstr ""
+msgstr "Rozmowa: %{title}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page.ex
 #, elixir-autogen, elixir-format
 msgid "Conversations"
-msgstr ""
+msgstr "Rozmowy"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "Message"
-msgstr ""
+msgstr "Wiadomość"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "Message…"
-msgstr ""
+msgstr "Wiadomość…"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "New"
-msgstr ""
+msgstr "Nowe"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page.ex
 #, elixir-autogen, elixir-format
 msgid "No conversations yet"
-msgstr ""
+msgstr "Nie masz jeszcze rozmów"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "Recommended by %{name}"
-msgstr ""
+msgstr "Polecane przez %{name}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "Recommended by you"
-msgstr ""
+msgstr "Twoje polecenie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page.ex
 #, elixir-autogen, elixir-format
 msgid "Recommended it"
-msgstr ""
+msgstr "Polecenie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "Send"
-msgstr ""
+msgstr "Wyślij"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "You recommended it to %{recipients}"
-msgstr ""
+msgstr "Twoje polecenie. Do: %{recipients}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page.ex
 #, elixir-autogen, elixir-format
 msgid "You: %{text}"
-msgstr ""
+msgstr "Ty: %{text}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page.ex
 #, elixir-autogen, elixir-format
 msgid "and %{count} other"
 msgid_plural "and %{count} others"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "i jeszcze %{count} osoba"
+msgstr[1] "i jeszcze %{count} osoby"
+msgstr[2] "i jeszcze %{count} osób"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/conversations/recipients.ex
 #, elixir-autogen, elixir-format
 msgid "you"
-msgstr ""
+msgstr "ty"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page.ex
 #, elixir-autogen, elixir-format
 msgid "Browse"
-msgstr ""
+msgstr "Przeglądaj"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't find this conversation."
-msgstr ""
+msgstr "Nie możemy znaleźć tej rozmowy."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page.ex
 #, elixir-autogen, elixir-format
 msgid "When you and your friends recommend movies and TV shows to each other, you talk about them here."
-msgstr ""
+msgstr "Gdy ze znajomymi polecacie sobie filmy i seriale, tutaj o nich rozmawiacie."

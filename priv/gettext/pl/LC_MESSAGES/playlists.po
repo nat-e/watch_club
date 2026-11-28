@@ -11,343 +11,406 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/changes/create_to_watch_playlist.ex
 #, elixir-autogen, elixir-format
 msgid "To Watch"
-msgstr ""
+msgstr "Do obejrzenia"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playlists/playlist_link.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} TV show"
 msgid_plural "%{count} TV shows"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{count} serial"
+msgstr[1] "%{count} seriale"
+msgstr[2] "%{count} seriali"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playlists/playlist_link.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} movie"
 msgid_plural "%{count} movies"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{count} film"
+msgstr[1] "%{count} filmy"
+msgstr[2] "%{count} filmów"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "%{users} will lose it too."
-msgstr ""
+msgstr "Dostęp do niej straci też %{users}."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Actions for %{playlist}"
-msgstr ""
+msgstr "Opcje playlisty %{playlist}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Change the icon"
-msgstr ""
+msgstr "Zmień ikonę"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "Choose an icon"
-msgstr ""
+msgstr "Wybierz ikonę"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Created by %{user}"
-msgstr ""
+msgstr "Utworzona przez %{user}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Delete playlist"
-msgstr ""
+msgstr "Usuń playlistę"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Edit playlist"
-msgstr ""
+msgstr "Edytuj playlistę"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playlists/playlist_link.ex
 #, elixir-autogen, elixir-format
 msgid "Empty"
-msgstr ""
+msgstr "Pusta"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "It's private until you share it."
-msgstr ""
+msgstr "Jest prywatna, dopóki jej nie udostępnisz."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "More for %{content}"
-msgstr ""
+msgstr "Więcej opcji: %{content}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "My playlist"
-msgstr ""
+msgstr "Moja playlista"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Name"
-msgstr ""
+msgstr "Nazwa"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playlists/playlist_link.ex
 #: lib/watch_club_web/live/playlists/playlists_page.ex
 #, elixir-autogen, elixir-format
 msgid "New"
-msgstr ""
+msgstr "Nowa"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
 #: lib/watch_club_web/live/playlists/playlists_page.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "New playlist"
-msgstr ""
+msgstr "Nowa playlista"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page.ex
 #, elixir-autogen, elixir-format
 msgid "No playlists yet"
-msgstr ""
+msgstr "Nie masz jeszcze playlist"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Nothing here yet"
-msgstr ""
+msgstr "Nic tu jeszcze nie ma"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "Playlist deleted."
-msgstr ""
+msgstr "Usunięto playlistę."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playlists/playlist_link.ex
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Private"
-msgstr ""
+msgstr "Prywatna"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Remove from %{playlist}"
-msgstr ""
+msgstr "Usuń z playlisty %{playlist}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page.ex
 #, elixir-autogen, elixir-format
 msgid "Removed %{content} from %{playlist}."
-msgstr ""
+msgstr "Usunięto pozycję %{content} z playlisty %{playlist}."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "Select an icon for your playlist"
-msgstr ""
+msgstr "Wybierz ikonę dla swojej playlisty"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Shared with"
-msgstr ""
+msgstr "Udostępniona:"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page.ex
 #, elixir-autogen, elixir-format
 msgid "Shared with you"
-msgstr ""
+msgstr "Udostępnione dla ciebie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page.ex
 #, elixir-autogen, elixir-format
 msgid "This playlist doesn't exist, or it isn't shared with you."
-msgstr ""
+msgstr "Ta playlista nie istnieje lub nie została ci udostępniona."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page.ex
 #, elixir-autogen, elixir-format
 msgid "This playlist is no longer shared with you."
-msgstr ""
+msgstr "Nie masz już dostępu do tej playlisty."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page.ex
 #, elixir-autogen, elixir-format
 msgid "This playlist was deleted."
-msgstr ""
+msgstr "Ta playlista została usunięta."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page.ex
 #, elixir-autogen, elixir-format
 msgid "Your playlists"
-msgstr ""
+msgstr "Twoje playlisty"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "%{users} can edit."
 msgid_plural "%{users} can edit."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{users} może edytować."
+msgstr[1] "%{users} mogą edytować."
+msgstr[2] "%{users} mogą edytować."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "%{users} can view."
 msgid_plural "%{users} can view."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{users} może wyświetlać."
+msgstr[1] "%{users} mogą wyświetlać."
+msgstr[2] "%{users} mogą wyświetlać."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Access for %{user}"
-msgstr ""
+msgstr "Dostęp użytkownika %{user}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Can edit"
-msgstr ""
+msgstr "Może edytować"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Can view"
-msgstr ""
+msgstr "Może wyświetlać"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "No access"
-msgstr ""
+msgstr "Brak dostępu"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Private: only you can see it."
-msgstr ""
+msgstr "Prywatna: widzisz ją tylko ty."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Share"
-msgstr ""
+msgstr "Udostępnij"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Share “%{playlist}”"
-msgstr ""
+msgstr "Udostępnij playlistę „%{playlist}”"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "Shared. It's in their Playlists now."
-msgstr ""
+msgstr "Udostępniono. Odbiorcy znajdą ją w zakładce Playlisty."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs_live.ex
 #, elixir-autogen, elixir-format
 msgid "The playlist is private."
-msgstr ""
+msgstr "Playlista jest prywatna."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "%{user}'s playlist"
-msgstr ""
+msgstr "Utworzona przez %{user}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Add %{content} to a playlist"
-msgstr ""
+msgstr "Dodaj do playlisty: %{content}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "Add to playlist"
-msgstr ""
+msgstr "Dodaj do playlisty"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Done"
-msgstr ""
+msgstr "Gotowe"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "In playlists"
-msgstr ""
+msgstr "Na playlistach"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "Not in your playlists yet"
-msgstr ""
+msgstr "Nie ma tego jeszcze na twoich playlistach"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Shared with %{users}"
-msgstr ""
+msgstr "Udostępniona: %{users}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Your playlists, and the shared playlists you can edit."
-msgstr ""
+msgstr "Twoje playlisty oraz udostępnione playlisty, które możesz edytować."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Added by %{user}"
-msgstr ""
+msgstr "Dodane przez %{user}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/playlists/playlist_link.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} sports event"
 msgid_plural "%{count} sports events"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{count} wydarzenie sportowe"
+msgstr[1] "%{count} wydarzenia sportowe"
+msgstr[2] "%{count} wydarzeń sportowych"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Add"
-msgstr ""
+msgstr "Dodaj"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Add to %{playlist}"
-msgstr ""
+msgstr "Dodaj do playlisty %{playlist}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Couldn't add %{content}. Try again."
-msgstr ""
+msgstr "Nie udało się dodać pozycji %{content}. Spróbuj ponownie."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Search by title, then pick what to add."
-msgstr ""
+msgstr "Wyszukaj po tytule, a potem wybierz, co dodać."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "Search for movies, TV shows and sports events to add."
-msgstr ""
+msgstr "Wyszukaj filmy, seriale i wydarzenia sportowe, które chcesz dodać."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgctxt "movie"
 msgid "Add it to a playlist to find it again later, or share it with friends."
-msgstr ""
+msgstr "Dodaj ten film do playlisty, żeby łatwo go później znaleźć albo podzielić się nim ze znajomymi."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgctxt "sports_event"
 msgid "Add it to a playlist to find it again later, or share it with friends."
-msgstr ""
+msgstr "Dodaj to wydarzenie sportowe do playlisty, żeby łatwo je później znaleźć albo podzielić się nim ze znajomymi."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgctxt "tv_show"
 msgid "Add it to a playlist to find it again later, or share it with friends."
-msgstr ""
+msgstr "Dodaj ten serial do playlisty, żeby łatwo go później znaleźć albo podzielić się nim ze znajomymi."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_detail.ex
 #, elixir-autogen, elixir-format
 msgid "%{user} hasn't added anything yet."
-msgstr ""
+msgstr "Gdy %{user} coś doda, pojawi się to tutaj."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Delete %{playlist}? You can't undo this."
-msgstr ""
+msgstr "Usunąć playlistę %{playlist}? Nie można tego cofnąć."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page.ex
 #, elixir-autogen, elixir-format
 msgid "Keep what you want to watch in one place, and share it with friends."
-msgstr ""
+msgstr "Zbieraj w jednym miejscu to, co chcesz obejrzeć, i dziel się tym ze znajomymi."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "They'll find it in their Playlists. Choose who can only view it, and who can also add and remove content."
-msgstr ""
+msgstr "Osoby, którym ją udostępnisz, znajdą ją w zakładce Playlisty. Wybierz, kto może ją tylko wyświetlać, a kto także dodawać i usuwać pozycje."

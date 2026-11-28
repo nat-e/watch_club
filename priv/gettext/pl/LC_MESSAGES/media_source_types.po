@@ -11,22 +11,26 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/source/type.ex
 #, elixir-autogen, elixir-format
 msgid "Filesystem"
-msgstr ""
+msgstr "System plików"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/source/type.ex
 #, elixir-autogen, elixir-format
 msgid "Radarr"
-msgstr ""
+msgstr "Radarr"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/source/type.ex
 #, elixir-autogen, elixir-format
 msgid "Sonarr"
-msgstr ""
+msgstr "Sonarr"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_sources/source/type.ex
 #, elixir-autogen, elixir-format
 msgid "Sportarr"
-msgstr ""
+msgstr "Sportarr"

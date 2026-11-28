@@ -11,75 +11,88 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/search_field_live.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
 #: lib/watch_club_web/live/search_page.ex
 #, elixir-autogen, elixir-format
 msgid "Search"
-msgstr ""
+msgstr "Szukaj"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/search/search_status.ex
 #, elixir-autogen, elixir-format
 msgid "No results"
-msgstr ""
+msgstr "Brak wyników"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/search_field_live.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/add_content_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Search results"
-msgstr ""
+msgstr "Wyniki wyszukiwania"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/search/search_status.ex
 #, elixir-autogen, elixir-format
 msgid "Searching…"
-msgstr ""
+msgstr "Wyszukiwanie…"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/search/search_status.ex
 #, elixir-autogen, elixir-format
 msgid "The search didn't work."
-msgstr ""
+msgstr "Wyszukiwanie nie powiodło się."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/search/search_status.ex
 #, elixir-autogen, elixir-format
 msgid "Try again"
-msgstr ""
+msgstr "Spróbuj ponownie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/search/search_status.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} result"
 msgid_plural "%{count} results"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{count} wynik"
+msgstr[1] "%{count} wyniki"
+msgstr[2] "%{count} wyników"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/search_field_live.ex
 #, elixir-autogen, elixir-format
 msgid "Close search"
-msgstr ""
+msgstr "Zamknij wyszukiwanie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/search/search_scopes.ex
 #, elixir-autogen, elixir-format
 msgid "Search in"
-msgstr ""
+msgstr "Szukaj w"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/search_field_live.ex
 #, elixir-autogen, elixir-format
 msgid "See all results for “%{query}”"
-msgstr ""
+msgstr "Zobacz wszystkie wyniki dla „%{query}”"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/search/search_status.ex
 #, elixir-autogen, elixir-format
 msgid "We didn't find anything for “%{query}”."
-msgstr ""
+msgstr "Nic nie znaleźliśmy dla zapytania „%{query}”."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/search_field_live.ex
 #: lib/watch_club_web/live/search_page.ex
 #, elixir-autogen, elixir-format
 msgid "Find any movie or TV show, even ones that aren't on %{name} yet."
-msgstr ""
+msgstr "Znajdź dowolny film lub serial, nawet taki, którego %{name} jeszcze nie ma."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/search/search_result_row.ex
 #: lib/watch_club_web/components/search/search_scopes.ex
 #, elixir-autogen, elixir-format
 msgid "On %{name}"
-msgstr ""
+msgstr "W klubie %{name}"

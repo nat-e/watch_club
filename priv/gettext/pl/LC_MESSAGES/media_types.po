@@ -11,52 +11,62 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "Audiobook"
-msgstr ""
+msgstr "Audiobook"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "Ebook"
-msgstr ""
+msgstr "E-book"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "Audiobooks"
-msgstr ""
+msgstr "Audiobooki"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "Ebooks"
-msgstr ""
+msgstr "E-booki"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "Movie"
-msgstr ""
+msgstr "Film"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "Movies"
-msgstr ""
+msgstr "Filmy"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "Sports"
-msgstr ""
+msgstr "Sport"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "Sports event"
-msgstr ""
+msgstr "Wydarzenie sportowe"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "TV show episode"
-msgstr ""
+msgstr "Odcinek serialu"
 
+# AI-translated (Claude)
 #: lib/watch_club/media_catalog/media_type.ex
 #, elixir-autogen, elixir-format
 msgid "TV shows"
-msgstr ""
+msgstr "Seriale"

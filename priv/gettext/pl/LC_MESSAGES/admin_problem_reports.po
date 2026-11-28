@@ -11,107 +11,128 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "%{username}, %{time}"
-msgstr ""
+msgstr "%{username}, %{time}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "Archive"
-msgstr ""
+msgstr "Zarchiwizuj"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "Archived reports"
-msgstr ""
+msgstr "Zarchiwizowane zgłoszenia"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "Audio"
-msgstr ""
+msgstr "Dźwięk"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "Back to open reports"
-msgstr ""
+msgstr "Wróć do otwartych zgłoszeń"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "Device"
-msgstr ""
+msgstr "Urządzenie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "More"
-msgstr ""
+msgstr "Więcej"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "No open reports"
-msgstr ""
+msgstr "Brak otwartych zgłoszeń"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "Off"
-msgstr ""
+msgstr "Wyłączone"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "Open reports"
-msgstr ""
+msgstr "Otwarte zgłoszenia"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "Play at %{time}"
-msgstr ""
+msgstr "Odtwórz od %{time}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "Quality"
-msgstr ""
+msgstr "Jakość"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "Report archived."
-msgstr ""
+msgstr "Zarchiwizowano zgłoszenie."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "Reported by"
-msgstr ""
+msgstr "Zgłoszone przez"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "Subtitles"
-msgstr ""
+msgstr "Napisy"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "Time in video"
-msgstr ""
+msgstr "Pozycja odtwarzania"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "Archived"
-msgstr ""
+msgstr "Zarchiwizowano"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "Didn't load"
-msgstr ""
+msgstr "Wideo się nie wczytało"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "No archived reports"
-msgstr ""
+msgstr "Brak zarchiwizowanych zgłoszeń"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't find this report."
-msgstr ""
+msgstr "Nie możemy znaleźć tego zgłoszenia."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "When friends report a problem from the Player, it shows up here, with what the Player showed at that moment."
-msgstr ""
+msgstr "Gdy znajomi zgłoszą problem w odtwarzaczu, zgłoszenie pojawi się tutaj, razem z tym, co odtwarzacz wtedy pokazywał."

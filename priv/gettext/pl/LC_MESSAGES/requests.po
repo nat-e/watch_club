@@ -11,75 +11,89 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
 msgid "My Requests"
-msgstr ""
+msgstr "Moje prośby"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
 msgid "No requests yet"
-msgstr ""
+msgstr "Nie masz jeszcze żadnych próśb"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
 #, elixir-autogen, elixir-format
 msgid "Stop getting notified"
-msgstr ""
+msgstr "Nie powiadamiaj mnie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/my_requests_page/request_on_the_way.ex
 #, elixir-autogen, elixir-format
 msgid "Stop getting notified about %{title}"
-msgstr ""
+msgstr "Nie powiadamiaj mnie: %{title}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_status.ex
 #, elixir-autogen, elixir-format
 msgid "%{percent}% downloaded"
-msgstr ""
+msgstr "Pobrano %{percent}%"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_status.ex
 #, elixir-autogen, elixir-format
 msgid "Not found, we'll keep looking for it"
-msgstr ""
+msgstr "Nie znaleziono, ale nadal będziemy szukać"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
 msgid "On the way"
-msgstr ""
+msgstr "W drodze"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_status.ex
 #, elixir-autogen, elixir-format
 msgid "Out on %{date}"
-msgstr ""
+msgstr "Premiera %{date}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
 msgid "Ready to watch"
-msgstr ""
+msgstr "Gotowe do obejrzenia"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_status.ex
 #, elixir-autogen, elixir-format
 msgid "Not found, still looking"
-msgstr ""
+msgstr "Nie znaleziono, szukamy dalej"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_status.ex
 #, elixir-autogen, elixir-format
 msgid "%{ready} of %{count} episode ready"
 msgid_plural "%{ready} of %{count} episodes ready"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Gotowe: %{ready} z %{count} odcinka"
+msgstr[1] "Gotowe: %{ready} z %{count} odcinków"
+msgstr[2] "Gotowe: %{ready} z %{count} odcinków"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_status.ex
 #, elixir-autogen, elixir-format
 msgid "Download stuck"
-msgstr ""
+msgstr "Pobieranie utknęło"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/my_requests_page.ex
 #, elixir-autogen, elixir-format
 msgid "Request the movies and TV shows you'd like to watch. You can follow them here until they're ready."
-msgstr ""
+msgstr "Poproś o filmy i seriale, które chcesz obejrzeć. Tutaj możesz śledzić ich postęp, aż będą gotowe."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/requests/request_status.ex
 #, elixir-autogen, elixir-format
 msgid "The download is stuck. Let %{admin} know."
-msgstr ""
+msgstr "Pobieranie utknęło. Daj znać administratorowi (%{admin})."

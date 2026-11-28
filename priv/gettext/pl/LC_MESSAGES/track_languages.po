@@ -11,17 +11,20 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/track_language.ex
 #, elixir-autogen, elixir-format
 msgid "English"
-msgstr ""
+msgstr "Angielski"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/track_language.ex
 #, elixir-autogen, elixir-format
 msgid "French"
-msgstr ""
+msgstr "Francuski"
 
+# AI-translated (Claude)
 #: lib/watch_club/accounts/track_language.ex
 #, elixir-autogen, elixir-format
 msgid "Polish"
-msgstr ""
+msgstr "Polski"

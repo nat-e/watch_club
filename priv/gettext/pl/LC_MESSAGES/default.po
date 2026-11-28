@@ -11,6 +11,7 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
 #: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
 #: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
@@ -25,110 +26,130 @@ msgstr ""
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Cancel"
-msgstr ""
+msgstr "Anuluj"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/ui/flash.ex
 #: lib/watch_club_web/components/ui/modal.ex
 #, elixir-autogen, elixir-format
 msgid "Close"
-msgstr ""
+msgstr "Zamknij"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Create"
-msgstr ""
+msgstr "Utwórz"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Delete"
-msgstr ""
+msgstr "Usuń"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/settings_page.ex
 #: lib/watch_club_web/live/admin/instance_settings_page.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Save"
-msgstr ""
+msgstr "Zapisz"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/controllers/error_html.ex
 #, elixir-autogen, elixir-format
 msgid "Try again"
-msgstr ""
+msgstr "Spróbuj ponownie"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/controllers/error_html.ex
 #, elixir-autogen, elixir-format
 msgid "Could not load page"
-msgstr ""
+msgstr "Nie udało się wczytać strony"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/controllers/error_html.ex
 #, elixir-autogen, elixir-format
 msgid "Go home"
-msgstr ""
+msgstr "Wróć na stronę główną"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/controllers/error_html.ex
 #, elixir-autogen, elixir-format
 msgid "Page not found"
-msgstr ""
+msgstr "Nie znaleziono strony"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/controllers/error_html.ex
 #, elixir-autogen, elixir-format
 msgid "Something went wrong while loading this page."
-msgstr ""
+msgstr "Podczas wczytywania tej strony wystąpił błąd."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/ui/flash.ex
 #, elixir-autogen, elixir-format
 msgid "Notifications"
-msgstr ""
+msgstr "Powiadomienia"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/ui/avatar.ex
 #, elixir-autogen, elixir-format
 msgid "%{count} more"
-msgstr ""
+msgstr "jeszcze %{count}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Back"
-msgstr ""
+msgstr "Wstecz"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/accounts/user_avatar.ex
 #: lib/watch_club_web/components/ui/badges.ex
 #, elixir-autogen, elixir-format
 msgid "Deleted user"
-msgstr ""
+msgstr "Usunięty użytkownik"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/helpers/usernames.ex
 #, elixir-autogen, elixir-format
 msgid "you"
-msgstr ""
+msgstr "ty"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/ui/icon_picker_live.ex
 #, elixir-autogen, elixir-format
 msgid "No icons found"
-msgstr ""
+msgstr "Nie znaleziono ikon"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/ui/icon_picker_live.ex
 #, elixir-autogen, elixir-format
 msgid "Search icons"
-msgstr ""
+msgstr "Szukaj ikon"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/ui/icon_picker_live.ex
 #, elixir-autogen, elixir-format
 msgid "Try a different search term."
-msgstr ""
+msgstr "Spróbuj wyszukać coś innego."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/ui/icon_picker_live.ex
 #, elixir-autogen, elixir-format
 msgid "Use %{icon_name} icon"
-msgstr ""
+msgstr "Użyj ikony %{icon_name}"
 
+# AI-translated (Claude)
 #: lib/watch_club_web/controllers/error_html.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't find this page. It may not exist, or you may not have access to it."
-msgstr ""
+msgstr "Nie udało nam się znaleźć tej strony. Być może nie istnieje albo nie masz do niej dostępu."
 
+# AI-translated (Claude)
 #: lib/watch_club_web/components/ui/select.ex
 #, elixir-autogen, elixir-format
 msgid "Select…"
-msgstr ""
+msgstr "Wybierz…"
