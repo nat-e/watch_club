@@ -150,6 +150,42 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
              |> Ash.Query.filter(id == ^original_track_id)
              |> Ash.exists?(authorize?: false)
     end
+
+    test "keeps the Audio and Text Tracks still in the file, so Playbacks keep their picks" do
+      movie = seed_movie()
+
+      candidate = %Candidate{
+        media_source_id: default_media_source_id(),
+        path: "tmp/new-subtitles-save.mkv",
+        media_type: :movie,
+        match_result: %MatchResult{result: :success, parts: [%{movie_id: movie.id, number: 1}]},
+        media_structure: sample_video_structure()
+      }
+
+      SaveMedia.apply!(candidate)
+      original = load_media!(candidate.path)
+
+      sidecar = %MediaStructure.TextTrack{
+        sidecar_path: Path.expand("tmp/new-subtitles-save.fr.srt"),
+        codec: "subrip",
+        language: "fr"
+      }
+
+      structure = candidate.media_structure
+
+      SaveMedia.apply!(
+        put_in(candidate.media_structure.text_tracks, [sidecar | structure.text_tracks])
+      )
+
+      refreshed = load_media!(candidate.path)
+
+      assert Enum.map(refreshed.video.audio_tracks, & &1.id) ==
+               Enum.map(original.video.audio_tracks, & &1.id)
+
+      [embedded] = original.video.text_tracks
+      assert [_, _] = refreshed.video.text_tracks
+      assert embedded.id in Enum.map(refreshed.video.text_tracks, & &1.id)
+    end
   end
 
   defp sample_video_structure do
@@ -162,9 +198,15 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMediaTest do
       bit_rate: 5_000_000,
       video_tracks: [%{stream_index: 0, codec: "h264", width: 1920, height: 1080}],
       audio_tracks: [
-        %{stream_index: 1, codec: "aac", language: "eng", channels: 2, default?: true}
+        %MediaStructure.AudioTrack{
+          stream_index: 1,
+          codec: "aac",
+          language: "eng",
+          channels: 2,
+          default?: true
+        }
       ],
-      text_tracks: [%{stream_index: 2, codec: "subrip", language: "eng"}]
+      text_tracks: [%MediaStructure.TextTrack{stream_index: 2, codec: "subrip", language: "eng"}]
     }
   end
 

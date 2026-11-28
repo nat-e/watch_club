@@ -143,8 +143,20 @@ defmodule WatchClub.MediaCatalog.Video do
 
       change RelateParts
       change manage_relationship(:video_tracks, type: :direct_control, authorize?: false)
-      change manage_relationship(:audio_tracks, type: :direct_control, authorize?: false)
-      change manage_relationship(:text_tracks, type: :direct_control, authorize?: false)
+
+      # The tracks that are still there keep their ids, so Playbacks keep their picks
+      change manage_relationship(:audio_tracks,
+               type: :direct_control,
+               use_identities: [:unique_stream_index],
+               authorize?: false
+             )
+
+      change manage_relationship(:text_tracks,
+               type: :direct_control,
+               use_identities: [:unique_stream_index, :unique_sidecar_path],
+               authorize?: false
+             )
+
       change ScheduleTrickplay
       change ScheduleDetection
     end

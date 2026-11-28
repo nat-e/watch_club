@@ -56,8 +56,10 @@ defmodule WatchClub.MediaSources.Import.Ingestor.SaveMedia do
       keyframe_seconds: structure.keyframe_seconds,
       keyframe_interval_bytes: structure.keyframe_interval_bytes,
       video_tracks: structure.video_tracks,
-      audio_tracks: structure.audio_tracks,
-      text_tracks: structure.text_tracks
+      # As maps, so the Video matches them with the tracks it already has: Ash would match a
+      # struct by its `video_id`, which these don't have
+      audio_tracks: Enum.map(structure.audio_tracks, &Map.from_struct/1),
+      text_tracks: Enum.map(structure.text_tracks, &Map.from_struct/1)
     }
   end
 end

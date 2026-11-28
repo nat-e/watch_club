@@ -143,4 +143,10 @@ defmodule WatchClub.MediaCatalog.TextTrack do
       public? true
     end
   end
+
+  identities do
+    # A Video processed again updates its tracks in place, so its Playbacks keep their picks
+    identity :unique_stream_index, [:video_id, :stream_index]
+    identity :unique_sidecar_path, [:video_id, :sidecar_path]
+  end
 end
