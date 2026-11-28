@@ -248,6 +248,8 @@ defmodule WatchClub.Generator do
         quality_profile_id: 1,
         quality_profile_name: "Movies",
         root_folder_path: "/path/to/radarr",
+        # Otherwise generated at random, which maps its files elsewhere on disk
+        local_root_folder_path: nil,
         webhook_callback_base_url: "http://watch_club:4000"
       ],
       authorize?: false,
