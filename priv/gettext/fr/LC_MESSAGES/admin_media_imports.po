@@ -632,32 +632,32 @@ msgstr "Voir tous les fichiers non associés"
 msgid "Every 15 minutes"
 msgstr "Toutes les 15 minutes"
 
-#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 # AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
 msgid "New and changed"
 msgstr "Nouveaux et modifiés"
 
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 # AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Read every file again"
 msgstr "Relire tous les fichiers"
 
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 # AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "We process new and changed files, subtitles included, and remove the media of deleted files."
 msgstr "On traite les fichiers nouveaux et modifiés, sous-titres compris, et on retire les médias des fichiers supprimés."
 
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 # AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Even files that haven't changed. Each file is matched again, but manual matches are kept."
 msgstr "Même les fichiers qui n'ont pas changé. Chaque fichier est associé à nouveau, mais les associations manuelles sont conservées."
 
-#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 # AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "For every video, even unchanged ones. New files always get them."
 msgstr "Pour toutes les vidéos, même celles qui n'ont pas changé. Les nouveaux fichiers les obtiennent toujours."

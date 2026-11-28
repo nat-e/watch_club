@@ -1,0 +1,488 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: pl\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Play"
+msgstr "Odtwórz"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Cast"
+msgstr "Obsada"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} season"
+msgid_plural "%{count} seasons"
+msgstr[0] "%{count} sezon"
+msgstr[1] "%{count} sezony"
+msgstr[2] "%{count} sezonów"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Episodes"
+msgstr "Odcinki"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Season %{number}"
+msgstr "Sezon %{number}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "Request"
+msgstr "Poproś"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Play %{episode}"
+msgstr "Odtwórz %{episode}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Resume"
+msgstr "Wznów"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Resume %{episode}"
+msgstr "Wznów %{episode}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Mark as watched"
+msgstr "Oznacz jako obejrzane"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Watched"
+msgstr "Obejrzane"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "%{action} %{title}"
+msgstr "%{action}: %{title}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "All episodes"
+msgstr "Wszystkie odcinki"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Mark all as not watched"
+msgstr "Oznacz wszystkie odcinki jako nieobejrzane"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Mark all as watched"
+msgstr "Oznacz wszystkie odcinki jako obejrzane"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Mark as not watched"
+msgstr "Oznacz jako nieobejrzane"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Mark season %{number} as not watched"
+msgstr "Oznacz sezon %{number} jako nieobejrzany"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Mark season %{number} as watched"
+msgstr "Oznacz sezon %{number} jako obejrzany"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Not out yet"
+msgstr "Jeszcze przed premierą"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Original language: %{language}"
+msgstr "Język oryginału: %{language}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Out on %{date}"
+msgstr "Premiera %{date}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Play episode %{number}"
+msgstr "Odtwórz odcinek %{number}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "See it on TMDB"
+msgstr "Zobacz na TMDB"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Watch trailer"
+msgstr "Obejrzyj zwiastun"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Who watched it"
+msgstr "Kto oglądał"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Watched episode %{number}"
+msgstr "Odcinek %{number} obejrzany"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "%{recommender} recommended it"
+msgstr "%{recommender} poleca"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Cancel"
+msgstr "Anuluj"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Conversations"
+msgstr "Rozmowy"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Message (optional)"
+msgstr "Wiadomość (opcjonalnie)"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "People"
+msgstr "Osoby"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Recommend"
+msgstr "Poleć"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Recommend %{title}"
+msgstr "Poleć: %{title}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended to %{names}. The conversation is in your Inbox."
+msgstr "Wysłano polecenie do: %{names}. Rozmowę znajdziesz w zakładce Wiadomości."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Starts a conversation with %{name}."
+msgstr "Nowa rozmowa: ty i %{name}."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Starts one group conversation with %{names}."
+msgstr "Jedna rozmowa grupowa: ty, %{names}."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Why they'd love it"
+msgstr "Dlaczego im się spodoba"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "You recommended it"
+msgstr "Twoje polecenie"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "to %{recipients}"
+msgstr "Do: %{recipients}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/poster_card.ex
+#, elixir-autogen, elixir-format
+msgid "New"
+msgstr "Nowość"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "%{title}: %{status}"
+msgstr "%{title}: %{status}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button.ex
+#, elixir-autogen, elixir-format
+msgid "%{percent}%"
+msgstr "%{percent}%"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Download"
+msgstr "Pobierz"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Download episode %{number}"
+msgstr "Pobierz odcinek %{number}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Play or download any episode, and mark what you've watched."
+msgstr "Odtwarzaj lub pobieraj dowolne odcinki i oznaczaj obejrzane."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/incomplete_badge.ex
+#, elixir-autogen, elixir-format
+msgid "Some episodes missing"
+msgstr "Brakuje niektórych odcinków"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Play %{episode} on TV"
+msgstr "Odtwórz %{episode} na telewizorze"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Play on TV"
+msgstr "Odtwórz na telewizorze"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Resume %{episode} on TV"
+msgstr "Wznów %{episode} na telewizorze"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Resume on TV"
+msgstr "Wznów na telewizorze"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Less"
+msgstr "Mniej"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "More"
+msgstr "Więcej"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/helpers/parts.ex
+#, elixir-autogen, elixir-format
+msgid "Part %{number}"
+msgstr "Część %{number}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} part"
+msgid_plural "%{count} parts"
+msgstr[0] "%{count} część"
+msgstr[1] "%{count} części"
+msgstr[2] "%{count} części"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Same file as %{episodes}"
+msgstr "Ten sam plik co %{episodes}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Couldn't send the request. Try again in a moment."
+msgstr "Nie udało się wysłać prośby. Spróbuj ponownie za chwilę."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "Loading…"
+msgstr "Wczytywanie…"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/contents/play_or_request_button_live.ex
+#, elixir-autogen, elixir-format
+msgid "Request sent. We'll let you know when you can watch %{title}."
+msgstr "Wysłano prośbę. Damy ci znać, gdy %{title} będzie do obejrzenia."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Tell them why they'll love it. You'll talk about it together in your Inbox."
+msgstr "Napisz, dlaczego im się spodoba. Porozmawiacie o tym w zakładce Wiadomości."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't find this TV show."
+msgstr "Nie udało nam się znaleźć tego serialu."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't find this movie."
+msgstr "Nie udało nam się znaleźć tego filmu."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't find this sports event."
+msgstr "Nie udało nam się znaleźć tego wydarzenia sportowego."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't load this TV show. Try again in a moment."
+msgstr "Nie udało nam się wczytać tego serialu. Spróbuj ponownie za chwilę."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't load this movie. Try again in a moment."
+msgstr "Nie udało nam się wczytać tego filmu. Spróbuj ponownie za chwilę."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't load this sports event. Try again in a moment."
+msgstr "Nie udało nam się wczytać tego wydarzenia sportowego. Spróbuj ponownie za chwilę."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "movie"
+msgid "Nobody has watched it yet."
+msgstr "Nikt jeszcze nie oglądał tego filmu."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "movie"
+msgid "Recommend it to friends, tell them why they'll love it, and talk about it together."
+msgstr "Poleć ten film znajomym, napisz, dlaczego im się spodoba, i porozmawiajcie o nim."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgctxt "movie"
+msgid "Recommended it to you"
+msgstr "Poleca ci ten film"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "sports_event"
+msgid "Nobody has watched it yet."
+msgstr "Nikt jeszcze nie oglądał tego wydarzenia sportowego."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "sports_event"
+msgid "Recommend it to friends, tell them why they'll love it, and talk about it together."
+msgstr "Poleć to wydarzenie sportowe znajomym, napisz, dlaczego im się spodoba, i porozmawiajcie o nim."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgctxt "sports_event"
+msgid "Recommended it to you"
+msgstr "Poleca ci to wydarzenie sportowe"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "tv_show"
+msgid "Nobody has watched it yet."
+msgstr "Nikt jeszcze nie oglądał tego serialu."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgctxt "tv_show"
+msgid "Recommend it to friends, tell them why they'll love it, and talk about it together."
+msgstr "Poleć ten serial znajomym, napisz, dlaczego im się spodoba, i porozmawiajcie o nim."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
+#, elixir-autogen, elixir-format
+msgctxt "tv_show"
+msgid "Recommended it to you"
+msgstr "Poleca ci ten serial"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
+#, elixir-autogen, elixir-format
+msgid "Not on %{name} yet"
+msgstr "Jeszcze nie ma w klubie %{name}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page.ex
+#, elixir-autogen, elixir-format
+msgid "You"
+msgstr "Ty"

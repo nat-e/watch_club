@@ -1,0 +1,168 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: pl\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/sidebar.ex
+#: lib/watch_club_web/components/navigation/tab_bar.ex
+#, elixir-autogen, elixir-format
+msgid "Main navigation"
+msgstr "Nawigacja główna"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/account_menu.ex
+#, elixir-autogen, elixir-format
+msgid "Settings"
+msgstr "Ustawienia"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/account_menu.ex
+#, elixir-autogen, elixir-format
+msgid "Sign out"
+msgstr "Wyloguj się"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/account_menu.ex
+#, elixir-autogen, elixir-format
+msgid "Instance settings"
+msgstr "Ustawienia instancji"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/account_menu.ex
+#, elixir-autogen, elixir-format
+msgid "Media browser"
+msgstr "Przeglądarka mediów"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/account_menu.ex
+#, elixir-autogen, elixir-format
+msgid "Users"
+msgstr "Użytkownicy"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/account_menu.ex
+#, elixir-autogen, elixir-format
+msgid "Administration"
+msgstr "Administracja"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/account_menu.ex
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#, elixir-autogen, elixir-format
+msgid "Instance administrator"
+msgstr "Administrator"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/account_menu.ex
+#, elixir-autogen, elixir-format
+msgid "Account"
+msgstr "Konto"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/app_bar.ex
+#, elixir-autogen, elixir-format
+msgid "Back"
+msgstr "Wstecz"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/app_bar.ex
+#, elixir-autogen, elixir-format
+msgid "Back to %{page}"
+msgstr "Wróć do: %{page}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/account_menu.ex
+#, elixir-autogen, elixir-format
+msgid "Close"
+msgstr "Zamknij"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/sections.ex
+#, elixir-autogen, elixir-format
+msgid "Requests"
+msgstr "Prośby"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/sections.ex
+#: lib/watch_club_web/live/browse_page.ex
+#: lib/watch_club_web/live/home_page.ex
+#: lib/watch_club_web/live/my_requests_page.ex
+#, elixir-autogen, elixir-format
+msgid "Browse"
+msgstr "Przeglądaj"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/sections.ex
+#: lib/watch_club_web/live/conversations/inbox_page.ex
+#, elixir-autogen, elixir-format
+msgid "Inbox"
+msgstr "Wiadomości"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/sections.ex
+#: lib/watch_club_web/live/playlists/playlists_page.ex
+#, elixir-autogen, elixir-format
+msgid "Playlists"
+msgstr "Playlisty"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/tab_bar.ex
+#, elixir-autogen, elixir-format
+msgid "You"
+msgstr "Ty"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/sections.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} unread conversation"
+msgid_plural "%{count} unread conversations"
+msgstr[0] "%{count} nieprzeczytana rozmowa"
+msgstr[1] "%{count} nieprzeczytane rozmowy"
+msgstr[2] "%{count} nieprzeczytanych rozmów"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/sections.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} new request ready to watch"
+msgid_plural "%{count} new requests ready to watch"
+msgstr[0] "%{count} nowa zrealizowana prośba"
+msgstr[1] "%{count} nowe zrealizowane prośby"
+msgstr[2] "%{count} nowych zrealizowanych próśb"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/account_menu.ex
+#: lib/watch_club_web/live/admin/problem_reports_page.ex
+#, elixir-autogen, elixir-format
+msgid "Problem reports"
+msgstr "Zgłoszenia"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/sections.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} playlist newly shared with you"
+msgid_plural "%{count} playlists newly shared with you"
+msgstr[0] "%{count} nowa udostępniona ci playlista"
+msgstr[1] "%{count} nowe udostępnione ci playlisty"
+msgstr[2] "%{count} nowych udostępnionych ci playlist"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/sections.ex
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "Home"
+msgstr "Strona główna"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/navigation/account_menu.ex
+#, elixir-autogen, elixir-format
+msgid "Media sources"
+msgstr "Źródła mediów"

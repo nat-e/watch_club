@@ -1,0 +1,174 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: pl\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} more"
+msgid_plural "%{count} more"
+msgstr[0] "jeszcze %{count}"
+msgstr[1] "jeszcze %{count}"
+msgstr[2] "jeszcze %{count}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "%{time} left"
+msgstr "Zostało %{time}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "%{user} watched %{contents}"
+msgstr "Obejrzane przez %{user}: %{contents}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "Activity"
+msgstr "Aktywność"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Continue watching"
+msgstr "Oglądaj dalej"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "For you"
+msgstr "Dla ciebie"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Not started"
+msgstr "Nie rozpoczęto"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Resume"
+msgstr "Wznów"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Resume %{title}"
+msgstr "Wznów: %{title}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "Shared by %{user}"
+msgstr "Udostępniona przez %{user}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "Show more"
+msgstr "Pokaż więcej"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Up next"
+msgstr "Następne"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/watching_now.ex
+#, elixir-autogen, elixir-format
+msgid "Watching now"
+msgstr "Teraz oglądają"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "New sports events"
+msgstr "Nowe wydarzenia sportowe"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/activity_feed.ex
+#, elixir-autogen, elixir-format
+msgid "%{show} (%{count} episode)"
+msgid_plural "%{show} (%{count} episodes)"
+msgstr[0] "%{show} (%{count} odcinek)"
+msgstr[1] "%{show} (%{count} odcinki)"
+msgstr[2] "%{show} (%{count} odcinków)"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "%{title} is hidden until you play it again."
+msgstr "Pozycja %{title} jest ukryta, dopóki znów jej nie odtworzysz."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Hide"
+msgstr "Ukryj"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/continue_watching.ex
+#, elixir-autogen, elixir-format
+msgid "Hide %{title}"
+msgstr "Ukryj: %{title}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "Recommended by %{user}"
+msgstr "Polecane przez %{user}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "Request the movies and TV shows you'd like to watch. We'll look for them and add them here for everyone."
+msgstr "Poproś o filmy i seriale, które chcesz obejrzeć. Poszukamy ich i dodamy je tutaj dla wszystkich."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "What friends recommend or share with you shows up here, and your requests once they're ready."
+msgstr "Tu pojawi się to, co polecą ci lub udostępnią znajomi, a także twoje prośby, gdy zostaną zrealizowane."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "Your TV show is ready"
+msgstr "Twój serial jest gotowy"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "Your movie is ready"
+msgstr "Twój film jest gotowy"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page/for_you.ex
+#, elixir-autogen, elixir-format
+msgid "Your sports event is ready"
+msgstr "Twoje wydarzenie sportowe jest gotowe"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "New on %{name}"
+msgstr "Nowości w klubie %{name}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/home_page.ex
+#, elixir-autogen, elixir-format
+msgid "Nothing on %{name} yet"
+msgstr "W klubie %{name} jeszcze nic nie ma"

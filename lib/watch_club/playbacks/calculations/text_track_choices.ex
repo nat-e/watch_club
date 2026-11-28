@@ -2,7 +2,7 @@ defmodule WatchClub.Playbacks.Calculations.TextTrackChoices do
   @moduledoc """
   The Text Track Choices of a Playback, and the Forced Text Tracks that play while none is picked.
 
-  The choices are one Text Track per language and region among English, French and the
+  The choices are one Text Track per language and region among the Track Languages and the
   Content's original language. In each, it takes the Playback's picked Text Track, else an SDH
   Text Track when the User prefers them and a regular one otherwise, when the Video has one,
   else the first in the file. Forced and picture-based Text Tracks are never choices.

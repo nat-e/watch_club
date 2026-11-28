@@ -1,0 +1,155 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: pl\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page/profile_picture_live.ex
+#: lib/watch_club_web/live/admin/media_browser_page/match_media_live.ex
+#: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
+#: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
+#: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
+#: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Cancel"
+msgstr "Anuluj"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/ui/flash.ex
+#: lib/watch_club_web/components/ui/modal.ex
+#, elixir-autogen, elixir-format
+msgid "Close"
+msgstr "Zamknij"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/contents/content_page/add_to_playlist_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Create"
+msgstr "Utwórz"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Delete"
+msgstr "Usuń"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/accounts/settings_page.ex
+#: lib/watch_club_web/live/admin/instance_settings_page.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/playlist_form_modal.ex
+#: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/share_playlist_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Save"
+msgstr "Zapisz"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/controllers/error_html.ex
+#, elixir-autogen, elixir-format
+msgid "Try again"
+msgstr "Spróbuj ponownie"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/controllers/error_html.ex
+#, elixir-autogen, elixir-format
+msgid "Could not load page"
+msgstr "Nie udało się wczytać strony"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/controllers/error_html.ex
+#, elixir-autogen, elixir-format
+msgid "Go home"
+msgstr "Wróć na stronę główną"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/controllers/error_html.ex
+#, elixir-autogen, elixir-format
+msgid "Page not found"
+msgstr "Nie znaleziono strony"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/controllers/error_html.ex
+#, elixir-autogen, elixir-format
+msgid "Something went wrong while loading this page."
+msgstr "Podczas wczytywania tej strony wystąpił błąd."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/ui/flash.ex
+#, elixir-autogen, elixir-format
+msgid "Notifications"
+msgstr "Powiadomienia"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/ui/avatar.ex
+#, elixir-autogen, elixir-format
+msgid "%{count} more"
+msgstr "jeszcze %{count}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
+#, elixir-autogen, elixir-format
+msgid "Back"
+msgstr "Wstecz"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/accounts/user_avatar.ex
+#: lib/watch_club_web/components/ui/badges.ex
+#, elixir-autogen, elixir-format
+msgid "Deleted user"
+msgstr "Usunięty użytkownik"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/helpers/usernames.ex
+#, elixir-autogen, elixir-format
+msgid "you"
+msgstr "ty"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/ui/icon_picker_live.ex
+#, elixir-autogen, elixir-format
+msgid "No icons found"
+msgstr "Nie znaleziono ikon"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/ui/icon_picker_live.ex
+#, elixir-autogen, elixir-format
+msgid "Search icons"
+msgstr "Szukaj ikon"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/ui/icon_picker_live.ex
+#, elixir-autogen, elixir-format
+msgid "Try a different search term."
+msgstr "Spróbuj wyszukać coś innego."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/ui/icon_picker_live.ex
+#, elixir-autogen, elixir-format
+msgid "Use %{icon_name} icon"
+msgstr "Użyj ikony %{icon_name}"
+
+# AI-translated (Claude)
+#: lib/watch_club_web/controllers/error_html.ex
+#, elixir-autogen, elixir-format
+msgid "We couldn't find this page. It may not exist, or you may not have access to it."
+msgstr "Nie udało nam się znaleźć tej strony. Być może nie istnieje albo nie masz do niej dostępu."
+
+# AI-translated (Claude)
+#: lib/watch_club_web/components/ui/select.ex
+#, elixir-autogen, elixir-format
+msgid "Select…"
+msgstr "Wybierz…"

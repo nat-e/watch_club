@@ -39,6 +39,7 @@ classDiagram
     <<enumeration>>
     en_US
     fr_FR
+    pl_PL
   }
   class InvitationCode {
     uuid id

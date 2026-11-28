@@ -125,7 +125,9 @@ config :watch_club, Oban,
     # Single worker so trickplay's ffmpeg passes never crowd out imports.
     trickplay_generation: 1,
     # Single worker so marker detection's audio decoding stays in the background
-    marker_detection: 1
+    marker_detection: 1,
+    # Single worker so a refresh of every Content stays gentle on the Metadata Providers
+    metadata_refreshes: 1
   ]
 
 # Configure the endpoint

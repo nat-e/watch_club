@@ -10,6 +10,7 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.TextTracks do
   lines, or else when its language matches none of the audio tracks'.
   """
 
+  alias WatchClub.Accounts.TrackLanguage
   alias WatchClub.Languages
   alias WatchClub.MediaSources.Import.Candidate.MediaStructure
 
@@ -151,8 +152,8 @@ defmodule WatchClub.MediaSources.Import.Ingestor.ExtractStructure.TextTracks do
     end)
   end
 
-  # Single-word language names in English and French, such as "french" or "francais"
-  @language_names for locale <- [:en, :fr],
+  # Single-word language names in each Track Language, such as "french", "francais" or "francuski"
+  @language_names for locale <- TrackLanguage.values(),
                       {code, %{standard: name}} <-
                         WatchClub.Cldr.Language.known_languages(locale),
                       is_binary(code) and String.length(code) == 2,

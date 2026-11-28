@@ -19,3 +19,9 @@ msgstr "Anglais (États-Unis)"
 #, elixir-autogen, elixir-format
 msgid "French"
 msgstr "Français"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/user_locale.ex
+#, elixir-autogen, elixir-format
+msgid "Polish"
+msgstr "Polonais"

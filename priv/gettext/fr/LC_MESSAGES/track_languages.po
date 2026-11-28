@@ -22,3 +22,9 @@ msgstr "Anglais"
 #, elixir-autogen, elixir-format
 msgid "French"
 msgstr "Français"
+
+# AI-translated (Claude)
+#: lib/watch_club/accounts/track_language.ex
+#, elixir-autogen, elixir-format
+msgid "Polish"
+msgstr "Polonais"

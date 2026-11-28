@@ -7,8 +7,9 @@ defmodule WatchClub.Accounts.TrackLanguage do
 
   use Gettext, backend: WatchClubWeb.Gettext
 
-  use Ash.Type.Enum, values: [:en, :fr]
+  use Ash.Type.Enum, values: [:en, :fr, :pl]
 
   def translated_label(:en), do: dgettext("track_languages", "English")
   def translated_label(:fr), do: dgettext("track_languages", "French")
+  def translated_label(:pl), do: dgettext("track_languages", "Polish")
 end
