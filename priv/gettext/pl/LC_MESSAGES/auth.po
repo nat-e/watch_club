@@ -126,13 +126,13 @@ msgstr "Linki resetujące hasło wygasają po 3 dniach. Poproś administratora o
 #: lib/watch_club_web/live/accounts/setup_page.ex
 #, elixir-autogen, elixir-format
 msgid "Welcome to Watch Club!"
-msgstr "Witaj w Watch Club!"
+msgstr "Witaj w aplikacji Watch Club!"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/setup_page.ex
 #, elixir-autogen, elixir-format
 msgid "Create the administrator account. You'll use it to manage Watch Club and invite your friends."
-msgstr "Utwórz konto administratora. Posłuży ci do zarządzania Watch Club i zapraszania znajomych."
+msgstr "Utwórz konto administratora. Posłuży ci do zarządzania aplikacją Watch Club i zapraszania znajomych."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/setup_page.ex

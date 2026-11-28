@@ -161,7 +161,7 @@ msgstr "Łączenie z telewizorem %{tv}…"
 #: lib/watch_club_web/components/playbacks/tv_controls_live.ex
 #, elixir-autogen, elixir-format
 msgid "Forward 10 seconds"
-msgstr "Przewiń o 10 sekund do przodu"
+msgstr "Przewiń do przodu o 10 sekund"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/remote_page.ex
@@ -331,7 +331,7 @@ msgstr "Dzięki! %{admin} ma już twoje zgłoszenie."
 #: lib/watch_club_web/live/player_page.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't find this video."
-msgstr "Nie znaleźliśmy tego wideo."
+msgstr "Nie udało nam się znaleźć tego wideo."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/player/player_components.ex
@@ -343,7 +343,7 @@ msgstr "Nie udało nam się odtworzyć tego wideo"
 #: lib/watch_club_web/live/player_page.ex
 #, elixir-autogen, elixir-format
 msgid "Couldn't play on the TV. It may not reach Watch Club: the TV needs an HTTPS address with a trusted certificate."
-msgstr "Nie udało się odtworzyć na telewizorze. Możliwe, że telewizor nie może połączyć się z Watch Club: potrzebuje adresu HTTPS z zaufanym certyfikatem."
+msgstr "Nie udało się odtworzyć na telewizorze. Możliwe, że telewizor nie może połączyć się z aplikacją Watch Club: potrzebuje adresu HTTPS z zaufanym certyfikatem."
 
 # AI-translated (Claude)
 #: lib/watch_club/playbacks/calculations/text_track_choices.ex

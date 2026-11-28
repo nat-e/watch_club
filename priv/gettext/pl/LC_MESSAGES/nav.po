@@ -134,9 +134,9 @@ msgstr[2] "%{count} nieprzeczytanych rozmów"
 #, elixir-autogen, elixir-format
 msgid "%{count} new request ready to watch"
 msgid_plural "%{count} new requests ready to watch"
-msgstr[0] "%{count} nowa prośba gotowa do obejrzenia"
-msgstr[1] "%{count} nowe prośby gotowe do obejrzenia"
-msgstr[2] "%{count} nowych próśb gotowych do obejrzenia"
+msgstr[0] "%{count} nowa zrealizowana prośba"
+msgstr[1] "%{count} nowe zrealizowane prośby"
+msgstr[2] "%{count} nowych zrealizowanych próśb"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/navigation/account_menu.ex

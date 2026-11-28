@@ -99,13 +99,13 @@ msgstr "Wszystkie odcinki"
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "Mark all as not watched"
-msgstr "Oznacz wszystko jako nieobejrzane"
+msgstr "Oznacz wszystkie odcinki jako nieobejrzane"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "Mark all as watched"
-msgstr "Oznacz wszystko jako obejrzane"
+msgstr "Oznacz wszystkie odcinki jako obejrzane"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -221,7 +221,7 @@ msgstr "Poleć: %{title}"
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Recommended to %{names}. The conversation is in your Inbox."
-msgstr "Wysłano polecenie do: %{names}. Rozmowę znajdziesz w Wiadomościach."
+msgstr "Wysłano polecenie do: %{names}. Rozmowę znajdziesz w zakładce Wiadomości."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
@@ -239,7 +239,7 @@ msgstr "Jedna rozmowa grupowa: ty, %{names}."
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Why they'd love it"
-msgstr "Dlaczego warto to obejrzeć"
+msgstr "Dlaczego im się spodoba"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -374,43 +374,43 @@ msgstr "Wysłano prośbę. Damy ci znać, gdy %{title} będzie do obejrzenia."
 #: lib/watch_club_web/live/contents/content_page/recommend_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Tell them why they'll love it. You'll talk about it together in your Inbox."
-msgstr "Napisz, dlaczego warto to obejrzeć. Porozmawiacie o tym w Wiadomościach."
+msgstr "Napisz, dlaczego im się spodoba. Porozmawiacie o tym w zakładce Wiadomości."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't find this TV show."
-msgstr "Nie udało się znaleźć tego serialu."
+msgstr "Nie udało nam się znaleźć tego serialu."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't find this movie."
-msgstr "Nie udało się znaleźć tego filmu."
+msgstr "Nie udało nam się znaleźć tego filmu."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't find this sports event."
-msgstr "Nie udało się znaleźć tego wydarzenia sportowego."
+msgstr "Nie udało nam się znaleźć tego wydarzenia sportowego."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't load this TV show. Try again in a moment."
-msgstr "Nie udało się wczytać tego serialu. Spróbuj ponownie za chwilę."
+msgstr "Nie udało nam się wczytać tego serialu. Spróbuj ponownie za chwilę."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't load this movie. Try again in a moment."
-msgstr "Nie udało się wczytać tego filmu. Spróbuj ponownie za chwilę."
+msgstr "Nie udało nam się wczytać tego filmu. Spróbuj ponownie za chwilę."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't load this sports event. Try again in a moment."
-msgstr "Nie udało się wczytać tego wydarzenia sportowego. Spróbuj ponownie za chwilę."
+msgstr "Nie udało nam się wczytać tego wydarzenia sportowego. Spróbuj ponownie za chwilę."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex
@@ -479,7 +479,7 @@ msgstr "Poleca ci ten serial"
 #: lib/watch_club_web/live/contents/content_page/episodes_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Not on %{name} yet"
-msgstr "%{name} nie ma jeszcze tego odcinka"
+msgstr "Jeszcze nie ma w klubie %{name}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/contents/content_page.ex

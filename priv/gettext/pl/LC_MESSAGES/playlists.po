@@ -401,7 +401,7 @@ msgstr "Gdy %{user} coś doda, pojawi się to tutaj."
 #: lib/watch_club_web/live/playlists/playlists_page/playlist_dialogs/delete_playlist_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Delete %{playlist}? You can't undo this."
-msgstr "Usunąć playlistę %{playlist}? Nie można tego cofnąć."
+msgstr "Usunąć playlistę %{playlist}? Tego nie da się cofnąć."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/playlists/playlists_page.ex

@@ -61,7 +61,7 @@ msgstr "Wiadomość"
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "Message…"
-msgstr "Wiadomość…"
+msgstr "Napisz wiadomość…"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
@@ -85,7 +85,7 @@ msgstr "Polecane przez %{name}"
 #: lib/watch_club_web/live/conversations/inbox_page/conversation_live.ex
 #, elixir-autogen, elixir-format
 msgid "Recommended by you"
-msgstr "Twoje polecenie"
+msgstr "Polecane przez ciebie"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page.ex
@@ -136,7 +136,7 @@ msgstr "Przeglądaj"
 #: lib/watch_club_web/live/conversations/inbox_page.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't find this conversation."
-msgstr "Nie możemy znaleźć tej rozmowy."
+msgstr "Nie udało nam się znaleźć tej rozmowy."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/conversations/inbox_page.ex

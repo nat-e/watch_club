@@ -33,4 +33,4 @@ msgstr "To zaproszenie już nie działa"
 #: lib/watch_club_web/live/invitations/invitation_page.ex
 #, elixir-autogen, elixir-format
 msgid "You're invited to %{name}"
-msgstr "%{name}: masz zaproszenie"
+msgstr "Masz zaproszenie do klubu %{name}"

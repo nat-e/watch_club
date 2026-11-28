@@ -1,7 +1,7 @@
 defmodule WatchClub.Repo.Migrations.RefreshMetadataForPolish do
   use Ecto.Migration
 
-  # Fetches the Polish localizations of the stored Content
+  # Fetches the Polish Content Localizations of the stored Content
   def up do
     execute """
     INSERT INTO oban_jobs (worker, queue, max_attempts)

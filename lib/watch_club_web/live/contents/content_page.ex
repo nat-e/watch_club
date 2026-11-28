@@ -499,7 +499,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
     )
   end
 
-  # The French names the Content Type, which sets the words' gender
+  # Translations name the Content Type, which sets the words' gender
   defp recommend_hint(:movie),
     do:
       dpgettext(
@@ -568,7 +568,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
     """
   end
 
-  # The French names the Content Type, which sets the words' gender
+  # Translations name the Content Type, which sets the words' gender
   defp nobody_watched_text(:movie),
     do: dpgettext("contents", "movie", "Nobody has watched it yet.")
 
@@ -623,7 +623,7 @@ defmodule WatchClubWeb.Contents.ContentPage do
     """
   end
 
-  # The French names the Content Type, which sets the words' gender
+  # Translations name the Content Type, which sets the words' gender
   defp add_to_playlist_hint(:movie),
     do:
       dpgettext(

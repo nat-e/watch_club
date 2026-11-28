@@ -76,7 +76,7 @@ msgstr "Wymuszone"
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
 #, elixir-autogen, elixir-format
 msgid "Frame rate"
-msgstr "Liczba klatek"
+msgstr "Liczba klatek na sekundę"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page/media_details.ex
@@ -392,7 +392,7 @@ msgstr "Miniatury i znaczniki zostaną ponownie wygenerowane w tle."
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Add a media source to bring your videos into Watch Club."
-msgstr "Dodaj źródło mediów, aby twoje pliki wideo pojawiły się w Watch Club."
+msgstr "Dodaj źródło mediów, aby twoje pliki wideo pojawiły się w aplikacji Watch Club."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
@@ -410,7 +410,7 @@ msgstr "Według tytułu"
 #: lib/watch_club_web/live/admin/media_browser_page.ex
 #, elixir-autogen, elixir-format
 msgid "Every file in Watch Club: find the unmatched ones, match them by hand, or remove them."
-msgstr "Wszystkie pliki w Watch Club: znajdź niedopasowane, dopasuj je ręcznie albo usuń."
+msgstr "Wszystkie pliki w aplikacji Watch Club: znajdź niedopasowane, dopasuj je ręcznie albo usuń."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex
@@ -441,7 +441,7 @@ msgstr "Nie ma jeszcze mediów"
 #: lib/watch_club_web/live/admin/media_browser_page/remove_media_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Remove this media from Watch Club? Its file stays on disk, so the next import adds it back."
-msgstr "Usunąć te media z Watch Club? Plik zostanie na dysku, więc następny import doda je z powrotem."
+msgstr "Usunąć te media z aplikacji Watch Club? Plik zostanie na dysku, więc następny import doda je z powrotem."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_browser_page.ex

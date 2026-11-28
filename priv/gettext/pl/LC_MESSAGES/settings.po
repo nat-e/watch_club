@@ -123,7 +123,7 @@ msgstr "Wyłączone"
 #: lib/watch_club_web/live/accounts/settings_page.ex
 #, elixir-autogen, elixir-format
 msgid "Original language"
-msgstr "Język oryginalny"
+msgstr "Język oryginału"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/accounts/settings_page.ex

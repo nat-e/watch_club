@@ -99,7 +99,7 @@ msgstr "Tajemnica"
 #: lib/watch_club/contents/genre.ex
 #, elixir-autogen, elixir-format
 msgid "News"
-msgstr "Informacje"
+msgstr "Informacyjny"
 
 # AI-translated (Claude)
 #: lib/watch_club/contents/genre.ex

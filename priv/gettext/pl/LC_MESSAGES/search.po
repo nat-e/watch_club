@@ -88,7 +88,7 @@ msgstr "Nic nie znaleźliśmy dla zapytania „%{query}”."
 #: lib/watch_club_web/live/search_page.ex
 #, elixir-autogen, elixir-format
 msgid "Find any movie or TV show, even ones that aren't on %{name} yet."
-msgstr "Znajdź dowolny film lub serial, nawet taki, którego %{name} jeszcze nie ma."
+msgstr "Znajdź dowolny film lub serial, nawet taki, którego jeszcze nie ma w klubie %{name}."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/components/search/search_result_row.ex

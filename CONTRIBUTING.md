@@ -20,7 +20,7 @@ CI also builds the Docker image, starts it with `docker-compose.yml` and checks 
 
 ## Translations
 
-The app is translated into English and French with Gettext. After changing text in the code:
+The app is translated into English, French and Polish with Gettext. After changing text in the code:
 
 1. Run `mix gettext.extract --merge` to update the `.po` files in `priv/gettext/`.
 2. Fill in the `msgstr` of the new messages.

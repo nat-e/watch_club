@@ -21,13 +21,13 @@ msgstr "Adres URL serwera %{name}"
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
 msgid "Actions"
-msgstr "Akcje"
+msgstr "Opcje"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_source_card.ex
 #, elixir-autogen, elixir-format
 msgid "Actions for %{label}"
-msgstr "Akcje dla źródła %{label}"
+msgstr "Opcje źródła %{label}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
@@ -277,7 +277,7 @@ msgstr "Rozpocznij nowy import ze źródła %{name}:"
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
 msgid "Started"
-msgstr "Rozpoczęcie"
+msgstr "Początek"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
@@ -289,13 +289,13 @@ msgstr "Status"
 #: lib/watch_club_web/live/admin/media_sources/media_import_history_table.ex
 #, elixir-autogen, elixir-format
 msgid "Trigger"
-msgstr "Uruchomienie"
+msgstr "Sposób uruchomienia"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Use the address %{name} can reach from its network. In Docker setups this is usually different from your browser URL."
-msgstr "Podaj adres osiągalny z sieci serwera %{name}. Przy Dockerze zwykle różni się on od adresu w twojej przeglądarce."
+msgstr "Podaj adres osiągalny z sieci serwera %{name}. W instalacjach z Dockerem zwykle różni się on od adresu w twojej przeglądarce."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/media_source_card.ex
@@ -373,7 +373,7 @@ msgstr "Tylko pliki, których jeszcze nie zaimportowano."
 #: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Process"
-msgstr "Przetwórz"
+msgstr "Pliki do przetworzenia"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
@@ -403,7 +403,7 @@ msgstr "Wygeneruj ponownie miniatury i znaczniki"
 #: lib/watch_club_web/live/admin/media_sources/run_import_modal_live.ex
 #, elixir-autogen, elixir-format
 msgid "Even for files that haven't changed. New files always get them."
-msgstr "Także dla plików, które się nie zmieniły. Nowe pliki zawsze je dostają."
+msgstr "Także dla plików, które się nie zmieniły. Nowe pliki zawsze je otrzymują."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
@@ -415,7 +415,7 @@ msgstr "Usuwanie…"
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "%{name} sends its updates to Watch Club at this address. We check that it works before saving."
-msgstr "Serwer %{name} wysyła na ten adres aktualizacje do Watch Club. Przed zapisaniem sprawdzimy, czy działa."
+msgstr "Serwer %{name} wysyła na ten adres aktualizacje do aplikacji Watch Club. Przed zapisaniem sprawdzimy, czy działa."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
@@ -505,7 +505,7 @@ msgstr "Importuj wydarzenia sportowe z serwera Sportarr i wysyłaj do niego pro�
 #: lib/watch_club_web/live/admin/media_sources/delete_media_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Its media will be removed from Watch Club too. Their files stay on disk."
-msgstr "Jego media zostaną też usunięte z Watch Club. Ich pliki pozostaną na dysku."
+msgstr "Jego media zostaną też usunięte z aplikacji Watch Club. Ich pliki pozostaną na dysku."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources_page.ex
@@ -560,13 +560,13 @@ msgstr "Nie ma jeszcze importów"
 #: lib/watch_club_web/live/admin/media_source_history_page.ex
 #, elixir-autogen, elixir-format
 msgid "Nothing imported from this source yet. Run an import to add its files to Watch Club."
-msgstr "Z tego źródła nic jeszcze nie zaimportowano. Uruchom import, aby dodać jego pliki do Watch Club."
+msgstr "Z tego źródła nic jeszcze nie zaimportowano. Uruchom import, aby dodać jego pliki do aplikacji Watch Club."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Path in Watch Club (optional)"
-msgstr "Ścieżka w Watch Club (opcjonalnie)"
+msgstr "Ścieżka w aplikacji Watch Club (opcjonalnie)"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
@@ -578,7 +578,7 @@ msgstr "Profil jakości"
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "The address where Watch Club reaches %{name}."
-msgstr "Adres, pod którym Watch Club znajdzie serwer %{name}."
+msgstr "Adres, pod którym Watch Club łączy się z serwerem %{name}."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
@@ -602,7 +602,7 @@ msgstr "Sprawdź webhooki"
 #: lib/watch_club_web/live/admin/media_sources/add_servarr_source_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Watch Club URL for %{name}"
-msgstr "Adres URL Watch Club dla serwera %{name}"
+msgstr "Adres URL aplikacji Watch Club dla serwera %{name}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/media_sources/create_or_edit_media_source_modal.ex

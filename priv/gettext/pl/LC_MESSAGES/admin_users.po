@@ -15,13 +15,13 @@ msgstr ""
 #: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Actions"
-msgstr "Akcje"
+msgstr "Opcje"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/users_table.ex
 #, elixir-autogen, elixir-format
 msgid "Actions for %{username}"
-msgstr "Akcje dla użytkownika %{username}"
+msgstr "Opcje użytkownika %{username}"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/delete_user_modal.ex

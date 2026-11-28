@@ -1,6 +1,6 @@
 defmodule WatchClub.Contents.Workers.RefreshAllMetadata do
   @moduledoc """
-  Refreshes the metadata of every Content, such as for a new User Locale. A migration schedules
+  Refreshes the metadata of every Content, such as for a new Locale. A migration schedules
   it when stored metadata needs fetching again:
 
       execute \"""

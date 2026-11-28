@@ -166,7 +166,7 @@ msgstr "Ten adres URL jest nieprawidłowy."
 #: lib/watch_club/media_sources/servarr/validations/check_connection.ex
 #, elixir-autogen, elixir-format
 msgid "Could not reach %{name}."
-msgstr "Nie udało się skontaktować z serwerem %{name}."
+msgstr "Serwer %{name} jest nieosiągalny."
 
 # AI-translated (Claude)
 #: lib/watch_club/conversations/conversation.ex
@@ -264,7 +264,7 @@ msgstr "Import z tego źródła mediów już trwa."
 #: lib/watch_club/accounts/user.ex
 #, elixir-autogen, elixir-format
 msgid "Choose a password"
-msgstr "Wybierz hasło"
+msgstr "Ustaw hasło"
 
 # AI-translated (Claude)
 #: lib/watch_club/accounts/user.ex
@@ -330,7 +330,7 @@ msgstr "Wpisz obecne hasło"
 #: lib/watch_club/playlists/playlist.ex
 #, elixir-autogen, elixir-format
 msgid "Name your playlist"
-msgstr "Nazwij swoją playlistę"
+msgstr "Nadaj playliście nazwę"
 
 # AI-translated (Claude)
 #: lib/watch_club/accounts/user.ex
@@ -378,7 +378,7 @@ msgstr "Wpisz adres URL"
 #: lib/watch_club/media_sources/servarr/wizard.ex
 #, elixir-autogen, elixir-format
 msgid "Enter the Watch Club URL"
-msgstr "Wpisz adres URL Watch Club"
+msgstr "Wpisz adres URL aplikacji Watch Club"
 
 # AI-translated (Claude)
 #: lib/watch_club/accounts/invitation_code.ex
@@ -396,7 +396,7 @@ msgstr "Maksymalna liczba użyć musi wynosić co najmniej %{greater_than_or_equ
 #: lib/watch_club/instance/instance_settings.ex
 #, elixir-autogen, elixir-format
 msgid "Name your instance"
-msgstr "Nazwij swoją instancję"
+msgstr "Nadaj instancji nazwę"
 
 # AI-translated (Claude)
 #: lib/watch_club/media_sources/servarr/validations/check_webhook_url.ex

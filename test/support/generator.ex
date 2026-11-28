@@ -131,7 +131,8 @@ defmodule WatchClub.Generator do
             id: content.id,
             backdrop_path: content.original_title,
             localizations:
-              for [iso_639_1, iso_3166_1] <- Enum.map(UserLocale.values(), &UserLocale.split/1) do
+              for locale <- UserLocale.values(),
+                  [iso_639_1, iso_3166_1] = UserLocale.split(locale) do
                 %{
                   iso_639_1: iso_639_1,
                   iso_3166_1: iso_3166_1,
@@ -183,7 +184,8 @@ defmodule WatchClub.Generator do
             tmdb_id: tmdb_id,
             tvdb_id: tmdb_id,
             localizations:
-              for [iso_639_1, iso_3166_1] <- Enum.map(UserLocale.values(), &UserLocale.split/1) do
+              for locale <- UserLocale.values(),
+                  [iso_639_1, iso_3166_1] = UserLocale.split(locale) do
                 %{iso_639_1: iso_639_1, iso_3166_1: iso_3166_1, title: content.original_title}
               end,
             episodes: episodes

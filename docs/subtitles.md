@@ -6,7 +6,7 @@ Glossary:
 **Forced track**: A subtitle track that only contains subtitles for audio in a different language or annotations.
 **SDH track**: A track that includes notes for non-dialog audio (music playing, noise that influences the plot), to help people with hearing deficiencies.
 
-We only display one track per supported language (English, French, Polish or original), named English, French, Polish or {Original Language} in the subtitles track list. When a language has tracks for several regions, we display one per region, named {Language} ({Region}), such as French (France) and French (Canada). When tracks can't be told apart, we pick the first one.
+We only display one track per Track Language or original language, named after its language, such as English or {Original Language}, in the subtitles track list. When a language has tracks for several regions, we display one per region, named {Language} ({Region}), such as French (France) and French (Canada). When tracks can't be told apart, we pick the first one.
 
 When the `Prefer Subtitles for the Deaf and Hard of Hearing` option is checked in the User Settings, we prefer an SDH track for each language when available. Otherwise, we prefer a regular track and fall back to an SDH one. SDH tracks show an SDH icon.
 

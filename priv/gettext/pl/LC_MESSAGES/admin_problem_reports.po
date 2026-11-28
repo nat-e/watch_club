@@ -105,7 +105,7 @@ msgstr "Napisy"
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "Time in video"
-msgstr "Pozycja odtwarzania"
+msgstr "Moment odtwarzania"
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
@@ -129,7 +129,7 @@ msgstr "Brak zarchiwizowanych zgłoszeń"
 #: lib/watch_club_web/live/admin/problem_reports_page.ex
 #, elixir-autogen, elixir-format
 msgid "We couldn't find this report."
-msgstr "Nie możemy znaleźć tego zgłoszenia."
+msgstr "Nie udało nam się znaleźć tego zgłoszenia."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/problem_reports_page.ex

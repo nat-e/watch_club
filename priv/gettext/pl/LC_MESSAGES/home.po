@@ -135,7 +135,7 @@ msgstr "Polecane przez %{user}"
 #: lib/watch_club_web/live/home_page.ex
 #, elixir-autogen, elixir-format
 msgid "Request the movies and TV shows you'd like to watch. We'll look for them and add them here for everyone."
-msgstr "Poproś o filmy i seriale, które chcesz obejrzeć. Poszukamy ich i dodamy tutaj dla wszystkich."
+msgstr "Poproś o filmy i seriale, które chcesz obejrzeć. Poszukamy ich i dodamy je tutaj dla wszystkich."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/home_page/for_you.ex

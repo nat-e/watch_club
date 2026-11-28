@@ -81,7 +81,7 @@ msgstr "Zaktualizowano zaproszenie"
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Maximum number of accounts this invitation can create. Leave empty for unlimited."
-msgstr "Maksymalna liczba kont, które można założyć z tym zaproszeniem. Zostaw puste, aby nie ustawiać limitu."
+msgstr "Maksymalna liczba kont, które można założyć za pomocą tego zaproszenia. Zostaw puste, aby nie ustawiać limitu."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
@@ -93,7 +93,7 @@ msgstr "Zapisz"
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "The code cannot be changed once created."
-msgstr "Po utworzeniu kodu nie można już zmienić."
+msgstr "Po utworzeniu kodu nie można go już zmienić."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/invitation_codes_section.ex
@@ -153,7 +153,7 @@ msgstr "Brak aktywnych zaproszeń"
 #: lib/watch_club_web/live/admin/users_page/delete_invitation_code_modal.ex
 #, elixir-autogen, elixir-format
 msgid "Nobody can sign up with %{code} anymore. Accounts already created with it stay."
-msgstr "Nikt nie będzie mógł już zarejestrować się kodem %{code}. Konta założone wcześniej z tym kodem pozostaną."
+msgstr "Nikt nie będzie mógł już zarejestrować się za pomocą kodu %{code}. Konta założone wcześniej za jego pomocą pozostaną."
 
 # AI-translated (Claude)
 #: lib/watch_club_web/live/admin/users_page/create_or_edit_invitation_code_modal.ex
