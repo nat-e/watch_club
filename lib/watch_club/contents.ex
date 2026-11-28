@@ -38,6 +38,7 @@ defmodule WatchClub.Contents do
       define :refresh_metadata
 
       define :get_or_refresh_content, action: :get_or_refresh, args: [:content_identity]
+      define :refresh_all_metadata, args: [:refreshed_before]
 
       define :get_actor_continue_watching, action: :actor_continue_watching
     end

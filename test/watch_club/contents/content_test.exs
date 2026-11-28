@@ -1084,6 +1084,31 @@ defmodule WatchClub.Contents.ContentTest do
     end
   end
 
+  describe "refresh_all_metadata/*" do
+    test "refreshes the Content refreshed before the given time", %{member: actor} do
+      stale = create_content!(ContentIdentity.for_movie(1), actor: actor)
+      refreshed_before = DateTime.utc_now()
+      fresh = create_content!(ContentIdentity.for_movie(2), actor: actor)
+
+      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+        tmdb_id = conn.request_path |> Path.basename() |> String.to_integer()
+
+        Req.Test.json(
+          conn,
+          Map.merge(tmdb_fixture("movie_details_11"), %{
+            "id" => tmdb_id,
+            "original_title" => "Refreshed"
+          })
+        )
+      end)
+
+      refresh_all_metadata!(refreshed_before, actor: SystemActor.actor())
+
+      assert get_content_by_id!(stale.id, actor: actor).original_title == "Refreshed"
+      assert get_content_by_id!(fresh.id, actor: actor).original_title == fresh.original_title
+    end
+  end
+
   describe "search_content/*" do
     test "returns the Sports Events from sportarr.net with the query's words, and whether they're in the Library",
          %{
