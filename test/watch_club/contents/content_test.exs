@@ -1086,26 +1086,33 @@ defmodule WatchClub.Contents.ContentTest do
 
   describe "refresh_all_metadata/*" do
     test "refreshes the Content refreshed before the given time", %{member: actor} do
-      stale = create_content!(ContentIdentity.for_movie(1), actor: actor)
       refreshed_before = DateTime.utc_now()
-      fresh = create_content!(ContentIdentity.for_movie(2), actor: actor)
-
-      Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
-        tmdb_id = conn.request_path |> Path.basename() |> String.to_integer()
-
-        Req.Test.json(
-          conn,
-          Map.merge(tmdb_fixture("movie_details_11"), %{
-            "id" => tmdb_id,
-            "original_title" => "Refreshed"
-          })
-        )
-      end)
+      stale = generate(movie(metadata_refreshed_at: DateTime.add(refreshed_before, -1, :day)))
+      never_refreshed = generate(movie(metadata_refreshed_at: nil))
+      fresh = generate(movie(metadata_refreshed_at: DateTime.add(refreshed_before, 1, :second)))
+      stub_refreshed_movie_metadata()
 
       refresh_all_metadata!(refreshed_before, actor: SystemActor.actor())
 
       assert get_content_by_id!(stale.id, actor: actor).original_title == "Refreshed"
+      assert get_content_by_id!(never_refreshed.id, actor: actor).original_title == "Refreshed"
       assert get_content_by_id!(fresh.id, actor: actor).original_title == fresh.original_title
+    end
+
+    test "keeps the stored metadata of a Content the Metadata Provider fails on", %{
+      member: actor
+    } do
+      refreshed_before = DateTime.utc_now()
+      failing = generate(movie(metadata_refreshed_at: DateTime.add(refreshed_before, -1, :day)))
+      other = generate(movie(metadata_refreshed_at: DateTime.add(refreshed_before, -1, :day)))
+      stub_refreshed_movie_metadata(failing: failing.external_id)
+
+      capture_log(fn ->
+        assert :ok = refresh_all_metadata(refreshed_before, actor: SystemActor.actor())
+      end)
+
+      assert get_content_by_id!(failing.id, actor: actor).original_title == failing.original_title
+      assert get_content_by_id!(other.id, actor: actor).original_title == "Refreshed"
     end
   end
 
@@ -1655,6 +1662,28 @@ defmodule WatchClub.Contents.ContentTest do
         Process.sleep(10)
         await_metadata_callers(identity, count, attempts - 1)
     end
+  end
+
+  # Answers every Movie's details with the original title "Refreshed", and a server error for
+  # the `failing` TMDB ID
+  defp stub_refreshed_movie_metadata(opts \\ []) do
+    failing_tmdb_id = opts[:failing]
+
+    Req.Test.stub(WatchClub.Integrations.Tmdb.Client, fn conn ->
+      case Path.basename(conn.request_path) do
+        ^failing_tmdb_id ->
+          Plug.Conn.send_resp(conn, 503, "")
+
+        tmdb_id ->
+          Req.Test.json(
+            conn,
+            Map.merge(tmdb_fixture("movie_details_11"), %{
+              "id" => String.to_integer(tmdb_id),
+              "original_title" => "Refreshed"
+            })
+          )
+      end
+    end)
   end
 
   defp stub_movie_metadata(details) do
